@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--In questo file sono presenti i sottomoduli possibili per s71200-->
+
+<ModuleCatalog>
+	<ModuleItemComposition>
+		<Module>
+			<TemplateName>DI 16x24VDC HF</TemplateName>
+			<OrderNumber>6ES7521-1BH00-0AB0</OrderNumber>
+			<FirmwareVersion>V2.1</FirmwareVersion>
+		</Module>
+		<Module>
+			<TemplateName>DQ 16x24VDC/0.5A HF</TemplateName>
+			<OrderNumber>6ES7522-1BH01-0AB0</OrderNumber>
+			<FirmwareVersion>V2.1</FirmwareVersion>
+		</Module>
+		<Module>
+			<TemplateName>AI 8xU/I/RTD/TC HF</TemplateName>
+			<OrderNumber>6ES7531-7QD00-0AB0</OrderNumber>
+			<FirmwareVersion>V2.1</FirmwareVersion>
+		</Module>
+	</ModuleItemComposition>
+</ModuleCatalog>

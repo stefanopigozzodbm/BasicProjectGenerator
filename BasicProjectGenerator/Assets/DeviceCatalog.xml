@@ -49,5 +49,13 @@
 			<FirmwareVersion>V2.9</FirmwareVersion>
 			<IncludeFailsafe>1</IncludeFailsafe>
 		</Device>
+		<Device> <!--test aggiunta device-->
+			<TemplateName>S71200-DBM</TemplateName>
+			<Station>S7-1200</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 214-1AG40-0XB0</OrderNumber>
+			<FirmwareVersion>V4.7</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+		</Device>
 	</DeviceItemComposition>
 </Catalog>
