@@ -414,6 +414,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_AddNewDevice.Size = new System.Drawing.Size(173, 33);
             this.btn_AddNewDevice.TabIndex = 13;
             this.btn_AddNewDevice.Text = "Add new device";
+            this.btn_AddNewDevice.BackColor = System.Drawing.Color.LightBlue;
             this.btn_AddNewDevice.UseVisualStyleBackColor = true;
             this.btn_AddNewDevice.Click += new System.EventHandler(this.btn_AddNewDevice_Click);
             // 

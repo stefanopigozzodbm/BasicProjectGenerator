@@ -206,6 +206,9 @@
     <Content Include="Assets\DeviceCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+	  <Content Include="Assets\ModuleCatalog.xml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>  
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.dll" />

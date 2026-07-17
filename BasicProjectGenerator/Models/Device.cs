@@ -1,4 +1,16 @@
-﻿namespace Basic_Project_Generator.Models
+﻿//Classe che rappresenta l'oggetto Device 
+/* per esempio vedi field
+  DevieceCataolg
+  		<TemplateName>CPU 1516-3 - V1.8</TemplateName>			
+			<Station>S7-1500/ET200MP station</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 516-3AN00-0AB0</OrderNumber>
+			<FirmwareVersion>V1.8</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+
+*/
+
+namespace Basic_Project_Generator.Models
 {
     public class Device
     {
