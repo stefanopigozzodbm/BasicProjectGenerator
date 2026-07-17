@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Catalog>
+	<DeviceItemComposition>
+		<Device>
+			<TemplateName>CPU 1516-3 - V1.8</TemplateName>			
+			<Station>S7-1500/ET200MP station</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 516-3AN00-0AB0</OrderNumber>
+			<FirmwareVersion>V1.8</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+		</Device>
+		<Device>
+			<TemplateName>CPU 1516-3 - V2.9</TemplateName>
+			<Station>S7-1500/ET200MP station</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 516-3AN01-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+		</Device>
+		<Device>
+			<TemplateName>CPU 1516-3 - V2.9</TemplateName>
+			<Station>S7-1500/ET200MP station</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 516-3AN02-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+		</Device>
+		<Device>
+			<TemplateName>CPU 1513F-1 - V1.8</TemplateName>
+			<Station>S7-1500/ET200MP station</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 513-1FL00-0AB0</OrderNumber>
+			<FirmwareVersion>V1.8</FirmwareVersion>
+			<IncludeFailsafe>1</IncludeFailsafe>
+		</Device>
+		<Device>
+			<TemplateName>CPU 1513F-1 - V2.9</TemplateName>
+			<Station>S7-1500/ET200MP station</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 513-1FL01-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>1</IncludeFailsafe>
+		</Device>
+		<Device>
+			<TemplateName>CPU 1513F-1 - V2.9</TemplateName>
+			<Station>S7-1500/ET200MP station</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 513-1FL02-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>1</IncludeFailsafe>
+		</Device>
+	</DeviceItemComposition>
+</Catalog>
