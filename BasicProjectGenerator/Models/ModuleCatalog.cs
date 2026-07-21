@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Basic_Project_Generator.Models
 {
@@ -6,7 +6,7 @@ namespace Basic_Project_Generator.Models
     {
         #region properties
 
-        public List<Module> ModuleItemComposition { get; set; }
+        public List<ExpModule> ModuleItemComposition { get; set; }
 
         #endregion // properties
     }

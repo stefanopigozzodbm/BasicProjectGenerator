@@ -3,20 +3,34 @@
 
 <ModuleCatalog>
 	<ModuleItemComposition>
-		<Module>
-			<TemplateName>DI 16x24VDC HF</TemplateName>
-			<OrderNumber>6ES7521-1BH00-0AB0</OrderNumber>
+		<ExpModule>
+			<TemplateName>SM 1231 AI 4x13Bit</TemplateName>
+			<OrderNumber>6ES7231-5PD32-0XB0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+		<ExpModule>
+			<TemplateName>SM 1221 DI 16x24VDC</TemplateName>
+			<OrderNumber>6ES7221-1BH32-0XB0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+		<ExpModule>
+			<TemplateName>SM 1221 DI 8</TemplateName>
+			<OrderNumber>6ES7221-1BF32-0XB0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+		<ExpModule>
+			<TemplateName>DI 16/DQ 16x24VDC</TemplateName>
+			<OrderNumber>6ES7 223-1BL32-0XB0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+		<ExpModule>
+			<TemplateName>SM 1232 AQ 2x14BIT</TemplateName>
+			<OrderNumber>6ES7 232-4HB32-0XB0</OrderNumber>
 			<FirmwareVersion>V2.1</FirmwareVersion>
-		</Module>
-		<Module>
-			<TemplateName>DQ 16x24VDC/0.5A HF</TemplateName>
-			<OrderNumber>6ES7522-1BH01-0AB0</OrderNumber>
-			<FirmwareVersion>V2.1</FirmwareVersion>
-		</Module>
-		<Module>
-			<TemplateName>AI 8xU/I/RTD/TC HF</TemplateName>
-			<OrderNumber>6ES7531-7QD00-0AB0</OrderNumber>
-			<FirmwareVersion>V2.1</FirmwareVersion>
-		</Module>
+		</ExpModule>
 	</ModuleItemComposition>
 </ModuleCatalog>
+
+
+
+

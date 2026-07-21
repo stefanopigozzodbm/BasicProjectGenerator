@@ -1,4 +1,4 @@
-//Classe che rappresenta l'oggetto Device 
+﻿//Classe che rappresenta l'oggetto ExpModule 
 /* per esempio vedi field
   DevieceCataolg
   			<TemplateName>DI 16x24VDC HF</TemplateName>
@@ -8,7 +8,7 @@
 */
 namespace Basic_Project_Generator.Models
 {
-    public class Module
+    public class ExpModule
     {
         public string TemplateName { get; set; }
         public string OrderNumber { get; set; }

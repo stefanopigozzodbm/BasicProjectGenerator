@@ -1,4 +1,5 @@
-﻿using Siemens.Engineering;
+﻿using Siemens.Collaboration.Net.Logging;
+using Siemens.Engineering;
 using Siemens.Engineering.Compiler;
 using Siemens.Engineering.Hmi;
 using Siemens.Engineering.HW;
@@ -6,7 +7,9 @@ using Siemens.Engineering.HW.Features;
 using Siemens.Engineering.SW;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -429,13 +432,52 @@ namespace Basic_Project_Generator.Interfaces
         /// <param name="name"></param>
         /// <param name="deviceName"></param>
         /// <param name="caller"></param>
-        public void DoAddNewDevice(string typeIdentifier, string name, string deviceName, [CallerMemberName] string caller = "")
+        public void DoAddNewDevice(string typeIdentifier, string name, string deviceName,  IReadOnlyDictionary<int, string> intPeriphName, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
+           
             Device = CurrentProject.Devices.CreateWithItem(typeIdentifier, name, deviceName);
             IsModified = CurrentProject.IsModified;
+            try
+            {
+                if (Device != null)
+                {
+                    
+                    _traceWriter.Write("Assign IO Add to: " + name);
+
+                    //test
+                    var DigitalInputStartAddress = 22;
+                    var DigitalOutputStartAddress = 30;
+                    var AnalogInputStartAddress = 25;
+                    var AnalogOutputStartAddress = 99;
+                    var HSC_InputAddressList = new List<int?> { 0,990, 994, 998,1002,1006,1010 };//!!!parte da indice 1 
+                    var PTOPWM_OutputAddressList = new List<int?> {0,990, 992, 994, 996 };//!!!parte da indice 1 
+
+
+                    SetDeviceAddresses(Device, 
+                        DigitalInputStartAddress, 
+                        DigitalOutputStartAddress, 
+                        AnalogInputStartAddress,
+                        AnalogOutputStartAddress,
+                        HSC_InputAddressList,
+                        PTOPWM_OutputAddressList,
+                        intPeriphName);
+                    
+                }
+            }
+            catch (Exception exception)
+            {
+                if (methodBase.ReflectedType != null)
+                {
+                    _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " - trovato in intPeriphName: " + exception.Message);
+                }
+                else
+                {
+                    _traceWriter.Write("DoAddNewDevice - trovato in intPeriphName: " + exception.Message);
+                }
+            }
         }
 
         /// <summary>
@@ -570,6 +612,182 @@ namespace Basic_Project_Generator.Interfaces
             }
         }
 
+
+        /// <summary>
+        /// Imposta l'indirizzo di start su PLC (Device)
+        /*   SetDeviceAddresses(Device, 
+                DigitalInputStartAddress, 
+                DigitalOutputStartAddress, 
+                AnalogInputStartAddress,
+                AnalogOutputStartAddress)*/
+
+        private void SetDeviceAddresses(Device device, int? digitalInputStartAddress, int? digitalOutputStartAddress, int? analogInputStartAddress, int? analogOutputStartAddress, List<int?> hscXInputStartAddress, List<int?> ptoPwmXOutputStartAddress, IReadOnlyDictionary<int, string> intPeriphName)
+        {
+            foreach (var (owner, address) in GetAllAddressesWithOwner(device.DeviceItems[1])) //lo 0 è il rack, 1 è sempre PLC
+            {
+                var ioType = address.GetAttribute("IoType")?.ToString();
+
+                var onboardName = "";// device.GetOnboardIoName(owner.PositionNumber);
+
+                if (intPeriphName.TryGetValue(owner.PositionNumber, out onboardName))
+                {
+                    _traceWriter.Write(owner.PositionNumber + " - trovato in intPeriphName");
+
+                }
+                else
+                {
+                    _traceWriter.Write(owner.PositionNumber + " - NON trovato in intPeriphName");
+                }
+
+
+                if (onboardName == null)
+                {
+                    continue; // questo blocco non è uno degli onboard IO conosciuti (es. IO integrato "base", DI14/DQ10 già gestito sotto)
+                }
+
+                int? valueToSet = null;
+
+                if (onboardName.StartsWith("HSC_") && ioType == "Input")
+                {
+                    var index = int.Parse(onboardName.Substring("HSC_".Length)); // HSC_1 -> indice 0
+                    if (index >= 0 && index < hscXInputStartAddress.Count)
+                    {
+                        valueToSet = hscXInputStartAddress[index];
+                    }
+                }
+                else if (onboardName.StartsWith("PTOPWM_") && ioType == "Output")
+                {
+                    var index = int.Parse(onboardName.Substring("PTOPWM_".Length)); // PTOPWM_1 -> indice 0
+                    if (index >= 0 && index < ptoPwmXOutputStartAddress.Count)
+                    {
+                        valueToSet = ptoPwmXOutputStartAddress[index];
+                    }
+                }
+                else if (onboardName == "AI2" && ioType == "Input")
+                {
+                    valueToSet = analogInputStartAddress;
+                }
+                else if (onboardName == "DI14DQ10")
+                {
+                    valueToSet = ioType == "Input" ? digitalInputStartAddress : digitalOutputStartAddress;
+                }
+
+                if (valueToSet.HasValue)
+                {
+                    try
+                    {
+                        address.SetAttribute("StartAddress", valueToSet.Value);
+                        _traceWriter.Write(onboardName + " (" + ioType + ") impostato a " + valueToSet.Value);
+                    }
+                    catch (Exception exception)
+                    {
+                        _traceWriter.Write("Errore impostando " + onboardName + ": " + exception.Message);
+                    }
+                }
+            }
+        }
+
+
+
+
+        //non compresa CPU -> vd DoAddNewDevice
+        public bool DoAddNewModule(string typeIdentifier, string name, int? inputStartAddress = null, int? outputStartAddress = null, [CallerMemberName] string caller = "")
+        {
+        var methodBase = MethodBase.GetCurrentMethod();
+        if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+        var result = false;
+
+        var rack = Device?.DeviceItems.FirstOrDefault();
+        if (rack != null)
+        {
+            var occupiedSlots = rack.DeviceItems.Select(di => di.PositionNumber).ToList();
+
+            for (var slot = 1; slot <= 20; slot++)
+            {
+                if (occupiedSlots.Contains(slot)) continue;
+
+                try
+                {
+                    var newModule = rack.PlugNew(typeIdentifier, name, slot);
+                    if (newModule != null)
+                    {
+                        IsModified = true;
+                        result = true;
+                             _traceWriter.Write("Module plugged in slot " + slot);
+
+                        SetModuleAddresses(newModule, inputStartAddress, outputStartAddress);
+                        break;
+                    }
+                }
+                catch (Exception)
+                {
+                    // Slot non valido per questo modulo -> provo il successivo
+                }
+            }
+
+            if (!result)
+            {
+                _traceWriter.Write("No free/valid slot found for module " + name);
+            }
+        }
+        return result;
+    }
+
+        /// <summary>
+        /// Imposta l'indirizzo di start su un DeviceItem appena innestato.
+        /// NOTA: nomi di attributo/enum (StartAddress, IoType) da verificare con IntelliSense
+        /// o TIA Openness Explorer sul proprio ambiente V21 prima di considerarli definitivi.
+        /// </summary>
+        private void SetModuleAddresses(DeviceItem deviceItem, int? inputStartAddress, int? outputStartAddress)
+        {
+            if (!inputStartAddress.HasValue && !outputStartAddress.HasValue) return;
+
+            foreach (var (owner, address) in GetAllAddressesWithOwner(deviceItem))
+            {
+                try
+                {
+                    var ioType = address.GetAttribute("IoType")?.ToString();
+
+
+                    if (inputStartAddress.HasValue && ioType == "Input")
+                    {
+                        address.SetAttribute("StartAddress", inputStartAddress.Value);
+                        _traceWriter.Write("Input start address set to " + inputStartAddress.Value + " on " + deviceItem.Name);
+                    }
+                    else if (outputStartAddress.HasValue && ioType == "Output")
+                    {
+                        address.SetAttribute("StartAddress", outputStartAddress.Value);
+                        _traceWriter.Write("Output start address set to " + outputStartAddress.Value + " on " + deviceItem.Name);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    _traceWriter.Write("Unable to set address on " + deviceItem.Name + ": " + exception.Message);
+                }
+            }
+        }   
+
+        /// <summary>
+        /// Cerca ricorsivamente tutti gli oggetti Address di un DeviceItem e dei suoi DeviceItems figli,
+        /// perché in alcuni moduli gli indirizzi non sono sul DeviceItem di primo livello ma su un figlio annidato.
+        /// </summary>
+        private static IEnumerable<(DeviceItem Owner, Siemens.Engineering.HW.Address Address)> GetAllAddressesWithOwner(DeviceItem deviceItem)
+        {
+            foreach (var address in deviceItem.Addresses)
+            {
+                yield return (deviceItem, address);
+            }
+
+            foreach (var childItem in deviceItem.DeviceItems)
+            {
+                foreach (var result in GetAllAddressesWithOwner(childItem))
+                {
+                    yield return result;
+                }
+            }
+        }
+
         #endregion // Device
 
         #region Compile
@@ -580,87 +798,87 @@ namespace Basic_Project_Generator.Interfaces
         /// <param name="deviceItem"></param>
         /// <param name="caller"></param>
         public void DoCompileDevice(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
-        {
-            var methodBase = MethodBase.GetCurrentMethod();
-            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+{
+    var methodBase = MethodBase.GetCurrentMethod();
+    if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
-            var deviceNotFound = true;
-            foreach (var device in CurrentProject.Devices)
+    var deviceNotFound = true;
+    foreach (var device in CurrentProject.Devices)
+    {
+        if (device.Name == deviceItem.DeviceName)
+        {
+            var deviceItemComposition = device.DeviceItems;
+            foreach (var item in deviceItemComposition)
             {
-                if (device.Name == deviceItem.DeviceName)
+                if (item.Name == deviceItem.Name)
                 {
-                    var deviceItemComposition = device.DeviceItems;
-                    foreach (var item in deviceItemComposition)
+                    var softwareContainer = item.GetService<SoftwareContainer>();
+                    if (softwareContainer != null)
                     {
-                        if (item.Name == deviceItem.Name)
+                        if (softwareContainer.Software is PlcSoftware)
                         {
-                            var softwareContainer = item.GetService<SoftwareContainer>();
-                            if (softwareContainer != null)
+                            var controllerTarget = softwareContainer.Software as PlcSoftware;
+                            if (controllerTarget != null)
                             {
-                                if (softwareContainer.Software is PlcSoftware)
+                                deviceNotFound = false;
+                                var plcCompiler = controllerTarget.GetService<ICompilable>();
+                                var plcCompilerResult = plcCompiler.Compile();
+                                var compilerMessage = "Compiling Software of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                                _traceWriter.Write(compilerMessage);
+                                if (plcCompilerResult.Messages.Count > 0)
                                 {
-                                    var controllerTarget = softwareContainer.Software as PlcSoftware;
-                                    if (controllerTarget != null)
+                                    if (plcCompilerResult.Messages != null && plcCompilerResult.Messages.Count > 0)
                                     {
-                                        deviceNotFound = false;
-                                        var plcCompiler = controllerTarget.GetService<ICompilable>();
-                                        var plcCompilerResult = plcCompiler.Compile();
-                                        var compilerMessage = "Compiling Software of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                                        _traceWriter.Write(compilerMessage);
-                                        if (plcCompilerResult.Messages.Count > 0)
-                                        {
-                                            if (plcCompilerResult.Messages != null && plcCompilerResult.Messages.Count > 0)
-                                            {
-                                                GetCompilerMessages("", plcCompilerResult.Messages);
-                                            }
-                                        }
-                                    }
-                                }
-                                if (softwareContainer.Software is HmiTarget)
-                                {
-                                    var hmiTarget = softwareContainer.Software as HmiTarget;
-                                    if (hmiTarget != null)
-                                    {
-                                        deviceNotFound = false;
-                                        var hmiCompiler = hmiTarget.GetService<ICompilable>();
-                                        var hmiCompilerResult = hmiCompiler.Compile();
-                                        var compilerMessage = "Compiling HMI of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                                        _traceWriter.Write(compilerMessage);
-                                        if (hmiCompilerResult.Messages.Count > 0)
-                                        {
-                                            if (hmiCompilerResult.Messages != null && hmiCompilerResult.Messages.Count > 0)
-                                            {
-                                                GetCompilerMessages("", hmiCompilerResult.Messages);
-                                            }
-                                        }
+                                        GetCompilerMessages("", plcCompilerResult.Messages);
                                     }
                                 }
                             }
-                            var compileProvider = item.GetService<ICompilable>();
-                            if (compileProvider != null)
+                        }
+                        if (softwareContainer.Software is HmiTarget)
+                        {
+                            var hmiTarget = softwareContainer.Software as HmiTarget;
+                            if (hmiTarget != null)
                             {
                                 deviceNotFound = false;
-                                var compileResult = compileProvider.Compile();
-                                var compilerMessage = "Compiling Hardware of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                                var hmiCompiler = hmiTarget.GetService<ICompilable>();
+                                var hmiCompilerResult = hmiCompiler.Compile();
+                                var compilerMessage = "Compiling HMI of " + deviceItem.DeviceName + " - " + deviceItem.Name;
                                 _traceWriter.Write(compilerMessage);
-                                if (compileResult.Messages.Count > 0)
+                                if (hmiCompilerResult.Messages.Count > 0)
                                 {
-                                    if (compileResult.Messages != null && compileResult.Messages.Count > 0)
+                                    if (hmiCompilerResult.Messages != null && hmiCompilerResult.Messages.Count > 0)
                                     {
-                                        GetCompilerMessages("", compileResult.Messages);
+                                        GetCompilerMessages("", hmiCompilerResult.Messages);
                                     }
                                 }
                             }
                         }
                     }
+                    var compileProvider = item.GetService<ICompilable>();
+                    if (compileProvider != null)
+                    {
+                        deviceNotFound = false;
+                        var compileResult = compileProvider.Compile();
+                        var compilerMessage = "Compiling Hardware of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                        _traceWriter.Write(compilerMessage);
+                        if (compileResult.Messages.Count > 0)
+                        {
+                            if (compileResult.Messages != null && compileResult.Messages.Count > 0)
+                            {
+                                GetCompilerMessages("", compileResult.Messages);
+                            }
+                        }
+                    }
                 }
             }
-
-            if (deviceNotFound)
-            {
-                _traceWriter.Write("No device found to compile!");
-            }
         }
+    }
+
+    if (deviceNotFound)
+    {
+        _traceWriter.Write("No device found to compile!");
+    }
+}
 
         /// <summary>
         /// Retrieve recursive the compile messages
@@ -691,5 +909,5 @@ namespace Basic_Project_Generator.Interfaces
         #endregion // Compile
 
         #endregion // methods
-    }
+        }
 }

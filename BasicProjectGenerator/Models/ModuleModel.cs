@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -17,6 +17,6 @@ namespace Basic_Project_Generator.Models
             }
         }
 
-        public string GetNamePropertyName() => nameof(Module.TemplateName);
+        public string GetNamePropertyName() => nameof(ExpModule.TemplateName);
     }
 }

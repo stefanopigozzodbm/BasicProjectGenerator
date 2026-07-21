@@ -88,6 +88,18 @@ namespace Basic_Project_Generator.Services
             set;
         }
 
+        public ModuleModel ModuleModel 
+        { get; set; } = new ModuleModel();
+
+        public XDocument ModuleCatalogXml
+        { get; set; }
+
+        public bool ModuleCatalogLoaded
+        { get; set; }
+
+        public Module NewModule
+        { get; set; }
+
         #endregion // properties
 
         #region methods
@@ -420,8 +432,8 @@ namespace Basic_Project_Generator.Services
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
-
-            _apiWrapper.DoAddNewDevice(device.TypeIdentifier, device.Name, device.TypeName);
+           // !!!!!!device.PTOPWM_1.> RequiredAttributeAttribute ci sono i valori che seronon per effettuare la ricerca!!!
+            _apiWrapper.DoAddNewDevice(device.TypeIdentifier, device.Name, device.TypeName,device.GetOnboardIoByPosition());
         }
 
         /// <summary>
@@ -455,6 +467,27 @@ namespace Basic_Project_Generator.Services
             }
         }
 
+
+        public bool LoadModuleCatalog([CallerMemberName] string caller = "")
+        {
+            ModuleCatalogLoaded = false;
+            ModuleCatalogXml = XDocument.Load("Assets\\ModuleCatalog.xml");
+            ModuleModel.LoadModuleCatalog(ModuleCatalogXml);
+            ModuleCatalogLoaded = true;
+            return ModuleCatalogLoaded;
+        }
+
+
+
+        public bool AddNewModule(string typeIdentifier, string name, int? inputStartAddress = null, int? outputStartAddress = null, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            return _apiWrapper.DoAddNewModule(typeIdentifier, name, inputStartAddress, outputStartAddress);
+        }
+
+
         #endregion // Device
 
         #region Compile
@@ -473,6 +506,21 @@ namespace Basic_Project_Generator.Services
         }
 
         #endregion // Compile
+
+        #region TableImport
+        private readonly SymbolicTableImportService _symbolicTableImportService = new SymbolicTableImportService();
+
+        public List<ImportedSymbolItem> ImportSymbolicTable(string filePath, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            LoadDeviceCatalog();
+            LoadModuleCatalog();
+
+            return _symbolicTableImportService.Import(filePath, DeviceModel.DeviceCatalog, ModuleModel.ModuleCatalog);
+        }
+        #endregion
 
         #endregion // methods
     }

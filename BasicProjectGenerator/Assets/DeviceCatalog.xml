@@ -50,12 +50,26 @@
 			<IncludeFailsafe>1</IncludeFailsafe>
 		</Device>
 		<Device> <!--test aggiunta device-->
-			<TemplateName>S71200-DBM</TemplateName>
+			<TemplateName>S71200-CPU 1214C DC/DC/DC</TemplateName>
 			<Station>S7-1200</Station>
 			<DeviceName>PLC</DeviceName>
 			<OrderNumber>6ES7 214-1AG40-0XB0</OrderNumber>
 			<FirmwareVersion>V4.7</FirmwareVersion>
 			<IncludeFailsafe>0</IncludeFailsafe>
+			<!--(solo per PLC con IO onboard)PositionNumber dei dispositivi IO (IO/HSC/PTO) sulla cpu, numero univoco per capire l'Address in fase di assegnazione per chi è-->
+			<HSC_1>16</HSC_1>
+			<HSC_2>17</HSC_2>
+			<HSC_3>18</HSC_3>
+			<HSC_4>19</HSC_4>
+			<HSC_5>20</HSC_5>
+			<HSC_6>21</HSC_6>
+			<AI2>2</AI2>
+			<DI14DQ10>1</DI14DQ10>
+			<PTOPWM_1>32</PTOPWM_1>
+			<PTOPWM_2>33</PTOPWM_2>
+			<PTOPWM_3>34</PTOPWM_3>
+			<PTOPWM_4>35</PTOPWM_4>
+			
 		</Device>
 	</DeviceItemComposition>
 </Catalog>

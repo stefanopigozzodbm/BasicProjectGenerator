@@ -76,10 +76,23 @@ namespace Basic_Project_Generator.UserInterfaces
             this.lab_DeviceList = new System.Windows.Forms.Label();
             this.lib_TraceWriterOutput = new System.Windows.Forms.ListBox();
             this.GeneratorToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.grb_AddModule = new System.Windows.Forms.GroupBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txb_ModuleName = new System.Windows.Forms.TextBox();
+            this.btn_AddModule = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.cob_ModuleTemplates = new System.Windows.Forms.ComboBox();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btn_AddImportedModules = new System.Windows.Forms.Button();
+            this.clb_ImportedItems = new System.Windows.Forms.CheckedListBox();
+            this.btn_ImportSymbolicTable = new System.Windows.Forms.Button();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
             this.grb_Compile.SuspendLayout();
+            this.grb_AddModule.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // grb_TiaPortal
@@ -409,12 +422,12 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // btn_AddNewDevice
             // 
+            this.btn_AddNewDevice.BackColor = System.Drawing.Color.LightBlue;
             this.btn_AddNewDevice.Location = new System.Drawing.Point(18, 344);
             this.btn_AddNewDevice.Name = "btn_AddNewDevice";
             this.btn_AddNewDevice.Size = new System.Drawing.Size(173, 33);
             this.btn_AddNewDevice.TabIndex = 13;
             this.btn_AddNewDevice.Text = "Add new device";
-            this.btn_AddNewDevice.BackColor = System.Drawing.Color.LightBlue;
             this.btn_AddNewDevice.UseVisualStyleBackColor = true;
             this.btn_AddNewDevice.Click += new System.EventHandler(this.btn_AddNewDevice_Click);
             // 
@@ -480,7 +493,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_Compile.Controls.Add(this.cob_DeviceList);
             this.grb_Compile.Controls.Add(this.lib_DeviceList);
             this.grb_Compile.Controls.Add(this.lab_DeviceList);
-            this.grb_Compile.Location = new System.Drawing.Point(663, 12);
+            this.grb_Compile.Location = new System.Drawing.Point(862, 12);
             this.grb_Compile.Name = "grb_Compile";
             this.grb_Compile.Size = new System.Drawing.Size(211, 436);
             this.grb_Compile.TabIndex = 3;
@@ -542,15 +555,116 @@ namespace Basic_Project_Generator.UserInterfaces
             this.lib_TraceWriterOutput.HorizontalScrollbar = true;
             this.lib_TraceWriterOutput.Location = new System.Drawing.Point(12, 454);
             this.lib_TraceWriterOutput.Name = "lib_TraceWriterOutput";
-            this.lib_TraceWriterOutput.Size = new System.Drawing.Size(862, 121);
+            this.lib_TraceWriterOutput.Size = new System.Drawing.Size(1061, 251);
             this.lib_TraceWriterOutput.TabIndex = 4;
+            // 
+            // grb_AddModule
+            // 
+            this.grb_AddModule.Controls.Add(this.label3);
+            this.grb_AddModule.Controls.Add(this.txb_ModuleName);
+            this.grb_AddModule.Controls.Add(this.btn_AddModule);
+            this.grb_AddModule.Controls.Add(this.label2);
+            this.grb_AddModule.Controls.Add(this.cob_ModuleTemplates);
+            this.grb_AddModule.Location = new System.Drawing.Point(663, 12);
+            this.grb_AddModule.Name = "grb_AddModule";
+            this.grb_AddModule.Size = new System.Drawing.Size(193, 190);
+            this.grb_AddModule.TabIndex = 5;
+            this.grb_AddModule.TabStop = false;
+            this.grb_AddModule.Text = "Add PLC Module (Manual)";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(7, 68);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(73, 13);
+            this.label3.TabIndex = 6;
+            this.label3.Text = "Module Name";
+            // 
+            // txb_ModuleName
+            // 
+            this.txb_ModuleName.Location = new System.Drawing.Point(6, 84);
+            this.txb_ModuleName.Name = "txb_ModuleName";
+            this.txb_ModuleName.Size = new System.Drawing.Size(181, 20);
+            this.txb_ModuleName.TabIndex = 5;
+            // 
+            // btn_AddModule
+            // 
+            this.btn_AddModule.Location = new System.Drawing.Point(6, 130);
+            this.btn_AddModule.Name = "btn_AddModule";
+            this.btn_AddModule.Size = new System.Drawing.Size(177, 33);
+            this.btn_AddModule.TabIndex = 4;
+            this.btn_AddModule.Text = "Add module";
+            this.btn_AddModule.UseVisualStyleBackColor = true;
+            this.btn_AddModule.Click += new System.EventHandler(this.btn_AddModule_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(7, 25);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(89, 13);
+            this.label2.TabIndex = 1;
+            this.label2.Text = "Module Template";
+            // 
+            // cob_ModuleTemplates
+            // 
+            this.cob_ModuleTemplates.FormattingEnabled = true;
+            this.cob_ModuleTemplates.Location = new System.Drawing.Point(6, 39);
+            this.cob_ModuleTemplates.Name = "cob_ModuleTemplates";
+            this.cob_ModuleTemplates.Size = new System.Drawing.Size(181, 21);
+            this.cob_ModuleTemplates.TabIndex = 0;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.btn_ImportSymbolicTable);
+            this.groupBox1.Controls.Add(this.clb_ImportedItems);
+            this.groupBox1.Controls.Add(this.btn_AddImportedModules);
+            this.groupBox1.Location = new System.Drawing.Point(663, 208);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(193, 240);
+            this.groupBox1.TabIndex = 6;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Add HW Conf from Excel";
+            // 
+            // btn_AddImportedModules
+            // 
+            this.btn_AddImportedModules.Location = new System.Drawing.Point(6, 201);
+            this.btn_AddImportedModules.Name = "btn_AddImportedModules";
+            this.btn_AddImportedModules.Size = new System.Drawing.Size(177, 33);
+            this.btn_AddImportedModules.TabIndex = 0;
+            this.btn_AddImportedModules.Text = "Add Selected Module";
+            this.btn_AddImportedModules.UseVisualStyleBackColor = true;
+            this.btn_AddImportedModules.Click += new System.EventHandler(this.btn_AddImportedModules_Click);
+            // 
+            // clb_ImportedItems
+            // 
+            this.clb_ImportedItems.FormattingEnabled = true;
+            this.clb_ImportedItems.HorizontalScrollbar = true;
+            this.clb_ImportedItems.Location = new System.Drawing.Point(6, 69);
+            this.clb_ImportedItems.Name = "clb_ImportedItems";
+            this.clb_ImportedItems.Size = new System.Drawing.Size(177, 124);
+            this.clb_ImportedItems.TabIndex = 1;
+            this.clb_ImportedItems.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clb_ImportedItems_ItemCheck);
+            // 
+            // btn_ImportSymbolicTable
+            // 
+            this.btn_ImportSymbolicTable.Location = new System.Drawing.Point(6, 29);
+            this.btn_ImportSymbolicTable.Name = "btn_ImportSymbolicTable";
+            this.btn_ImportSymbolicTable.Size = new System.Drawing.Size(177, 33);
+            this.btn_ImportSymbolicTable.TabIndex = 2;
+            this.btn_ImportSymbolicTable.Text = "Excel Import";
+            this.btn_ImportSymbolicTable.UseVisualStyleBackColor = true;
+            this.btn_ImportSymbolicTable.Click += new System.EventHandler(this.btn_ImportSymbolicTable_Click);
             // 
             // BasicProjectGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(887, 588);
+            this.ClientSize = new System.Drawing.Size(1099, 716);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.grb_AddModule);
             this.Controls.Add(this.lib_TraceWriterOutput);
             this.Controls.Add(this.grb_Compile);
             this.Controls.Add(this.grb_AddNewDevice);
@@ -569,6 +683,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddNewDevice.PerformLayout();
             this.grb_Compile.ResumeLayout(false);
             this.grb_Compile.PerformLayout();
+            this.grb_AddModule.ResumeLayout(false);
+            this.grb_AddModule.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -621,6 +738,17 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.ComboBox cob_DeviceList;
         private System.Windows.Forms.Button btn_CompileDevice;
         private System.Windows.Forms.Label lab_DeviceToCompile;
+        private System.Windows.Forms.GroupBox grb_AddModule;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox cob_ModuleTemplates;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.Button btn_AddModule;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txb_ModuleName;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button btn_ImportSymbolicTable;
+        private System.Windows.Forms.CheckedListBox clb_ImportedItems;
+        private System.Windows.Forms.Button btn_AddImportedModules;
     }
 }
 

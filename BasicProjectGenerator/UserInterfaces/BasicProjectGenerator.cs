@@ -3,6 +3,8 @@ using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Services;
 using Siemens.Engineering;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -172,6 +174,9 @@ namespace Basic_Project_Generator.UserInterfaces
             cob_ProcessIds.Enabled = cob_ProcessIds.Items.Count > 0;
             btn_ConnectTiaPortal.Enabled = cob_ProcessIds.Items.Count > 0 && (cob_ProcessIds.SelectedIndex > -1 && string.IsNullOrEmpty(currentProcessId) || currentProcessId != availableProcessId);
             btn_CloseTiaPortal.Enabled = !string.IsNullOrEmpty(currentProcessId);
+
+
+
         }
 
         /// <summary>
@@ -200,6 +205,7 @@ namespace Basic_Project_Generator.UserInterfaces
             {
                 GetCurrentDeviceCount();
                 LoadDeviceCatalog();
+                LoadModuleCatalog();
             }
         }
 
@@ -690,25 +696,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
             try
             {
-                if (GetNewDevice())
-                {
-                    Cursor.Current = Cursors.WaitCursor;
-
-                    _projectGeneratorService.AddNewDevice(_projectGeneratorService.NewDevice);
-
-                    Cursor.Current = Cursors.Default;
-
-                    _projectGeneratorService.SetPlcSecuritySettings(_projectGeneratorService.NewDevice.Name, _projectGeneratorService.NewDevice.IncludeFailsafe);
-
-                    GetCurrentDeviceCount();
-
-                    ManageUiState();
-                }
-                else
-                {
-                    _traceWriter.Write("Error: New device object could not be created.");
-                    MessageBox.Show("The properties device name, station, order number and version are required!", "Error create a new device", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                AddNewDeviceFromFields();
             }
             catch (Exception exception)
             {
@@ -716,6 +704,35 @@ namespace Basic_Project_Generator.UserInterfaces
             }
         }
 
+        /// <summary>
+        /// Crea il device leggendo i campi correnti (txb_Station, txb_DeviceName, txb_OrderNr, txb_Version, ckb_IncludeFailsafe)
+        /// e apre la finestra di sicurezza PLC, esattamente come il click manuale sul pulsante.
+        /// </summary>
+        private bool AddNewDeviceFromFields()
+        {
+            var result = false;
+
+            if (GetNewDevice())
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                _projectGeneratorService.AddNewDevice(_projectGeneratorService.NewDevice);
+                Cursor.Current = Cursors.Default;
+
+                _projectGeneratorService.SetPlcSecuritySettings(_projectGeneratorService.NewDevice.Name, _projectGeneratorService.NewDevice.IncludeFailsafe);
+
+                GetCurrentDeviceCount();
+                ManageUiState();
+
+                result = true;
+            }
+            else
+            {
+                _traceWriter.Write("Error: New device object could not be created.");
+                MessageBox.Show("The properties device name, station, order number and version are required!", "Error create a new device", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            return result;
+        }
         /// <summary>
         /// Create a new device object
         /// </summary>
@@ -773,6 +790,23 @@ namespace Basic_Project_Generator.UserInterfaces
             return result;
         }
 
+
+        private void PrepareNewDeviceFromImportedItem(ImportedSymbolItem item)
+        {
+            var deviceItem = item.MatchedDevice;
+
+            _projectGeneratorService.NewDevice = deviceItem.Clone();
+            _projectGeneratorService.NewDevice.DeviceName = item.Name;
+            _projectGeneratorService.NewDevice.PositionNumber = _projectGeneratorService.DeviceModel.CurrentDeviceCount;
+
+            ckb_IncludeFailsafe.Checked = deviceItem.IncludeFailsafe;
+            txb_DeviceName.Text = item.Name;
+            txb_Station.Text = deviceItem.Station;
+            txb_TypeIdentifier.Text = _projectGeneratorService.NewDevice.TypeIdentifier;
+            txb_OrderNr.Text = deviceItem.OrderNumber;
+            txb_Version.Text = deviceItem.FirmwareVersion;
+        }
+
         #endregion // Device
 
         #region Compile
@@ -813,6 +847,212 @@ namespace Basic_Project_Generator.UserInterfaces
         }
 
         #endregion // Compile
+
+       
+
+
+
+        #region Custom
+        private void LoadModuleCatalog()
+        {
+            
+            if (_projectGeneratorService.LoadModuleCatalog())
+            {
+                cob_ModuleTemplates.Items.Clear();
+                foreach (var module in _projectGeneratorService.ModuleModel.ModuleCatalog.ModuleItemComposition)
+                {
+                    cob_ModuleTemplates.Items.Add(module.TemplateName);
+                }
+                if (cob_ModuleTemplates.Items.Count > 0)
+                    cob_ModuleTemplates.SelectedIndex = 0;
+            }
+        }
+
+        private void btn_AddModule_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (cob_ModuleTemplates.SelectedItem == null)
+                {
+                    MessageBox.Show("Seleziona un modulo dal menu a tendina.", "Dati mancanti", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(txb_ModuleName.Text))
+                {
+                    MessageBox.Show("Inserisci un nome per il modulo.", "Dati mancanti", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                var moduleItem = _projectGeneratorService.ModuleModel.ModuleCatalog.ModuleItemComposition
+                    .FirstOrDefault(m => m.TemplateName == cob_ModuleTemplates.SelectedItem.ToString());
+
+                if (moduleItem != null)
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+                    var added = _projectGeneratorService.AddNewModule(moduleItem.TypeIdentifier, txb_ModuleName.Text.Trim());
+                    Cursor.Current = Cursors.Default;
+
+                    if (!added)
+                        MessageBox.Show("Impossibile inserire il modulo: nessuno slot libero/compatibile trovato.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    else
+                        txb_ModuleName.Clear();
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write(exception.Message);
+            }
+        }
+
+        private List<ImportedSymbolItem> _importedItems = new List<ImportedSymbolItem>();
+
+        private void btn_ImportSymbolicTable_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var openFileDialog = new OpenFileDialog { Filter = "Excel files|*.xls;*.xlsx" })
+                {
+                    if (openFileDialog.ShowDialog() != DialogResult.OK) return;
+
+                    Cursor.Current = Cursors.WaitCursor;
+                    _importedItems = _projectGeneratorService.ImportSymbolicTable(openFileDialog.FileName);
+                    Cursor.Current = Cursors.Default;
+
+                    clb_ImportedItems.Items.Clear();
+
+                    foreach (var item in _importedItems)
+                    {
+                        var label = item.Name + "  -  " + item.OrderNumber + "  [" + item.ItemType + "]";
+                        var index = clb_ImportedItems.Items.Add(label);
+                        clb_ImportedItems.SetItemChecked(index, item.ItemType == SymbolItemType.Module);
+                    }
+
+                    _traceWriter.Write("Import: " +
+                        _importedItems.Count(i => i.ItemType == SymbolItemType.Device) + " device, " +
+                        _importedItems.Count(i => i.ItemType == SymbolItemType.Module) + " moduli, " +
+                        _importedItems.Count(i => i.ItemType == SymbolItemType.Unknown) + " non riconosciuti.");
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write(exception.Message);
+                MessageBox.Show(exception.Message, "Errore importazione", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btn_AddImportedModules_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1) Se è spuntata una CPU, creala per prima (apre la finestra di sicurezza PLC)
+                var checkedDeviceItems = new List<ImportedSymbolItem>();
+                for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
+                {
+                    if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.Device)
+                    {
+                        checkedDeviceItems.Add(_importedItems[i]);
+                    }
+                }
+
+                if (checkedDeviceItems.Count > 1)
+                {
+                    MessageBox.Show("Puoi selezionare una sola CPU per volta.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (checkedDeviceItems.Count == 1)
+                {
+                   // PrepareNewDeviceFromImportedItem(checkedDeviceItems[0]); totla perchè comunuqe si autopola quado seleziono la spunta
+
+                    if (!AddNewDeviceFromFields())
+                    {
+                        return; // validazione fallita: non proseguo con i moduli
+                    }
+                }
+
+                // 2) Aggiungo i moduli spuntati
+                var addedCount = 0;
+                var errorCount = 0;
+
+                for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
+                {
+                    if (!clb_ImportedItems.GetItemChecked(i)) continue;
+
+                    var item = _importedItems[i];
+
+                    if (item.ItemType == SymbolItemType.Device)
+                    {
+                        continue; // già gestita sopra
+                    }
+
+                    if (item.ItemType != SymbolItemType.Module)
+                    {
+                        _traceWriter.Write("Saltato (non riconosciuto): " + item.Name);
+                        continue;
+                    }
+
+                    Cursor.Current = Cursors.WaitCursor;
+                    //var added = _projectGeneratorService.AddNewModule(item.TypeIdentifier, item.Name);
+                    var added = _projectGeneratorService.AddNewModule(item.TypeIdentifier, item.Name, item.InputStartAddress, item.OutputStartAddress);
+                    Cursor.Current = Cursors.Default;
+
+                    if (added) addedCount++;
+                    else { errorCount++; _traceWriter.Write("Fallito: " + item.Name); }
+                }
+
+                MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write(exception.Message);
+            }
+        }
+
+     
+
+        private void clb_ImportedItems_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            var item = _importedItems[e.Index];
+
+            if (item.ItemType != SymbolItemType.Device)
+            {
+                return; // i moduli non hanno bisogno di questa logica
+            }
+
+            if (e.NewValue == CheckState.Checked)
+            {
+                // Se un'altra CPU era già spuntata, la deseleziono automaticamente
+                for (var i = 0; i < _importedItems.Count; i++)
+                {
+                    if (i != e.Index && _importedItems[i].ItemType == SymbolItemType.Device && clb_ImportedItems.GetItemChecked(i))
+                    {
+                        clb_ImportedItems.SetItemChecked(i, false);
+                    }
+                }
+
+                // Precompila subito i campi di "Add new device"
+                PrepareNewDeviceFromImportedItem(item);
+            }
+            else
+            {
+                // La CPU è stata deselezionata: svuoto i campi
+                ClearNewDeviceFields();
+            }
+        }
+
+        private void ClearNewDeviceFields()
+        {
+            _projectGeneratorService.NewDevice = null;
+            ckb_IncludeFailsafe.Checked = false;
+            txb_DeviceName.Text = string.Empty;
+            txb_Station.Text = string.Empty;
+            txb_TypeIdentifier.Text = string.Empty;
+            txb_OrderNr.Text = string.Empty;
+            txb_Version.Text = string.Empty;
+        }
+
+        #endregion
 
         #endregion // methods
     }
