@@ -428,12 +428,19 @@ namespace Basic_Project_Generator.Services
         /// </summary>
         /// <param name="device"></param>
         /// <param name="caller"></param>
-        public void AddNewDevice(Device device, [CallerMemberName] string caller = "")
+        public void AddNewDevice(
+                 Models.Device device,
+                 int? digitalInputStartAddress,
+                 int? digitalOutputStartAddress,
+                 int? analogInputStartAddress,
+                 int? analogOutputStartAddress,
+                 IReadOnlyDictionary<int, string> intPeriphName,
+                 [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
-           // !!!!!!device.PTOPWM_1.> RequiredAttributeAttribute ci sono i valori che seronon per effettuare la ricerca!!!
-            _apiWrapper.DoAddNewDevice(device.TypeIdentifier, device.Name, device.TypeName,device.GetOnboardIoByPosition());
+
+            _apiWrapper.DoAddNewDevice(device.TypeIdentifier, device.Name, device.TypeName, device, digitalInputStartAddress, digitalOutputStartAddress, analogInputStartAddress, analogOutputStartAddress, intPeriphName);
         }
 
         /// <summary>

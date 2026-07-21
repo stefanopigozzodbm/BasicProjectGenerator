@@ -708,17 +708,28 @@ namespace Basic_Project_Generator.UserInterfaces
         /// Crea il device leggendo i campi correnti (txb_Station, txb_DeviceName, txb_OrderNr, txb_Version, ckb_IncludeFailsafe)
         /// e apre la finestra di sicurezza PLC, esattamente come il click manuale sul pulsante.
         /// </summary>
-        private bool AddNewDeviceFromFields()
+        private bool AddNewDeviceFromFields(ImportedSymbolItem sourceItem = null)
         {
             var result = false;
 
             if (GetNewDevice())
             {
                 Cursor.Current = Cursors.WaitCursor;
-                _projectGeneratorService.AddNewDevice(_projectGeneratorService.NewDevice);
+
+                var catalogDevice = _projectGeneratorService.NewDevice;
+                var intPeriphName = catalogDevice.GetOnboardIoByPosition();
+
+                _projectGeneratorService.AddNewDevice(
+                    catalogDevice,
+                    sourceItem?.DigitalInputStartAddress,
+                    sourceItem?.DigitalOutputStartAddress,
+                    sourceItem?.AnalogInputStartAddress,
+                    sourceItem?.AnalogOutputStartAddress,
+                    intPeriphName);
+
                 Cursor.Current = Cursors.Default;
 
-                _projectGeneratorService.SetPlcSecuritySettings(_projectGeneratorService.NewDevice.Name, _projectGeneratorService.NewDevice.IncludeFailsafe);
+                _projectGeneratorService.SetPlcSecuritySettings(catalogDevice.Name, catalogDevice.IncludeFailsafe);
 
                 GetCurrentDeviceCount();
                 ManageUiState();
@@ -733,6 +744,9 @@ namespace Basic_Project_Generator.UserInterfaces
 
             return result;
         }
+
+
+
         /// <summary>
         /// Create a new device object
         /// </summary>
@@ -969,6 +983,11 @@ namespace Basic_Project_Generator.UserInterfaces
                     {
                         return; // validazione fallita: non proseguo con i moduli
                     }
+                }
+
+                if (!AddNewDeviceFromFields(checkedDeviceItems[0]))
+                {
+                    return;
                 }
 
                 // 2) Aggiungo i moduli spuntati

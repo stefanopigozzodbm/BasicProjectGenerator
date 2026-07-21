@@ -69,6 +69,16 @@
 			<PTOPWM_2>33</PTOPWM_2>
 			<PTOPWM_3>34</PTOPWM_3>
 			<PTOPWM_4>35</PTOPWM_4>
+			<HSC_1_Address>1000</HSC_1_Address>
+			<HSC_2_Address>1004</HSC_2_Address>
+			<HSC_3_Address>1008</HSC_3_Address>
+			<HSC_4_Address>1012</HSC_4_Address>
+			<HSC_5_Address>1016</HSC_5_Address>
+			<HSC_6_Address>1020</HSC_6_Address>
+			<PTOPWM_1_Address>1000</PTOPWM_1_Address>
+			<PTOPWM_2_Address>1002</PTOPWM_2_Address>
+			<PTOPWM_3_Address>1004</PTOPWM_3_Address>
+			<PTOPWM_4_Address>1006</PTOPWM_4_Address>
 			
 		</Device>
 	</DeviceItemComposition>

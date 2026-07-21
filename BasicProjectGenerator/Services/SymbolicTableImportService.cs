@@ -77,15 +77,22 @@ namespace Basic_Project_Generator.Services
 
                     if (string.IsNullOrWhiteSpace(tipologia) || string.IsNullOrWhiteSpace(indirizzo)) continue;
 
-                    if (TryGetDirection(tipologia, out var direction) && TryGetStartAddress(indirizzo, out var startAddress))
+                    if (TryGetCategory(tipologia, out var category) && TryGetStartAddress(indirizzo, out var startAddress))
                     {
-                        if (direction == Direction.Input && currentItem.InputStartAddress == null)
+                        switch (category)
                         {
-                            currentItem.InputStartAddress = startAddress;
-                        }
-                        else if (direction == Direction.Output && currentItem.OutputStartAddress == null)
-                        {
-                            currentItem.OutputStartAddress = startAddress;
+                            case AddressCategory.DigitalInput:
+                                if (currentItem.DigitalInputStartAddress == null) currentItem.DigitalInputStartAddress = startAddress;
+                                break;
+                            case AddressCategory.DigitalOutput:
+                                if (currentItem.DigitalOutputStartAddress == null) currentItem.DigitalOutputStartAddress = startAddress;
+                                break;
+                            case AddressCategory.AnalogInput:
+                                if (currentItem.AnalogInputStartAddress == null) currentItem.AnalogInputStartAddress = startAddress;
+                                break;
+                            case AddressCategory.AnalogOutput:
+                                if (currentItem.AnalogOutputStartAddress == null) currentItem.AnalogOutputStartAddress = startAddress;
+                                break;
                         }
                     }
                 }
@@ -120,6 +127,22 @@ namespace Basic_Project_Generator.Services
             // Analogico "64" -> è già l'indirizzo di parola
             var bytePart = indirizzo.Split('.')[0];
             return int.TryParse(bytePart, out startAddress);
+        }
+
+        private enum AddressCategory { DigitalInput, DigitalOutput, AnalogInput, AnalogOutput }
+
+        private static bool TryGetCategory(string tipologia, out AddressCategory category)
+        {
+            switch (tipologia.Trim().ToUpperInvariant())
+            {
+                case "I": category = AddressCategory.DigitalInput; return true;
+                case "Q": category = AddressCategory.DigitalOutput; return true;
+                case "AIW":
+                case "PEW": category = AddressCategory.AnalogInput; return true;
+                case "AQW":
+                case "PAW": category = AddressCategory.AnalogOutput; return true;
+                default: category = AddressCategory.DigitalInput; return false;
+            }
         }
 
         private static string GetCellText(IRow row, int columnIndex)

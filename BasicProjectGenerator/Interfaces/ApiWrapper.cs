@@ -432,39 +432,26 @@ namespace Basic_Project_Generator.Interfaces
         /// <param name="name"></param>
         /// <param name="deviceName"></param>
         /// <param name="caller"></param>
-        public void DoAddNewDevice(string typeIdentifier, string name, string deviceName,  IReadOnlyDictionary<int, string> intPeriphName, [CallerMemberName] string caller = "")
+        public void DoAddNewDevice(
+                        string typeIdentifier, string name, string deviceName,
+                        Basic_Project_Generator.Models.Device catalogDevice,
+                        int? digitalInputStartAddress, int? digitalOutputStartAddress,
+                        int? analogInputStartAddress, int? analogOutputStartAddress,
+                        IReadOnlyDictionary<int, string> intPeriphName,
+                        [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
-           
             Device = CurrentProject.Devices.CreateWithItem(typeIdentifier, name, deviceName);
             IsModified = CurrentProject.IsModified;
+
             try
             {
                 if (Device != null)
                 {
-                    
                     _traceWriter.Write("Assign IO Add to: " + name);
-
-                    //test
-                    var DigitalInputStartAddress = 22;
-                    var DigitalOutputStartAddress = 30;
-                    var AnalogInputStartAddress = 25;
-                    var AnalogOutputStartAddress = 99;
-                    var HSC_InputAddressList = new List<int?> { 0,990, 994, 998,1002,1006,1010 };//!!!parte da indice 1 
-                    var PTOPWM_OutputAddressList = new List<int?> {0,990, 992, 994, 996 };//!!!parte da indice 1 
-
-
-                    SetDeviceAddresses(Device, 
-                        DigitalInputStartAddress, 
-                        DigitalOutputStartAddress, 
-                        AnalogInputStartAddress,
-                        AnalogOutputStartAddress,
-                        HSC_InputAddressList,
-                        PTOPWM_OutputAddressList,
-                        intPeriphName);
-                    
+                    SetDeviceAddresses(catalogDevice, digitalInputStartAddress, digitalOutputStartAddress, analogInputStartAddress, analogOutputStartAddress, intPeriphName);
                 }
             }
             catch (Exception exception)
@@ -621,46 +608,43 @@ namespace Basic_Project_Generator.Interfaces
                 AnalogInputStartAddress,
                 AnalogOutputStartAddress)*/
 
-        private void SetDeviceAddresses(Device device, int? digitalInputStartAddress, int? digitalOutputStartAddress, int? analogInputStartAddress, int? analogOutputStartAddress, List<int?> hscXInputStartAddress, List<int?> ptoPwmXOutputStartAddress, IReadOnlyDictionary<int, string> intPeriphName)
+        private void SetDeviceAddresses(
+                    Basic_Project_Generator.Models.Device catalogDevice,
+                    int? digitalInputStartAddress,
+                    int? digitalOutputStartAddress,
+                    int? analogInputStartAddress,
+                    int? analogOutputStartAddress,
+                    IReadOnlyDictionary<int, string> intPeriphName)
         {
-            foreach (var (owner, address) in GetAllAddressesWithOwner(device.DeviceItems[1])) //lo 0 è il rack, 1 è sempre PLC
+            var excelAddresses = new List<int>();
+            if (digitalInputStartAddress.HasValue) excelAddresses.Add(digitalInputStartAddress.Value);
+            if (digitalOutputStartAddress.HasValue) excelAddresses.Add(digitalOutputStartAddress.Value);
+            if (analogInputStartAddress.HasValue) excelAddresses.Add(analogInputStartAddress.Value);
+            if (analogOutputStartAddress.HasValue) excelAddresses.Add(analogOutputStartAddress.Value);
+
+            // Device qui è il campo di classe (Siemens HW Device), NON il parametro catalogDevice.
+            // Device.DeviceItems[0] = rack, Device.DeviceItems[1] = PLC (come già confermato da te).
+            foreach (var (owner, address) in GetAllAddressesWithOwner(Device.DeviceItems[1]))
             {
                 var ioType = address.GetAttribute("IoType")?.ToString();
 
-                var onboardName = "";// device.GetOnboardIoName(owner.PositionNumber);
-
-                if (intPeriphName.TryGetValue(owner.PositionNumber, out onboardName))
-                {
-                    _traceWriter.Write(owner.PositionNumber + " - trovato in intPeriphName");
-
-                }
-                else
+                if (!intPeriphName.TryGetValue(owner.PositionNumber, out var onboardName))
                 {
                     _traceWriter.Write(owner.PositionNumber + " - NON trovato in intPeriphName");
+                    continue;
                 }
 
-
-                if (onboardName == null)
-                {
-                    continue; // questo blocco non è uno degli onboard IO conosciuti (es. IO integrato "base", DI14/DQ10 già gestito sotto)
-                }
+                _traceWriter.Write(owner.PositionNumber + " - trovato in intPeriphName: " + onboardName);
 
                 int? valueToSet = null;
 
-                if (onboardName.StartsWith("HSC_") && ioType == "Input")
+                if (onboardName.StartsWith("HSC_") || onboardName.StartsWith("PTOPWM_"))
                 {
-                    var index = int.Parse(onboardName.Substring("HSC_".Length)); // HSC_1 -> indice 0
-                    if (index >= 0 && index < hscXInputStartAddress.Count)
+                    valueToSet = catalogDevice.GetOnboardConstantAddress(onboardName);
+
+                    if (valueToSet.HasValue && excelAddresses.Contains(valueToSet.Value))
                     {
-                        valueToSet = hscXInputStartAddress[index];
-                    }
-                }
-                else if (onboardName.StartsWith("PTOPWM_") && ioType == "Output")
-                {
-                    var index = int.Parse(onboardName.Substring("PTOPWM_".Length)); // PTOPWM_1 -> indice 0
-                    if (index >= 0 && index < ptoPwmXOutputStartAddress.Count)
-                    {
-                        valueToSet = ptoPwmXOutputStartAddress[index];
+                        _traceWriter.Write("ATTENZIONE: indirizzo costante " + valueToSet.Value + " di " + onboardName + " coincide con un indirizzo già assegnato dall'Excel. Verificare manualmente.");
                     }
                 }
                 else if (onboardName == "AI2" && ioType == "Input")
@@ -686,8 +670,6 @@ namespace Basic_Project_Generator.Interfaces
                 }
             }
         }
-
-
 
 
         //non compresa CPU -> vd DoAddNewDevice

@@ -65,6 +65,40 @@ namespace Basic_Project_Generator.Models
 
         #endregion // onboard IO positions
 
+        #region Costant Fields
+            public int? HSC_1_Address { get; set; }
+            public int? HSC_2_Address { get; set; }
+            public int? HSC_3_Address { get; set; }
+            public int? HSC_4_Address { get; set; }
+            public int? HSC_5_Address { get; set; }
+            public int? HSC_6_Address { get; set; }
+            public int? PTOPWM_1_Address { get; set; }
+            public int? PTOPWM_2_Address { get; set; }
+            public int? PTOPWM_3_Address { get; set; }
+            public int? PTOPWM_4_Address { get; set; }
+
+       
+
+        /// <summary>Indirizzo costante configurato per un blocco onboard (es. "HSC_2"); null se non configurato.</summary>
+        public int? GetOnboardConstantAddress(string onboardName)
+        {
+            switch (onboardName)
+            {
+                case "HSC_1": return HSC_1_Address;
+                case "HSC_2": return HSC_2_Address;
+                case "HSC_3": return HSC_3_Address;
+                case "HSC_4": return HSC_4_Address;
+                case "HSC_5": return HSC_5_Address;
+                case "HSC_6": return HSC_6_Address;
+                case "PTOPWM_1": return PTOPWM_1_Address;
+                case "PTOPWM_2": return PTOPWM_2_Address;
+                case "PTOPWM_3": return PTOPWM_3_Address;
+                case "PTOPWM_4": return PTOPWM_4_Address;
+                default: return null;
+            }
+        }
+        #endregion
+
         #region computed properties
 
         public string TypeIdentifier => "OrderNumber:" + OrderNumber + "/" + FirmwareVersion;

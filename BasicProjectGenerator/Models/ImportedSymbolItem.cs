@@ -17,8 +17,17 @@ namespace Basic_Project_Generator.Models
         public string TypeIdentifier { get; set; }
         public SymbolItemType ItemType { get; set; }
         public Device MatchedDevice { get; set; }  
-        public int? InputStartAddress { get; set; }   // primo "I" / "AIW" / "PEW" 
-        public int? OutputStartAddress { get; set; }  // primo "Q" / "AQW" / "PAW" 
+     //   public int? InputStartAddress { get; set; }   // primo "I" / "AIW" / "PEW" 
+       // public int? OutputStartAddress { get; set; }  // primo "Q" / "AQW" / "PAW" 
+
+        public int? DigitalInputStartAddress { get; set; }
+        public int? DigitalOutputStartAddress { get; set; }
+        public int? AnalogInputStartAddress { get; set; }
+        public int? AnalogOutputStartAddress { get; set; }
+
+        // Compatibilità con AddNewModule esistente (moduli: sempre puramente digitali o analogici)
+        public int? InputStartAddress => DigitalInputStartAddress ?? AnalogInputStartAddress;
+        public int? OutputStartAddress => DigitalOutputStartAddress ?? AnalogOutputStartAddress;
 
 
     }
