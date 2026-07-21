@@ -977,17 +977,10 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 if (checkedDeviceItems.Count == 1)
                 {
-                   // PrepareNewDeviceFromImportedItem(checkedDeviceItems[0]); totla perchè comunuqe si autopola quado seleziono la spunta
-
-                    if (!AddNewDeviceFromFields())
+                    if (!AddNewDeviceFromFields(checkedDeviceItems[0]))
                     {
                         return; // validazione fallita: non proseguo con i moduli
                     }
-                }
-
-                if (!AddNewDeviceFromFields(checkedDeviceItems[0]))
-                {
-                    return;
                 }
 
                 // 2) Aggiungo i moduli spuntati
