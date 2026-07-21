@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Windows.Forms;
 
@@ -28,6 +29,8 @@ namespace Basic_Project_Generator.Interfaces
         private TiaPortalMode _tiaPortalMode;
         public event PropertyChangedEventHandler PropertyChanged;
 
+       
+        
         #endregion // Fields
 
         #region ctor
@@ -623,7 +626,7 @@ namespace Basic_Project_Generator.Interfaces
             if (analogOutputStartAddress.HasValue) excelAddresses.Add(analogOutputStartAddress.Value);
 
             // Device qui è il campo di classe (Siemens HW Device), NON il parametro catalogDevice.
-            // Device.DeviceItems[0] = rack, Device.DeviceItems[1] = PLC (come già confermato da te).
+            // Device.DeviceItems[0] = rack, Device.DeviceItems[1] = PLC
             foreach (var (owner, address) in GetAllAddressesWithOwner(Device.DeviceItems[1]))
             {
                 var ioType = address.GetAttribute("IoType")?.ToString();
@@ -696,10 +699,15 @@ namespace Basic_Project_Generator.Interfaces
                     {
                         IsModified = true;
                         result = true;
-                             _traceWriter.Write("Module plugged in slot " + slot);
+                        _traceWriter.Write("Module plugged in slot " + slot);
 
                         SetModuleAddresses(newModule, inputStartAddress, outputStartAddress);
-                        break;
+
+                        var DeviceItemIndex = slot + 1;
+                        SetModulePotentialGroup(1, DeviceItemIndex);
+                          
+
+                            break;
                     }
                 }
                 catch (Exception)
@@ -724,7 +732,7 @@ namespace Basic_Project_Generator.Interfaces
         private void SetModuleAddresses(DeviceItem deviceItem, int? inputStartAddress, int? outputStartAddress)
         {
             if (!inputStartAddress.HasValue && !outputStartAddress.HasValue) return;
-
+            
             foreach (var (owner, address) in GetAllAddressesWithOwner(deviceItem))
             {
                 try
@@ -748,7 +756,25 @@ namespace Basic_Project_Generator.Interfaces
                     _traceWriter.Write("Unable to set address on " + deviceItem.Name + ": " + exception.Message);
                 }
             }
-        }   
+        }
+
+        /// <summary>
+        /// Imposta il Potential Group relativamente al modulo appena aggiunto
+        /// il dato viene prelevato da schema su colonna J (per il momento compilata a mano)
+        /// </summary>
+        private void SetModulePotentialGroup(System.UInt64 potential,int index)
+        {
+
+            try
+            {
+                Device.DeviceItems[index].SetAttribute("PotentialGroup", potential);
+            }
+            catch (Exception e)
+            {
+                _traceWriter.Write("SetModulePotentialGroup" + e.Message);
+
+            }
+        }
 
         /// <summary>
         /// Cerca ricorsivamente tutti gli oggetti Address di un DeviceItem e dei suoi DeviceItems figli,
@@ -758,6 +784,7 @@ namespace Basic_Project_Generator.Interfaces
         {
             foreach (var address in deviceItem.Addresses)
             {
+              
                 yield return (deviceItem, address);
             }
 

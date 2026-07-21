@@ -3,31 +3,178 @@
 
 <ModuleCatalog>
 	<ModuleItemComposition>
+		<!--S71200-->
+		
 		<ExpModule>
-			<TemplateName>SM 1231 AI 4x13Bit</TemplateName>
+			<TemplateName>SM 1231 AI4 x RTD</TemplateName>
 			<OrderNumber>6ES7231-5PD32-0XB0</OrderNumber>
 			<FirmwareVersion>V2.0</FirmwareVersion>
 		</ExpModule>
+		
 		<ExpModule>
-			<TemplateName>SM 1221 DI 16x24VDC</TemplateName>
+			<TemplateName>SM 1221 DI16 x 24VDC</TemplateName>
 			<OrderNumber>6ES7221-1BH32-0XB0</OrderNumber>
 			<FirmwareVersion>V2.0</FirmwareVersion>
 		</ExpModule>
+		
 		<ExpModule>
-			<TemplateName>SM 1221 DI 8</TemplateName>
+			<TemplateName>SM 1221 DI8 x 24VDC</TemplateName>
 			<OrderNumber>6ES7221-1BF32-0XB0</OrderNumber>
 			<FirmwareVersion>V2.0</FirmwareVersion>
 		</ExpModule>
+		
 		<ExpModule>
-			<TemplateName>DI 16/DQ 16x24VDC</TemplateName>
+			<TemplateName>SM 1223 DI16/DQ16 x 24VDC</TemplateName>
 			<OrderNumber>6ES7 223-1BL32-0XB0</OrderNumber>
 			<FirmwareVersion>V2.0</FirmwareVersion>
 		</ExpModule>
+		
 		<ExpModule>
 			<TemplateName>SM 1232 AQ 2x14BIT</TemplateName>
 			<OrderNumber>6ES7 232-4HB32-0XB0</OrderNumber>
 			<FirmwareVersion>V2.1</FirmwareVersion>
 		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>SM 1223 DI8/DQ8 x 24VDC</TemplateName>
+			<OrderNumber>6ES7 223-1BH32-0XB0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>SM 1226 F-DI8/16 x 24VDC</TemplateName>
+			<OrderNumber>6ES7 226-6BA32-0XB0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>SM 1226 F-DQ4 x 24VDC</TemplateName>
+			<OrderNumber>6ES7 226-6DA32-0XB0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>SM 1231 AI4</TemplateName>
+			<OrderNumber>6ES7 231-4HD32-0XB0</OrderNumber>
+			<FirmwareVersion>V2.1</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>CP 1243-1</TemplateName>
+			<OrderNumber>6GK7 243-1BX30-0XE0</OrderNumber>
+			<FirmwareVersion>V3.6</FirmwareVersion>
+		</ExpModule>
+
+
+		<!--S71500-->
+
+		<ExpModule>
+			<TemplateName>DI 32x24VDC HF</TemplateName>
+			<OrderNumber>6ES7 521-1BL00-0AB0</OrderNumber>
+			<FirmwareVersion>V2.2</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>DQ 32x24VDC/0.5A HF</TemplateName>
+			<OrderNumber>6ES7 522-1BL01-0AB0</OrderNumber>
+			<FirmwareVersion>V1.1</FirmwareVersion>
+		</ExpModule>
+		
+		<ExpModule>
+			<TemplateName>DI 16x24VDC / DQ 16x24VDC/0.5A BA</TemplateName>
+			<OrderNumber>6ES7 523-1BL00-0AA0</OrderNumber>
+			<FirmwareVersion>V1.1</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>CM 1542-1</TemplateName>
+			<OrderNumber>6GK7 542-1AX00-0XE0</OrderNumber>
+			<FirmwareVersion>V3.0</FirmwareVersion>
+		</ExpModule>
+
+		<!--ET200SP/S71500-->
+
+		<ExpModule>
+			<TemplateName>F-DI 8x24VDC HF</TemplateName>
+			<OrderNumber>6ES7 136-6BA01-0CA0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>F-DQ 4x24VDC/2A PM HF</TemplateName>
+			<OrderNumber>6ES7 136-6DB00-0CA0</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+		
+		<ExpModule>
+			<TemplateName>DI 16x24VDC ST</TemplateName>
+			<OrderNumber>6ES7 131-6BH01-0BA0</OrderNumber>
+			<FirmwareVersion>V0.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>DQ 16x24VDC/0.5A ST</TemplateName>
+			<OrderNumber>6ES7 132-6BH01-0BA0</OrderNumber>
+			<FirmwareVersion>V0.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>DI 8x24VDC ST</TemplateName>
+			<OrderNumber>6ES7 131-6BF01-0BA0</OrderNumber>
+			<FirmwareVersion>V0.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>DQ 8x24VDC/0.5A ST</TemplateName>
+			<OrderNumber>6ES7 132-6BF01-0BA0</OrderNumber>
+			<FirmwareVersion>V0.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>AI 4xRTD/TC 2-/3-/4-wire HF</TemplateName>
+			<OrderNumber>6ES7 134-6JD00-0CA1</OrderNumber>
+			<FirmwareVersion>V2.1</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>AI 4xI 2-/4-wire ST</TemplateName>
+			<OrderNumber>6ES7 134-6GD01-0BA1</OrderNumber>
+			<FirmwareVersion>V2.0</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>AQ 4xU/I ST</TemplateName>
+			<OrderNumber>6ES7 135-6HD00-0BA1</OrderNumber>
+			<FirmwareVersion>V1.1</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>CP 1542SP-1</TemplateName>
+			<OrderNumber>6GK7 542-6UX00-0XE0</OrderNumber>
+			<FirmwareVersion>V2.4</FirmwareVersion>
+		</ExpModule>
+		
+		
+		<!--IM155-->
+		<ExpModule>
+			<TemplateName>IM 155-6 PN ST (6AU00)</TemplateName>
+			<OrderNumber>6ES7 155-6AU00-0BN0</OrderNumber>
+			<FirmwareVersion>V3.3</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>IM 155-6 PN ST (6AU01)</TemplateName>
+			<OrderNumber>6ES7 155-6AU01-0BN0</OrderNumber>
+			<FirmwareVersion>V4.2</FirmwareVersion>
+		</ExpModule>
+
+		<ExpModule>
+			<TemplateName>IM 155-6 PN ST (6AU02)</TemplateName>
+			<OrderNumber>6ES7 155-6AU02-0BN0</OrderNumber>
+			<FirmwareVersion>V6.4</FirmwareVersion>
+		</ExpModule>
+
+
 	</ModuleItemComposition>
 </ModuleCatalog>
 

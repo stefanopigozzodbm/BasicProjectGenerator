@@ -1,6 +1,67 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Catalog>
 	<DeviceItemComposition>
+		<!--aggiunti in base a HW disponibile in DBM...di dicuro non serve tutto il catalogo siemensAdmin1224
+		-->
+		<!--ET200SP/S71500-->
+		<Device>
+			<TemplateName>ET200SP/CPU 1510SP F-1 PN</TemplateName>
+			<Station>S7-1500</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 510-1SJ01-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>1</IncludeFailsafe>
+		</Device>
+
+		<Device>
+			<TemplateName>ET200SP/CPU 1510SP-1 PN</TemplateName>
+			<Station>S7-1500</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 510-1DJ01-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+		</Device>
+
+
+		<Device>
+			<TemplateName>ET200SP/CPU 1512SP-1 PN</TemplateName>
+			<Station>S7-1500</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 512-1DK01-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+		</Device>
+
+		<Device>
+			<TemplateName>ET200SP/CPU 1512SP F-1 PN</TemplateName>
+			<Station>S7-1500</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 512-1SK01-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>1</IncludeFailsafe>
+		</Device>
+
+
+		<!--S71500-->
+		<Device>
+			<TemplateName>CPU 1511C-1 PN</TemplateName>
+			<Station>S7-1500</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 511-1CK01-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+		</Device>
+
+		<Device>
+			<TemplateName>CPU 1511-1 PN</TemplateName>
+			<Station>S7-1500</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 511-1AK02-0AB0</OrderNumber>
+			<FirmwareVersion>V2.9</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+		</Device>
+		
+		
 		<Device>
 			<TemplateName>CPU 1516-3 - V1.8</TemplateName>			
 			<Station>S7-1500/ET200MP station</Station>
@@ -49,7 +110,9 @@
 			<FirmwareVersion>V2.9</FirmwareVersion>
 			<IncludeFailsafe>1</IncludeFailsafe>
 		</Device>
-		<Device> <!--test aggiunta device-->
+
+		<!--S71200-->
+		<Device> 
 			<TemplateName>S71200-CPU 1214C DC/DC/DC</TemplateName>
 			<Station>S7-1200</Station>
 			<DeviceName>PLC</DeviceName>
@@ -79,7 +142,71 @@
 			<PTOPWM_2_Address>1002</PTOPWM_2_Address>
 			<PTOPWM_3_Address>1004</PTOPWM_3_Address>
 			<PTOPWM_4_Address>1006</PTOPWM_4_Address>
-			
 		</Device>
+
+		<Device>
+			<TemplateName>S71200-CPU 1214FC DC/DC/DC</TemplateName>
+			<Station>S7-1200</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 214-1AF40-0XB0</OrderNumber>
+			<FirmwareVersion>V4.7</FirmwareVersion>
+			<IncludeFailsafe>1</IncludeFailsafe>
+			<!--(solo per PLC con IO onboard)PositionNumber dei dispositivi IO (IO/HSC/PTO) sulla cpu, numero univoco per capire l'Address in fase di assegnazione per chi è-->
+			<HSC_1>16</HSC_1>
+			<HSC_2>17</HSC_2>
+			<HSC_3>18</HSC_3>
+			<HSC_4>19</HSC_4>
+			<HSC_5>20</HSC_5>
+			<HSC_6>21</HSC_6>
+			<AI2>2</AI2>
+			<DI14DQ10>1</DI14DQ10>
+			<PTOPWM_1>32</PTOPWM_1>
+			<PTOPWM_2>33</PTOPWM_2>
+			<PTOPWM_3>34</PTOPWM_3>
+			<PTOPWM_4>35</PTOPWM_4>
+			<HSC_1_Address>1000</HSC_1_Address>
+			<HSC_2_Address>1004</HSC_2_Address>
+			<HSC_3_Address>1008</HSC_3_Address>
+			<HSC_4_Address>1012</HSC_4_Address>
+			<HSC_5_Address>1016</HSC_5_Address>
+			<HSC_6_Address>1020</HSC_6_Address>
+			<PTOPWM_1_Address>1000</PTOPWM_1_Address>
+			<PTOPWM_2_Address>1002</PTOPWM_2_Address>
+			<PTOPWM_3_Address>1004</PTOPWM_3_Address>
+			<PTOPWM_4_Address>1006</PTOPWM_4_Address>
+		</Device>
+
+		<Device>
+			<TemplateName>S71200-CPU 1215C DC/DC/DC</TemplateName>
+			<Station>S7-1200</Station>
+			<DeviceName>PLC</DeviceName>
+			<OrderNumber>6ES7 215-1AG40-0XB0</OrderNumber>
+			<FirmwareVersion>V4.7</FirmwareVersion>
+			<IncludeFailsafe>0</IncludeFailsafe>
+			<!--(solo per PLC con IO onboard)PositionNumber dei dispositivi IO (IO/HSC/PTO) sulla cpu, numero univoco per capire l'Address in fase di assegnazione per chi è-->
+			<HSC_1>16</HSC_1>
+			<HSC_2>17</HSC_2>
+			<HSC_3>18</HSC_3>
+			<HSC_4>19</HSC_4>
+			<HSC_5>20</HSC_5>
+			<HSC_6>21</HSC_6>
+			<AI2>2</AI2>
+			<DI14DQ10>1</DI14DQ10>
+			<PTOPWM_1>32</PTOPWM_1>
+			<PTOPWM_2>33</PTOPWM_2>
+			<PTOPWM_3>34</PTOPWM_3>
+			<PTOPWM_4>35</PTOPWM_4>
+			<HSC_1_Address>1000</HSC_1_Address>
+			<HSC_2_Address>1004</HSC_2_Address>
+			<HSC_3_Address>1008</HSC_3_Address>
+			<HSC_4_Address>1012</HSC_4_Address>
+			<HSC_5_Address>1016</HSC_5_Address>
+			<HSC_6_Address>1020</HSC_6_Address>
+			<PTOPWM_1_Address>1000</PTOPWM_1_Address>
+			<PTOPWM_2_Address>1002</PTOPWM_2_Address>
+			<PTOPWM_3_Address>1004</PTOPWM_3_Address>
+			<PTOPWM_4_Address>1006</PTOPWM_4_Address>
+		</Device>
+		
 	</DeviceItemComposition>
 </Catalog>
