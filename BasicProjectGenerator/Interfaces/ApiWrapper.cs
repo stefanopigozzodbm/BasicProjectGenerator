@@ -749,11 +749,19 @@ namespace Basic_Project_Generator.Interfaces
                         result = true;
                         _traceWriter.Write("Module plugged in slot " + slot);
 
+                        //scrittua degli indirizzi
                         SetModuleAddresses(newModule, inputStartAddress, outputStartAddress);
 
+                        //scrittua del gruppo di potenziale (solo per et200sp)
                         var deviceItemIndex = slot + 1;
                         SetModulePotentialGroup(newPotentialGroup ? (ulong)1 : 0, deviceItemIndex);
-                          
+
+                            //scrittura della configurazione canali (solo per moduli safety)
+                            //TiaPortal.Projects[0].Devices[0].DeviceItems[3].DeviceItems[0].Channels[0]
+
+
+
+
 
                             break;
                     }
