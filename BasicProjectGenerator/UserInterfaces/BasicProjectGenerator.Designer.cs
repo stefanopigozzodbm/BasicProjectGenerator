@@ -84,9 +84,12 @@ namespace Basic_Project_Generator.UserInterfaces
             this.cob_ModuleTemplates = new System.Windows.Forms.ComboBox();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.btn_AddImportedModules = new System.Windows.Forms.Button();
-            this.clb_ImportedItems = new System.Windows.Forms.CheckedListBox();
             this.btn_ImportSymbolicTable = new System.Windows.Forms.Button();
+            this.clb_ImportedItems = new System.Windows.Forms.CheckedListBox();
+            this.btn_AddImportedModules = new System.Windows.Forms.Button();
+            this.tb_PlcIpAddress = new System.Windows.Forms.TextBox();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.label4 = new System.Windows.Forms.Label();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -337,6 +340,8 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // grb_AddNewDevice
             // 
+            this.grb_AddNewDevice.Controls.Add(this.label4);
+            this.grb_AddNewDevice.Controls.Add(this.tb_PlcIpAddress);
             this.grb_AddNewDevice.Controls.Add(this.txb_Station);
             this.grb_AddNewDevice.Controls.Add(this.lab_Station);
             this.grb_AddNewDevice.Controls.Add(this.ckb_IncludeFailsafe);
@@ -423,7 +428,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // btn_AddNewDevice
             // 
             this.btn_AddNewDevice.BackColor = System.Drawing.Color.LightBlue;
-            this.btn_AddNewDevice.Location = new System.Drawing.Point(18, 344);
+            this.btn_AddNewDevice.Location = new System.Drawing.Point(21, 397);
             this.btn_AddNewDevice.Name = "btn_AddNewDevice";
             this.btn_AddNewDevice.Size = new System.Drawing.Size(173, 33);
             this.btn_AddNewDevice.TabIndex = 13;
@@ -627,15 +632,15 @@ namespace Basic_Project_Generator.UserInterfaces
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Add HW Conf from Excel";
             // 
-            // btn_AddImportedModules
+            // btn_ImportSymbolicTable
             // 
-            this.btn_AddImportedModules.Location = new System.Drawing.Point(6, 201);
-            this.btn_AddImportedModules.Name = "btn_AddImportedModules";
-            this.btn_AddImportedModules.Size = new System.Drawing.Size(177, 33);
-            this.btn_AddImportedModules.TabIndex = 0;
-            this.btn_AddImportedModules.Text = "Add Selected Module";
-            this.btn_AddImportedModules.UseVisualStyleBackColor = true;
-            this.btn_AddImportedModules.Click += new System.EventHandler(this.btn_AddImportedModules_Click);
+            this.btn_ImportSymbolicTable.Location = new System.Drawing.Point(6, 29);
+            this.btn_ImportSymbolicTable.Name = "btn_ImportSymbolicTable";
+            this.btn_ImportSymbolicTable.Size = new System.Drawing.Size(177, 33);
+            this.btn_ImportSymbolicTable.TabIndex = 2;
+            this.btn_ImportSymbolicTable.Text = "Excel Import";
+            this.btn_ImportSymbolicTable.UseVisualStyleBackColor = true;
+            this.btn_ImportSymbolicTable.Click += new System.EventHandler(this.btn_ImportSymbolicTable_Click);
             // 
             // clb_ImportedItems
             // 
@@ -647,15 +652,37 @@ namespace Basic_Project_Generator.UserInterfaces
             this.clb_ImportedItems.TabIndex = 1;
             this.clb_ImportedItems.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clb_ImportedItems_ItemCheck);
             // 
-            // btn_ImportSymbolicTable
+            // btn_AddImportedModules
             // 
-            this.btn_ImportSymbolicTable.Location = new System.Drawing.Point(6, 29);
-            this.btn_ImportSymbolicTable.Name = "btn_ImportSymbolicTable";
-            this.btn_ImportSymbolicTable.Size = new System.Drawing.Size(177, 33);
-            this.btn_ImportSymbolicTable.TabIndex = 2;
-            this.btn_ImportSymbolicTable.Text = "Excel Import";
-            this.btn_ImportSymbolicTable.UseVisualStyleBackColor = true;
-            this.btn_ImportSymbolicTable.Click += new System.EventHandler(this.btn_ImportSymbolicTable_Click);
+            this.btn_AddImportedModules.Location = new System.Drawing.Point(6, 201);
+            this.btn_AddImportedModules.Name = "btn_AddImportedModules";
+            this.btn_AddImportedModules.Size = new System.Drawing.Size(177, 33);
+            this.btn_AddImportedModules.TabIndex = 0;
+            this.btn_AddImportedModules.Text = "Add Selected Module";
+            this.btn_AddImportedModules.UseVisualStyleBackColor = true;
+            this.btn_AddImportedModules.Click += new System.EventHandler(this.btn_AddImportedModules_Click);
+            // 
+            // tb_PlcIpAddress
+            // 
+            this.tb_PlcIpAddress.Location = new System.Drawing.Point(18, 329);
+            this.tb_PlcIpAddress.Name = "tb_PlcIpAddress";
+            this.tb_PlcIpAddress.Size = new System.Drawing.Size(173, 20);
+            this.tb_PlcIpAddress.TabIndex = 14;
+            this.tb_PlcIpAddress.Text = "10.0.0.1";
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(18, 313);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(58, 13);
+            this.label4.TabIndex = 15;
+            this.label4.Text = "IP Address";
             // 
             // BasicProjectGenerator
             // 
@@ -749,6 +776,9 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.Button btn_ImportSymbolicTable;
         private System.Windows.Forms.CheckedListBox clb_ImportedItems;
         private System.Windows.Forms.Button btn_AddImportedModules;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox tb_PlcIpAddress;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
     }
 }
 

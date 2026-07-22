@@ -24,6 +24,7 @@ namespace Basic_Project_Generator.Models
         public int? DigitalOutputStartAddress { get; set; }
         public int? AnalogInputStartAddress { get; set; }
         public int? AnalogOutputStartAddress { get; set; }
+        public bool NewPotentialGroup { get; set; }  // colonna J: true=1 (nuovo gruppo), false=0
 
         // Compatibilità con AddNewModule esistente (moduli: sempre puramente digitali o analogici)
         public int? InputStartAddress => DigitalInputStartAddress ?? AnalogInputStartAddress;

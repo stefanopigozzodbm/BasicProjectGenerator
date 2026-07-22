@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--Attributi sul DeviceItem passato alla funzione SetDeviceAttributes in ApiWrapper.cs-->
+<!--Utile per presettare in fase di configurazione dei dati sulla CPU DeviceItems[1]-->
+<StartupSettings>
+	
+	
+	<Attribute>
+		<Name>StartupConfigurationTimeout</Name>
+		<Value>5000</Value>
+	</Attribute>
+
+	<Attribute>
+		<Name>ClockMemoryByte</Name>
+		<Value>True</Value>
+	</Attribute>
+
+	<Attribute>
+		<Name>ClockMemoryByteAddress</Name>
+		<Value>252</Value>
+	</Attribute>
+
+	<Attribute>
+		<Name>SystemMemoryByte</Name>
+		<Value>True</Value>
+	</Attribute>
+
+	<Attribute>
+		<Name>SystemMemoryByteAddress</Name>
+		<Value>0</Value>
+	</Attribute>
+	
+</StartupSettings>

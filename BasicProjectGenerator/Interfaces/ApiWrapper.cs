@@ -435,13 +435,7 @@ namespace Basic_Project_Generator.Interfaces
         /// <param name="name"></param>
         /// <param name="deviceName"></param>
         /// <param name="caller"></param>
-        public void DoAddNewDevice(
-                        string typeIdentifier, string name, string deviceName,
-                        Basic_Project_Generator.Models.Device catalogDevice,
-                        int? digitalInputStartAddress, int? digitalOutputStartAddress,
-                        int? analogInputStartAddress, int? analogOutputStartAddress,
-                        IReadOnlyDictionary<int, string> intPeriphName,
-                        [CallerMemberName] string caller = "")
+        public void DoAddNewDevice(string typeIdentifier, string name, string deviceName,Basic_Project_Generator.Models.Device catalogDevice,int? digitalInputStartAddress, int? digitalOutputStartAddress,int? analogInputStartAddress, int? analogOutputStartAddress,IReadOnlyDictionary<int, string> intPeriphName,string ipAddress, Dictionary<string, object> startupAttributes, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -455,6 +449,9 @@ namespace Basic_Project_Generator.Interfaces
                 {
                     _traceWriter.Write("Assign IO Add to: " + name);
                     SetDeviceAddresses(catalogDevice, digitalInputStartAddress, digitalOutputStartAddress, analogInputStartAddress, analogOutputStartAddress, intPeriphName);
+                    SetDeviceIpAddress(Device.DeviceItems[1], ipAddress);
+                    SetDeviceAttributes(Device.DeviceItems[1], startupAttributes);
+                    DumpAllAttributes(Device.DeviceItems[1], "startup");
                 }
             }
             catch (Exception exception)
@@ -602,23 +599,13 @@ namespace Basic_Project_Generator.Interfaces
             }
         }
 
+              
 
         /// <summary>
         /// Imposta l'indirizzo di start su PLC (Device)
-        /*   SetDeviceAddresses(Device, 
-                DigitalInputStartAddress, 
-                DigitalOutputStartAddress, 
-                AnalogInputStartAddress,
-                AnalogOutputStartAddress)*/
-
-        private void SetDeviceAddresses(
-                    Basic_Project_Generator.Models.Device catalogDevice,
-                    int? digitalInputStartAddress,
-                    int? digitalOutputStartAddress,
-                    int? analogInputStartAddress,
-                    int? analogOutputStartAddress,
-                    IReadOnlyDictionary<int, string> intPeriphName)
+        private void SetDeviceAddresses(Basic_Project_Generator.Models.Device catalogDevice,int? digitalInputStartAddress,int? digitalOutputStartAddress,int? analogInputStartAddress,int? analogOutputStartAddress,IReadOnlyDictionary<int, string> intPeriphName)
         {
+
             var excelAddresses = new List<int>();
             if (digitalInputStartAddress.HasValue) excelAddresses.Add(digitalInputStartAddress.Value);
             if (digitalOutputStartAddress.HasValue) excelAddresses.Add(digitalOutputStartAddress.Value);
@@ -674,9 +661,70 @@ namespace Basic_Project_Generator.Interfaces
             }
         }
 
+        /// <summary>
+        /// Imposta l'indirizzo IP sull'interfaccia PROFINET del PLC appena creato.
+        /// Cerca ricorsivamente, tra il DeviceItem del PLC e i suoi figli, il primo che espone
+        /// il servizio NetworkInterface, e ne imposta il primo Node.
+        /// NOTA: nomi "NetworkInterface"/"Address" da riconfermare con TIA Openness Explorer
+        /// se il PLC ha più interfacce (es. seconda PROFINET) e serve puntarne una specifica.
+        /// </summary>
+        private void SetDeviceIpAddress(DeviceItem plcDeviceItem, string ipAddress)
+        {
+            if (string.IsNullOrWhiteSpace(ipAddress))
+            {
+                return;
+            }
+
+            if (!System.Net.IPAddress.TryParse(ipAddress, out _))
+            {
+                _traceWriter.Write("Indirizzo IP non valido: '" + ipAddress + "', assegnazione saltata.");
+                return;
+            }
+
+            if (TrySetIpAddressRecursive(plcDeviceItem, ipAddress))
+            {
+                _traceWriter.Write("IP " + ipAddress + " impostato su " + plcDeviceItem.Name);
+            }
+            else
+            {
+                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + plcDeviceItem.Name + ", IP non impostato.");
+            }
+        }
+
+        private bool TrySetIpAddressRecursive(DeviceItem deviceItem, string ipAddress, string path = "")
+        {
+            var currentPath = string.IsNullOrEmpty(path) ? deviceItem.Name : path + " / " + deviceItem.Name;
+
+            try
+            {
+                var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                {
+                    networkInterface.Nodes[0].SetAttribute("Address", ipAddress);
+                    _traceWriter.Write("NetworkInterface trovata al percorso: " + currentPath);
+                    Debug.WriteLine("NetworkInterface trovata al percorso: " + currentPath);
+                    return true;
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore impostando IP su " + currentPath + ": " + exception.Message);
+            }
+
+            foreach (var childItem in deviceItem.DeviceItems)
+            {
+                if (TrySetIpAddressRecursive(childItem, ipAddress, currentPath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 
         //non compresa CPU -> vd DoAddNewDevice
-        public bool DoAddNewModule(string typeIdentifier, string name, int? inputStartAddress = null, int? outputStartAddress = null, [CallerMemberName] string caller = "")
+        public bool DoAddNewModule(string typeIdentifier, string name, int? inputStartAddress = null, int? outputStartAddress = null, bool newPotentialGroup = false,[CallerMemberName] string caller = "")
         {
         var methodBase = MethodBase.GetCurrentMethod();
         if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -703,8 +751,8 @@ namespace Basic_Project_Generator.Interfaces
 
                         SetModuleAddresses(newModule, inputStartAddress, outputStartAddress);
 
-                        var DeviceItemIndex = slot + 1;
-                        SetModulePotentialGroup(1, DeviceItemIndex);
+                        var deviceItemIndex = slot + 1;
+                        SetModulePotentialGroup(newPotentialGroup ? (ulong)1 : 0, deviceItemIndex);
                           
 
                             break;
@@ -732,31 +780,63 @@ namespace Basic_Project_Generator.Interfaces
         private void SetModuleAddresses(DeviceItem deviceItem, int? inputStartAddress, int? outputStartAddress)
         {
             if (!inputStartAddress.HasValue && !outputStartAddress.HasValue) return;
-            
+
+            // Per i moduli Safety, l'indirizzo delle Q può risultare non scrivibile via Openness:
+            // in quel caso l'unico modo per fissare l'indirizzo dell'uscita è impostare quello dell'Input corrispondente.
+            var outputAddressSetSuccessfully = false;
+            Siemens.Engineering.HW.Address inputAddressFallback = null;
+
             foreach (var (owner, address) in GetAllAddressesWithOwner(deviceItem))
             {
-                try
+                var ioType = address.GetAttribute("IoType")?.ToString();
+
+                if (ioType == "Input")
                 {
-                    var ioType = address.GetAttribute("IoType")?.ToString();
+                    inputAddressFallback = address; // tengo traccia dell'ultimo Input trovato, come possibile fallback
 
-
-                    if (inputStartAddress.HasValue && ioType == "Input")
+                    if (inputStartAddress.HasValue)
                     {
-                        address.SetAttribute("StartAddress", inputStartAddress.Value);
-                        _traceWriter.Write("Input start address set to " + inputStartAddress.Value + " on " + deviceItem.Name);
+                        try
+                        {
+                            address.SetAttribute("StartAddress", inputStartAddress.Value);
+                            _traceWriter.Write("Input start address set to " + inputStartAddress.Value + " on " + deviceItem.Name);
+                        }
+                        catch (Exception exception)
+                        {
+                            _traceWriter.Write("Unable to set input address on " + deviceItem.Name + ": " + exception.Message);
+                        }
                     }
-                    else if (outputStartAddress.HasValue && ioType == "Output")
+                }
+                else if (ioType == "Output" && outputStartAddress.HasValue)
+                {
+                    try
                     {
                         address.SetAttribute("StartAddress", outputStartAddress.Value);
                         _traceWriter.Write("Output start address set to " + outputStartAddress.Value + " on " + deviceItem.Name);
+                        outputAddressSetSuccessfully = true;
                     }
+                    catch (Exception exception)
+                    {
+                        _traceWriter.Write("Output non scrivibile su " + deviceItem.Name + " (" + exception.Message + "), provo a impostare l'Input corrispondente (probabile modulo Safety).");
+                    }
+                }
+            }
+
+            // Fallback: la scrittura sull'Output è fallita ma l'Excel definisce Q per questo modulo -> imposto l'Input al posto della Q
+            if (outputStartAddress.HasValue && !outputAddressSetSuccessfully && inputAddressFallback != null)
+            {
+                try
+                {
+                    inputAddressFallback.SetAttribute("StartAddress", outputStartAddress.Value);
+                    _traceWriter.Write("Modulo Safety: Output " + outputStartAddress.Value + " impostato via Input su " + deviceItem.Name);
                 }
                 catch (Exception exception)
                 {
-                    _traceWriter.Write("Unable to set address on " + deviceItem.Name + ": " + exception.Message);
+                    _traceWriter.Write("Impossibile impostare l'indirizzo (né Output né Input fallback) su " + deviceItem.Name + ": " + exception.Message);
                 }
             }
         }
+     
 
         /// <summary>
         /// Imposta il Potential Group relativamente al modulo appena aggiunto
@@ -797,7 +877,120 @@ namespace Basic_Project_Generator.Interfaces
             }
         }
 
+        /// <summary>
+        /// METODO APPOGGIO PER IL RICHIAMO DI SetAttribute con gestione eccezione
+        /// </summary>
+        /// <summary>
+        /// Metodo di appoggio per il richiamo di SetAttribute con gestione eccezione.
+        /// Imposta più attributi (nome -> valore) sullo stesso DeviceItem, loggando eventuali errori
+        /// (es. attributo inesistente o non scrivibile) senza interrompere gli altri.
+        /// Per ora limitato al DeviceItem passato: non scende nei figli.
+        /// </summary>
+        private void SetDeviceAttributes(DeviceItem deviceItem, Dictionary<string, object> attributeList)
+        {
+            if (deviceItem == null || attributeList == null || attributeList.Count == 0)
+            {
+                return;
+            }
+
+            //var attributeInfos = deviceItem.GetAttributeInfos(); spostato sotto
+
+            foreach (var kvp in attributeList)
+            {
+                try
+                {
+                    // Richiesto ad ogni iterazione (non prima del ciclo): un attributo impostato
+                    // nel giro precedente (es. ClockMemoryByte=True) può far comparire nuovi attributi
+                    // "condizionati" (es. ClockMemoryByteAddress) che prima non c'erano.
+                    var attributeInfos = deviceItem.GetAttributeInfos(); 
+
+                    var attributeInfo = attributeInfos.FirstOrDefault(a => a.Name == kvp.Key);
+
+                    if (attributeInfo == null)
+                    {
+                        _traceWriter.Write("Attributo '" + kvp.Key + "' non trovato su " + deviceItem.Name);
+                        continue;
+                    }
+
+                    var targetType = attributeInfo.SupportedTypes.FirstOrDefault();
+
+                    if (targetType == null)
+                    {
+                        _traceWriter.Write("Attributo '" + kvp.Key + "' non ha SupportedTypes definiti, provo a impostarlo senza conversione.");
+                        deviceItem.SetAttribute(kvp.Key, kvp.Value);
+                        continue;
+                    }
+
+                    var convertedValue = ConvertToAttributeType(kvp.Value, targetType);
+
+                    deviceItem.SetAttribute(kvp.Key, convertedValue);
+                    _traceWriter.Write(kvp.Key + " impostato a " + convertedValue + " (" + targetType.Name + ") su " + deviceItem.Name);
+                }
+                catch (Exception exception)
+                {
+                    _traceWriter.Write("Errore impostando '" + kvp.Key + "' su " + deviceItem.Name + ": " + exception.Message);
+                }
+            }
+        }
+
+        private static object ConvertToAttributeType(object rawValue, Type targetType)
+        {
+            if (rawValue == null)
+            {
+                return null;
+            }
+
+            if (targetType.IsEnum)
+            {
+                if (rawValue is string stringValue)
+                {
+                    return Enum.Parse(targetType, stringValue, ignoreCase: true);
+                }
+                return Enum.ToObject(targetType, rawValue);
+            }
+
+            return Convert.ChangeType(rawValue, targetType);
+        }
+
+
         #endregion // Device
+
+
+        #region Debug
+
+        /// <summary>
+        /// METODO DI DEBUG: stampa tutti gli attributi disponibili su un DeviceItem,
+        /// utile per scoprire il nome esatto di un parametro senza aprire TIA Openness Explorer.
+        /// </summary>
+        private void DumpAllAttributes(DeviceItem deviceItem, string filter = null)
+        {
+           // _traceWriter.Write("--- Attributi di " + deviceItem.Name + " ---");
+            Debug.WriteLine("DumpAllAttributes: " + "--- Attributi di " + deviceItem.Name + " ---");
+
+            foreach (var attributeInfo in deviceItem.GetAttributeInfos())
+            {
+                if (filter == null || attributeInfo.Name.ToLowerInvariant().Contains(filter.ToLowerInvariant()))
+                {
+                    var supportedTypes = string.Join(", ", attributeInfo.SupportedTypes.Select(t => t.Name));
+
+
+                    try
+                    {
+                        
+                        var value = deviceItem.GetAttribute(attributeInfo.Name);
+                        Debug.WriteLine("DumpAllAttributes: " + attributeInfo.Name + " = " + value + "  [SupportedTypes: " + supportedTypes + "]");
+                        //_traceWriter.Write(attributeInfo.Name + " = " + value + "  [Type: " + attributeInfo.Type + "]");
+                    }
+                    catch
+                    {
+                        Debug.WriteLine("DumpAllAttributes: " + attributeInfo.Name + " = (non leggibile)  [SupportedTypes: " + supportedTypes + "]");
+                        //_traceWriter.Write(attributeInfo.Name + " = (non leggibile)  [Type: " + attributeInfo.Type + "]");
+                    }
+                }
+            }
+        }
+
+        #endregion
 
         #region Compile
 

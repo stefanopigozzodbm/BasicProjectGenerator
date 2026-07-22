@@ -12,6 +12,7 @@ namespace Basic_Project_Generator.Services
         private const int ColumnCodiceUnita = 6;  // colonna G
         private const int ColumnTipologia = 7;    // colonna H
         private const int ColumnIndirizzo = 8;    // colonna I
+        private const int ColumnPotentialGroup = 9;  // colonna J
 
         private enum Direction { Input, Output }
 
@@ -39,7 +40,8 @@ namespace Basic_Project_Generator.Services
                         {
                             Name = GetCellText(row, ColumnSiglaScheda),
                             OrderNumber = orderNumber,
-                            ItemType = SymbolItemType.Unknown
+                            ItemType = SymbolItemType.Unknown,
+                            NewPotentialGroup = GetCellText(row, ColumnPotentialGroup).Trim() == "1"
                         };
 
                         var normalized = Normalize(orderNumber);

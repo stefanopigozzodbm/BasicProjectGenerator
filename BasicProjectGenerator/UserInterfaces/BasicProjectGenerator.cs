@@ -719,13 +719,18 @@ namespace Basic_Project_Generator.UserInterfaces
                 var catalogDevice = _projectGeneratorService.NewDevice;
                 var intPeriphName = catalogDevice.GetOnboardIoByPosition();
 
+                var startupAttributes = _projectGeneratorService.LoadPlcStartupSettings();
+
+
                 _projectGeneratorService.AddNewDevice(
                     catalogDevice,
                     sourceItem?.DigitalInputStartAddress,
                     sourceItem?.DigitalOutputStartAddress,
                     sourceItem?.AnalogInputStartAddress,
                     sourceItem?.AnalogOutputStartAddress,
-                    intPeriphName);
+                    intPeriphName,
+                    tb_PlcIpAddress.Text.Trim(),
+                    startupAttributes);
 
                 Cursor.Current = Cursors.Default;
 
@@ -1006,7 +1011,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
                     Cursor.Current = Cursors.WaitCursor;
                     //var added = _projectGeneratorService.AddNewModule(item.TypeIdentifier, item.Name);
-                    var added = _projectGeneratorService.AddNewModule(item.TypeIdentifier, item.Name, item.InputStartAddress, item.OutputStartAddress);
+                    var added = _projectGeneratorService.AddNewModule(item.TypeIdentifier, item.Name, item.InputStartAddress, item.OutputStartAddress, item.NewPotentialGroup);
                     Cursor.Current = Cursors.Default;
 
                     if (added) addedCount++;
