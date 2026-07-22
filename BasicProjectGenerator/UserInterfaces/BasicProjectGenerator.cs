@@ -835,16 +835,16 @@ namespace Basic_Project_Generator.UserInterfaces
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void cob_DeviceList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var methodBase = MethodBase.GetCurrentMethod();
-            _traceWriter.Write(methodBase.Name);
+        //private void cob_DeviceList_SelectedIndexChanged(object sender, EventArgs e)
+        //{
+        //    var methodBase = MethodBase.GetCurrentMethod();
+        //    _traceWriter.Write(methodBase.Name);
 
-            if (cob_DeviceList.Items.Count > 0)
-            {
-                _projectGeneratorService.SetCurrentDevice((DeviceItem)cob_DeviceList.SelectedItem);
-            }
-        }
+        //    if (cob_DeviceList.Items.Count > 0)
+        //    {
+        //        _projectGeneratorService.SetCurrentDevice((DeviceItem)cob_DeviceList.SelectedItem);
+        //    }
+        //}
 
         /// <summary>
         /// Compile the selected device item

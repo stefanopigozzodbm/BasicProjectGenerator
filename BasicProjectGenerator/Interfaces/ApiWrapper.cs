@@ -451,7 +451,8 @@ namespace Basic_Project_Generator.Interfaces
                     SetDeviceAddresses(catalogDevice, digitalInputStartAddress, digitalOutputStartAddress, analogInputStartAddress, analogOutputStartAddress, intPeriphName);
                     SetDeviceIpAddress(Device.DeviceItems[1], ipAddress);
                     SetDeviceAttributes(Device.DeviceItems[1], startupAttributes);
-                    DumpAllAttributes(Device.DeviceItems[1], "startup");
+                    
+                   
                 }
             }
             catch (Exception exception)
@@ -759,18 +760,24 @@ namespace Basic_Project_Generator.Interfaces
                             //scrittura della configurazione canali (solo per moduli safety)
                             //TiaPortal.Projects[0].Devices[0].DeviceItems[3].DeviceItems[0].Channels[0]
 
-
+                            DumpAllAttributes(Device.DeviceItems[1], "sensor");//metodo di debus per ricerca
 
 
 
                             break;
                     }
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
-                    // Slot non valido per questo modulo -> provo il successivo
+
+                        if (methodBase.ReflectedType != null)
+                        {
+                            Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception);
+                            _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception.Message);
+                        }
+                        // Slot non valido per questo modulo -> provo il successivo
+                    }
                 }
-            }
 
             if (!result)
             {

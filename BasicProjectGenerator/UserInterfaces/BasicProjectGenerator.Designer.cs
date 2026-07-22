@@ -54,6 +54,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_LoadProject = new System.Windows.Forms.Button();
             this.btn_OpenProject = new System.Windows.Forms.Button();
             this.grb_AddNewDevice = new System.Windows.Forms.GroupBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.tb_PlcIpAddress = new System.Windows.Forms.TextBox();
             this.txb_Station = new System.Windows.Forms.TextBox();
             this.lab_Station = new System.Windows.Forms.Label();
             this.ckb_IncludeFailsafe = new System.Windows.Forms.CheckBox();
@@ -87,9 +89,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_ImportSymbolicTable = new System.Windows.Forms.Button();
             this.clb_ImportedItems = new System.Windows.Forms.CheckedListBox();
             this.btn_AddImportedModules = new System.Windows.Forms.Button();
-            this.tb_PlcIpAddress = new System.Windows.Forms.TextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.label4 = new System.Windows.Forms.Label();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -363,6 +363,23 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddNewDevice.TabStop = false;
             this.grb_AddNewDevice.Text = "Add new device";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(18, 313);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(58, 13);
+            this.label4.TabIndex = 15;
+            this.label4.Text = "IP Address";
+            // 
+            // tb_PlcIpAddress
+            // 
+            this.tb_PlcIpAddress.Location = new System.Drawing.Point(18, 329);
+            this.tb_PlcIpAddress.Name = "tb_PlcIpAddress";
+            this.tb_PlcIpAddress.Size = new System.Drawing.Size(173, 20);
+            this.tb_PlcIpAddress.TabIndex = 14;
+            this.tb_PlcIpAddress.Text = "10.0.0.1";
+            // 
             // txb_Station
             // 
             this.txb_Station.Location = new System.Drawing.Point(18, 170);
@@ -532,7 +549,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.cob_DeviceList.Name = "cob_DeviceList";
             this.cob_DeviceList.Size = new System.Drawing.Size(173, 21);
             this.cob_DeviceList.TabIndex = 3;
-            this.cob_DeviceList.SelectedIndexChanged += new System.EventHandler(this.cob_DeviceList_SelectedIndexChanged);
+           // this.cob_DeviceList.SelectedIndexChanged += new System.EventHandler(this.cob_DeviceList_SelectedIndexChanged);
             // 
             // lib_DeviceList
             // 
@@ -662,27 +679,10 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_AddImportedModules.UseVisualStyleBackColor = true;
             this.btn_AddImportedModules.Click += new System.EventHandler(this.btn_AddImportedModules_Click);
             // 
-            // tb_PlcIpAddress
-            // 
-            this.tb_PlcIpAddress.Location = new System.Drawing.Point(18, 329);
-            this.tb_PlcIpAddress.Name = "tb_PlcIpAddress";
-            this.tb_PlcIpAddress.Size = new System.Drawing.Size(173, 20);
-            this.tb_PlcIpAddress.TabIndex = 14;
-            this.tb_PlcIpAddress.Text = "10.0.0.1";
-            // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(18, 313);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(58, 13);
-            this.label4.TabIndex = 15;
-            this.label4.Text = "IP Address";
             // 
             // BasicProjectGenerator
             // 
