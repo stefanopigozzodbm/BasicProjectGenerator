@@ -549,7 +549,6 @@ namespace Basic_Project_Generator.UserInterfaces
             this.cob_DeviceList.Name = "cob_DeviceList";
             this.cob_DeviceList.Size = new System.Drawing.Size(173, 21);
             this.cob_DeviceList.TabIndex = 3;
-           // this.cob_DeviceList.SelectedIndexChanged += new System.EventHandler(this.cob_DeviceList_SelectedIndexChanged);
             // 
             // lib_DeviceList
             // 
