@@ -2,9 +2,11 @@
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Services;
 using Siemens.Engineering;
+using Siemens.Engineering.Library;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -419,8 +421,37 @@ namespace Basic_Project_Generator.UserInterfaces
         /// <param name="e"></param>
         private void btn_OpenProject_Click(object sender, EventArgs e)
         {
+            try
+            {
+                var methodBase = MethodBase.GetCurrentMethod();
+                _traceWriter.Write(methodBase.Name);
 
+                var canOpenProject = true;
+
+                if (!string.IsNullOrEmpty(_projectGeneratorService.GetCurrentProjectName()))
+                {
+                    canOpenProject = CheckProjectModified();
+                }
+
+                if (canOpenProject)
+                {
+                    CloseProject();
+
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    _projectGeneratorService.OpenProject();
+
+                    ManageUiState();
+
+                    Cursor.Current = Cursors.Default;
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write(exception.Message);
+            }
         }
+
 
         /// <summary>
         /// Load a open project from connected instance -> see 'DoConnectTiaPortal'
@@ -849,9 +880,6 @@ namespace Basic_Project_Generator.UserInterfaces
         #endregion // Compile
 
        
-
-
-
         #region Custom
         private void LoadModuleCatalog()
         {
@@ -1067,8 +1095,24 @@ namespace Basic_Project_Generator.UserInterfaces
             txb_Version.Text = string.Empty;
         }
 
+        #region Library
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+            var methodBase = MethodBase.GetCurrentMethod();
+            _traceWriter.Write(methodBase.Name);
+
+           
+            _projectGeneratorService.OpenLibrary();
+
+           
+        }
+        #endregion
+
         #endregion
 
         #endregion // methods
-    }
+
+
+}
 }

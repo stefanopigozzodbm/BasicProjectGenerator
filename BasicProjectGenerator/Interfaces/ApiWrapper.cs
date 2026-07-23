@@ -5,6 +5,7 @@ using Siemens.Engineering.Compiler;
 using Siemens.Engineering.Hmi;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.HW.Features;
+using Siemens.Engineering.Library;
 using Siemens.Engineering.SW;
 using System;
 using System.Collections.Generic;
@@ -241,6 +242,20 @@ namespace Basic_Project_Generator.Interfaces
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
             return CurrentTiaPortalProcess != null ? CurrentTiaPortalProcess.Id.ToString() : string.Empty;
+        }
+
+
+        /// <summary>
+        /// Open User Global Library
+        /// </summary>
+        /// <param name="caller"></param>
+        public bool DoOpenLibrary(string path, [CallerMemberName] string caller = "")
+        {
+
+            FileInfo fileInfo = new FileInfo(path); 
+
+            UserGlobalLibrary userLib = TiaPortal.GlobalLibraries.Open(fileInfo, OpenMode.ReadOnly);
+            return true;
         }
 
         #endregion // TIA Portal

@@ -1,6 +1,7 @@
 ﻿using Basic_Project_Generator.Interfaces;
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.UserInterfaces;
+using Siemens.Engineering.Library;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -62,6 +63,12 @@ namespace Basic_Project_Generator.Services
         }
 
         public string SelectedProject
+        {
+            get;
+            set;
+        }
+
+        public string SelectedLibrary
         {
             get;
             set;
@@ -332,6 +339,31 @@ namespace Basic_Project_Generator.Services
         }
 
         /// <summary>
+        /// Open a file dialog and retrieve all *.ap* files to select a project file
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <returns></returns>
+        private bool SelectLibrary([CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var result = false;
+            SelectedLibrary = string.Empty;
+            var fileSearch = new OpenFileDialog
+            {
+                Filter = "TIA Portal V21 Library|*.al21",
+                RestoreDirectory = true
+            };
+            if (DialogResult.OK == fileSearch.ShowDialog())
+            {
+                SelectedLibrary = fileSearch.FileName;
+                result = true;
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Load a open project from connected instance -> see 'DoConnectTiaPortal'
         /// </summary>
         /// <param name="caller"></param>
@@ -402,6 +434,36 @@ namespace Basic_Project_Generator.Services
             }
             return result;
         }
+
+
+        /// <summary>
+        /// Open User Global Library 
+        /// </summary>
+        /// <param name="caller"></param>
+        public bool OpenLibrary([CallerMemberName] string caller = "")
+        {
+
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var result = false;
+            if (SelectLibrary())
+            {
+                if (_apiWrapper.DoOpenLibrary(SelectedLibrary))
+                {
+                    result = true;
+                }
+            }
+            return result;
+
+           
+
+        }
+
+        /// <summary>
+        /// Close a project
+        /// </summary>
+        /// <param name="caller"></param>
 
         #endregion // TIA Portal Project
 

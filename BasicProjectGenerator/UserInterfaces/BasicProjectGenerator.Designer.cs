@@ -94,6 +94,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Siemens = new System.Windows.Forms.TabPage();
             this.HW_Other = new System.Windows.Forms.TabPage();
             this.Tag = new System.Windows.Forms.TabPage();
+            this.button1 = new System.Windows.Forms.Button();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -102,6 +103,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.HW_Siemens.SuspendLayout();
+            this.HW_Other.SuspendLayout();
             this.SuspendLayout();
             // 
             // grb_TiaPortal
@@ -521,7 +523,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_Compile.Controls.Add(this.cob_DeviceList);
             this.grb_Compile.Controls.Add(this.lib_DeviceList);
             this.grb_Compile.Controls.Add(this.lab_DeviceList);
-            this.grb_Compile.Location = new System.Drawing.Point(854, 17);
+            this.grb_Compile.Location = new System.Drawing.Point(854, 6);
             this.grb_Compile.Name = "grb_Compile";
             this.grb_Compile.Size = new System.Drawing.Size(211, 384);
             this.grb_Compile.TabIndex = 3;
@@ -592,9 +594,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddModule.Controls.Add(this.btn_AddModule);
             this.grb_AddModule.Controls.Add(this.label2);
             this.grb_AddModule.Controls.Add(this.cob_ModuleTemplates);
-            this.grb_AddModule.Location = new System.Drawing.Point(655, 17);
+            this.grb_AddModule.Location = new System.Drawing.Point(655, 6);
             this.grb_AddModule.Name = "grb_AddModule";
-            this.grb_AddModule.Size = new System.Drawing.Size(193, 157);
+            this.grb_AddModule.Size = new System.Drawing.Size(193, 168);
             this.grb_AddModule.TabIndex = 5;
             this.grb_AddModule.TabStop = false;
             this.grb_AddModule.Text = "Add PLC Module (Manual)";
@@ -718,6 +720,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // HW_Other
             // 
+            this.HW_Other.Controls.Add(this.button1);
             this.HW_Other.Location = new System.Drawing.Point(4, 22);
             this.HW_Other.Name = "HW_Other";
             this.HW_Other.Padding = new System.Windows.Forms.Padding(3);
@@ -735,6 +738,16 @@ namespace Basic_Project_Generator.UserInterfaces
             this.Tag.TabIndex = 2;
             this.Tag.Text = "Tag";
             this.Tag.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(24, 32);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // BasicProjectGenerator
             // 
@@ -762,6 +775,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.groupBox1.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.HW_Siemens.ResumeLayout(false);
+            this.HW_Other.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -832,6 +846,7 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.TabPage HW_Siemens;
         private System.Windows.Forms.TabPage HW_Other;
         private System.Windows.Forms.TabPage Tag;
+        private System.Windows.Forms.Button button1;
     }
 }
 
