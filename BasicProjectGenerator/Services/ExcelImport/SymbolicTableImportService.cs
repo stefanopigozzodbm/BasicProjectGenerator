@@ -119,7 +119,7 @@ namespace Basic_Project_Generator.Services
                     }
 
                     // Solo per moduli Safety di ingressi: accumulo Descrizione1/Pin1/Pin2 delle righe "I"
-                    if (currentItem.IsSafetyModule && category == AddressCategory.DigitalInput)
+                    if (currentItem.IsSafetyModule && (category == AddressCategory.DigitalInput || category == AddressCategory.DigitalOutput))
                     {
                         var description = GetCellText(row, ColumnDescrizione1);
                         var pin1Raw = GetCellText(row, ColumnPin1);
@@ -165,7 +165,7 @@ namespace Basic_Project_Generator.Services
             foreach (var reserveRow in reserveRows)
             {
                 if (TryGetChannelFromAddress(reserveRow.Indirizzo, out var reserveChannel))
-                // fatto cosi se non c'è numero su pin 1... guarda indirizzo !!!! nel caso di 16 ingressi safety ex 12200 NON andrebbe bene
+                // fatto cosi se non c'è numero su pin 1... guarda indirizzo !!!! nel caso di 16 ingressi safety ex s71200 NON andrebbe bene
                 {
                     reserveChannelNumbers.Add(reserveChannel);
                     _traceWriter.Write("RISERVA/RESERVE rilevata: '" + reserveRow.Description + "' su indirizzo " + reserveRow.Indirizzo + " -> canale " + reserveChannel);
@@ -215,7 +215,7 @@ namespace Basic_Project_Generator.Services
                         ChannelNumber = channelNumber,
                         FailsafeSensorEvaluation = (UInt64)evaluation,
                         FailsafeSensorSupply = (UInt64)sensorSupply,
-                        Failsafe_Activated = true
+                        FailsafeActivated = true
                     });
                 }
             }
@@ -232,7 +232,7 @@ namespace Basic_Project_Generator.Services
                     ChannelNumber = reserveChannel,
                     FailsafeSensorEvaluation = 0,
                     FailsafeSensorSupply = 8,
-                    Failsafe_Activated = false
+                    FailsafeActivated = false
                 });
             }
 

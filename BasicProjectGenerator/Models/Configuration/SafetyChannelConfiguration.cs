@@ -1,5 +1,6 @@
-﻿//classe per oggetto che descrive la configurazione safety di un singolo canale di un modulo F-DI
+﻿//classe per oggetto che descrive la configurazione safety di un singolo canale di un modulo F-DI / F-DO
 //probabilmente non funziona con s71200 in quanto non ci sono attributi sul channel safety cambiabili da openness
+using Siemens.Engineering.HW;
 using System;
 
 namespace Basic_Project_Generator.Models
@@ -13,8 +14,13 @@ namespace Basic_Project_Generator.Models
         // Failsafe_SensorEvaluation = 3 -> (Safety mat evalutation)
         public UInt64 FailsafeSensorEvaluation { get; set; } 
       
-        public Boolean Failsafe_Activated { get; set; }
+        public Boolean FailsafeActivated { get; set; }
 
         public UInt64 FailsafeSensorSupply { get; set; }      // 0-7 = sensor supply N, 8 = external
+
+        public Boolean FailsafeActivatedLightTest { get; set; } = true; //default per moduli F-DO
+
+        public Boolean FailsafeDiagnosisWireBreak { get; set; } = true; //default per moduli F-DO
+
     }
 }

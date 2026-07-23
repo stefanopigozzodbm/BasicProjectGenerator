@@ -1,4 +1,5 @@
-﻿using Siemens.Collaboration.Net.Logging;
+﻿using NPOI.SS.Formula.Functions;
+using Siemens.Collaboration.Net.Logging;
 using Siemens.Engineering;
 using Siemens.Engineering.Compiler;
 using Siemens.Engineering.Hmi;
@@ -782,7 +783,7 @@ namespace Basic_Project_Generator.Interfaces
                             if (methodBase.ReflectedType != null)
                             {
                                 Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception+ "Slot: "+ slot);
-                                _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception.Message + "Slot: " + slot);
+                                _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " \n\rException: " + exception.Message + "Slot: " + slot + " \n\rGià Occupato" );
                             }
                             // Slot non valido per questo modulo -> provo il successivo
                         }
@@ -823,12 +824,25 @@ namespace Basic_Project_Generator.Interfaces
                     var channel = channelHolder.Channels[channelConfig.ChannelNumber];
 
                     //il problme anasce dal fatto che se disattivo canale non posso più accedere al sensor evalutation
-                    if (channelConfig.Failsafe_Activated) // necessario perchè nel momento che si disattiva un canale automaticamente gli attributi Failsafe_SensorEvaluation e Failsafe_SensorSupply NON sono più accessibili e genererebbe una eccezione
+                    if (channelConfig.FailsafeActivated) // necessario perchè nel momento che si disattiva un canale automaticamente gli attributi Failsafe_SensorEvaluation e Failsafe_SensorSupply NON sono più accessibili e genererebbe una eccezione
                     {
-                        channel.SetAttribute("Failsafe_SensorEvaluation", channelConfig.FailsafeSensorEvaluation);
-                        channel.SetAttribute("Failsafe_SensorSupply", channelConfig.FailsafeSensorSupply);
+                        
+
+                        var ioType = channel.GetAttribute("IoType")?.ToString(); 
+                        if (ioType == "Output")  //scrivo parametri canale di uscita solo se il modulo è safe uscite
+                        {
+                            channel.SetAttribute("Failsafe_ActivatedLightTest", channelConfig.FailsafeActivatedLightTest);
+                            channel.SetAttribute("Failsafe_DiagnosisWireBreak", channelConfig.FailsafeDiagnosisWireBreak);
+                        }
+                        else if (ioType == "Input") //scrivo parametri canale di ingresso solo se il modulo è safe ingressi
+                        {
+                            channel.SetAttribute("Failsafe_SensorEvaluation", channelConfig.FailsafeSensorEvaluation);
+                            channel.SetAttribute("Failsafe_SensorSupply", channelConfig.FailsafeSensorSupply);
+                           
+                        }
+                        
                     }
-                    channel.SetAttribute("Failsafe_Activated", channelConfig.Failsafe_Activated);
+                    channel.SetAttribute("Failsafe_Activated", channelConfig.FailsafeActivated);
 
                     _traceWriter.Write("Channel " + channelConfig.ChannelNumber + " su " + moduleDeviceItem.Name +
                         ": Failsafe_SensorEvaluation=" + channelConfig.FailsafeSensorEvaluation +
