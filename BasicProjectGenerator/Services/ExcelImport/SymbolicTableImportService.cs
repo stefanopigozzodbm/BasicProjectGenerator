@@ -1,8 +1,10 @@
 ﻿using Basic_Project_Generator.Interfaces;
 using Basic_Project_Generator.Models;
 using NPOI.SS.UserModel;
+using Siemens.Engineering.HW;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -34,7 +36,7 @@ namespace Basic_Project_Generator.Services
         {
             var result = new List<ImportedSymbolItem>();
             ImportedSymbolItem currentItem = null;
-            var currentSafetyRows = new List<(string Description, int Pin1, string Pin2Raw)>();
+            var currentSafetyRows = new List<(string Description, string Pin1Raw, string Pin2Raw, string Indirizzo)>();
 
             using (var stream = File.OpenRead(filePath))
             {
@@ -52,7 +54,7 @@ namespace Basic_Project_Generator.Services
                     {
                         // Prima di passare alla scheda successiva, finalizzo i canali Safety di quella precedente
                         FinalizeSafetyChannels(currentItem, currentSafetyRows);
-                        currentSafetyRows = new List<(string, int, string)>();
+                        currentSafetyRows = new List<(string, string, string, string)>();
 
                         currentItem = new ImportedSymbolItem
                         {
@@ -123,9 +125,9 @@ namespace Basic_Project_Generator.Services
                         var pin1Raw = GetCellText(row, ColumnPin1);
                         var pin2Raw = GetCellText(row, ColumnPin2);
 
-                        if (!string.IsNullOrWhiteSpace(description) && int.TryParse(pin1Raw, out var pin1))
+                        if (!string.IsNullOrWhiteSpace(description))
                         {
-                            currentSafetyRows.Add((description, pin1, pin2Raw));
+                            currentSafetyRows.Add((description, pin1Raw, pin2Raw, indirizzo));
                         }
                     }
                 }
@@ -148,45 +150,107 @@ namespace Basic_Project_Generator.Services
         /// - 1 sola occorrenza -> canale singolo (Evaluation=0)
         /// - Per ogni occorrenza, Failsafe_SensorSupply = numero del canale se Pin2 è popolato in quella riga, altrimenti 8 (esterno)
         /// </summary>
-        private void FinalizeSafetyChannels(ImportedSymbolItem item, List<(string Description, int Pin1, string Pin2Raw)> rows)
+        private void FinalizeSafetyChannels(ImportedSymbolItem item, List<(string Description, string Pin1Raw, string Pin2Raw, string Indirizzo)> rows)
         {
             if (item == null || !item.IsSafetyModule || rows.Count == 0)
             {
                 return;
             }
 
+            var reserveRows = rows
+                .Where(r => ReserveKeywords.Any(keyword => string.Equals(r.Description?.Trim(), keyword, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            var reserveChannelNumbers = new List<int>();
+            foreach (var reserveRow in reserveRows)
+            {
+                if (TryGetChannelFromAddress(reserveRow.Indirizzo, out var reserveChannel))
+                // fatto cosi se non c'è numero su pin 1... guarda indirizzo !!!! nel caso di 16 ingressi safety ex 12200 NON andrebbe bene
+                {
+                    reserveChannelNumbers.Add(reserveChannel);
+                    _traceWriter.Write("RISERVA/RESERVE rilevata: '" + reserveRow.Description + "' su indirizzo " + reserveRow.Indirizzo + " -> canale " + reserveChannel);
+                }
+                else
+                {
+                    _traceWriter.Write("RISERVA/RESERVE su '" + item.Name + "': impossibile determinare il canale dall'indirizzo '" + reserveRow.Indirizzo + "'.");
+                }
+            }
+
             var channels = new List<SafetyChannelConfiguration>();
 
-            foreach (var group in rows.GroupBy(r => r.Description))
+            // 1) Canali "normali": TUTTE le righe con Pin1 numerico, RISERVA comprese se per caso lo avessero
+            var normalRows = rows
+                .Where(r => int.TryParse(r.Pin1Raw, out _))
+                .Select(r => (r.Description, Pin1: int.Parse(r.Pin1Raw), r.Pin2Raw))
+                .ToList();
+
+            foreach (var group in normalRows.GroupBy(r => r.Description))
             {
                 var occurrences = group.ToList();
 
                 if (occurrences.Count > 2)
                 {
                     _traceWriter.Write("ATTENZIONE: il simbolo '" + group.Key + "' sul modulo '" + item.Name +
-                        "' compare " + occurrences.Count + " volte (atteso 1 o 2). Verificare manualmente l'Excel: " +
-                        "i canali verranno comunque configurati come 1oo2 equivalent, ma la configurazione potrebbe non essere corretta.");
+                        "' compare " + occurrences.Count + " volte (atteso 1 o 2). Verificare manualmente l'Excel.");
                 }
 
-                var evaluation = occurrences.Count >= 2 ? 1 : 0;
+                var evaluation = occurrences.Count >= 2 ? 1 : 0; 
+                /* se compare 2 volte valutazione canalae doppio altrimneti canale singolo
+                Failsafe_SensorEvaluation = 0 -> 1oo1 Evalutation
+                Failsafe_SensorEvaluation = 1-> 1oo2 evalutation, equivalent
+                Failsafe_SensorEvaluation = 2-> (1oo2 evalutation, non equivalent)
+                Failsafe_SensorEvaluation = 3-> (Safety mat evalutation)
+                */
+
 
                 foreach (var occurrence in occurrences)
                 {
                     var channelNumber = occurrence.Pin1 - 1;
                     var sensorSupply = !string.IsNullOrWhiteSpace(occurrence.Pin2Raw) ? channelNumber : 8;
 
+                    _traceWriter.Write("Canale normale: '" + group.Key + "' -> canale " + channelNumber + " (Evaluation=" + evaluation + ", Supply=" + sensorSupply + ")");
+
                     channels.Add(new SafetyChannelConfiguration
                     {
                         ChannelNumber = channelNumber,
                         FailsafeSensorEvaluation = (UInt64)evaluation,
                         FailsafeSensorSupply = (UInt64)sensorSupply,
-                     
+                        Failsafe_Activated = true
                     });
                 }
             }
 
+            // 2) I canali RISERVA/RESERVE hanno SEMPRE precedenza: rimuovo eventuali duplicati "normali" sullo stesso canale
+            channels.RemoveAll(c => reserveChannelNumbers.Contains(c.ChannelNumber));
+
+            foreach (var reserveChannel in reserveChannelNumbers)
+            {
+              //  _traceWriter.Write("Canale normale: '" + group.Key + "' -> canale " + channelNumber + " (Evaluation=" + evaluation + ", Supply=" + sensorSupply + ")");
+                
+                channels.Add(new SafetyChannelConfiguration
+                {
+                    ChannelNumber = reserveChannel,
+                    FailsafeSensorEvaluation = 0,
+                    FailsafeSensorSupply = 8,
+                    Failsafe_Activated = false
+                });
+            }
+
             item.SafetyChannels = channels;
         }
+        /// <summary>
+        /// Estrae il numero di canale dalla parte "bit" di un indirizzo digitale (es. "100.5" -> canale 5).
+        /// Usato per i canali RISERVA/RESERVE, dove il canale non si ricava da Pin1.
+        /// </summary>
+        private static bool TryGetChannelFromAddress(string indirizzo, out int channel)
+        {
+            channel = 0;
+            if (string.IsNullOrWhiteSpace(indirizzo)) return false;
+
+            var parts = indirizzo.Split('.');
+            return parts.Length >= 2 && int.TryParse(parts[1], out channel);
+        }
+
         private static bool TryGetDirection(string tipologia, out Direction direction)
         {
             switch (tipologia.Trim().ToUpperInvariant())

@@ -822,8 +822,12 @@ namespace Basic_Project_Generator.Interfaces
                 {
                     var channel = channelHolder.Channels[channelConfig.ChannelNumber];
 
-                    channel.SetAttribute("Failsafe_SensorEvaluation", channelConfig.FailsafeSensorEvaluation);
-                    channel.SetAttribute("Failsafe_SensorSupply", channelConfig.FailsafeSensorSupply);
+                    //il problme anasce dal fatto che se disattivo canale non posso più accedere al sensor evalutation
+                    if (channelConfig.Failsafe_Activated) // necessario perchè nel momento che si disattiva un canale automaticamente gli attributi Failsafe_SensorEvaluation e Failsafe_SensorSupply NON sono più accessibili e genererebbe una eccezione
+                    {
+                        channel.SetAttribute("Failsafe_SensorEvaluation", channelConfig.FailsafeSensorEvaluation);
+                        channel.SetAttribute("Failsafe_SensorSupply", channelConfig.FailsafeSensorSupply);
+                    }
                     channel.SetAttribute("Failsafe_Activated", channelConfig.Failsafe_Activated);
 
                     _traceWriter.Write("Channel " + channelConfig.ChannelNumber + " su " + moduleDeviceItem.Name +
@@ -832,7 +836,7 @@ namespace Basic_Project_Generator.Interfaces
                 }
                 catch (Exception exception)
                 {
-                    _traceWriter.Write("Errore impostando Safety su channel " + channelConfig.ChannelNumber + " di " + moduleDeviceItem.Name + ": " + exception.Message);
+                    _traceWriter.Write("Errore impostando Safety su channel " + channelConfig.ChannelNumber + " di " + moduleDeviceItem.Name + ": " + exception.Message, "Probabilmente modulo Safety S71200");
                 }
             }
         }
