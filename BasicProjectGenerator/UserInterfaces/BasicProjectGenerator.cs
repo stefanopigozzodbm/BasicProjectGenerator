@@ -174,9 +174,13 @@ namespace Basic_Project_Generator.UserInterfaces
             cob_ProcessIds.Enabled = cob_ProcessIds.Items.Count > 0;
             btn_ConnectTiaPortal.Enabled = cob_ProcessIds.Items.Count > 0 && (cob_ProcessIds.SelectedIndex > -1 && string.IsNullOrEmpty(currentProcessId) || currentProcessId != availableProcessId);
             btn_CloseTiaPortal.Enabled = !string.IsNullOrEmpty(currentProcessId);
-
-
-
+            cob_ModuleTemplates.Enabled = !string.IsNullOrEmpty(currentProcessId);
+            txb_ModuleName.Enabled = !string.IsNullOrEmpty(currentProcessId);
+            btn_AddModule.Enabled = !string.IsNullOrEmpty(currentProcessId);
+            btn_ImportSymbolicTable.Enabled = !string.IsNullOrEmpty(currentProcessId);
+            clb_ImportedItems.Enabled = !string.IsNullOrEmpty(currentProcessId);
+            btn_AddImportedModules.Enabled = !string.IsNullOrEmpty(currentProcessId);
+            tb_PlcIpAddress.Enabled = !string.IsNullOrEmpty(currentProcessId);
         }
 
         /// <summary>
@@ -415,35 +419,7 @@ namespace Basic_Project_Generator.UserInterfaces
         /// <param name="e"></param>
         private void btn_OpenProject_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var methodBase = MethodBase.GetCurrentMethod();
-                _traceWriter.Write(methodBase.Name);
 
-                var canOpenProject = true;
-
-                if (!string.IsNullOrEmpty(_projectGeneratorService.GetCurrentProjectName()))
-                {
-                    canOpenProject = CheckProjectModified();
-                }
-
-                if (canOpenProject)
-                {
-                    CloseProject();
-
-                    Cursor.Current = Cursors.WaitCursor;
-
-                    _projectGeneratorService.OpenProject();
-
-                    ManageUiState();
-
-                    Cursor.Current = Cursors.Default;
-                }
-            }
-            catch (Exception exception)
-            {
-                _traceWriter.Write(exception.Message);
-            }
         }
 
         /// <summary>

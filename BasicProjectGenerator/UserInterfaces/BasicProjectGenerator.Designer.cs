@@ -90,12 +90,18 @@ namespace Basic_Project_Generator.UserInterfaces
             this.clb_ImportedItems = new System.Windows.Forms.CheckedListBox();
             this.btn_AddImportedModules = new System.Windows.Forms.Button();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.HW_Siemens = new System.Windows.Forms.TabPage();
+            this.HW_Other = new System.Windows.Forms.TabPage();
+            this.Tag = new System.Windows.Forms.TabPage();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
             this.grb_Compile.SuspendLayout();
             this.grb_AddModule.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.HW_Siemens.SuspendLayout();
             this.SuspendLayout();
             // 
             // grb_TiaPortal
@@ -110,9 +116,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_TiaPortal.Controls.Add(this.btn_OpenTiaPortal);
             this.grb_TiaPortal.Controls.Add(this.rdb_WithoutUI);
             this.grb_TiaPortal.Controls.Add(this.rdb_WithUI);
-            this.grb_TiaPortal.Location = new System.Drawing.Point(12, 12);
+            this.grb_TiaPortal.Location = new System.Drawing.Point(6, 6);
             this.grb_TiaPortal.Name = "grb_TiaPortal";
-            this.grb_TiaPortal.Size = new System.Drawing.Size(211, 436);
+            this.grb_TiaPortal.Size = new System.Drawing.Size(211, 395);
             this.grb_TiaPortal.TabIndex = 0;
             this.grb_TiaPortal.TabStop = false;
             this.grb_TiaPortal.Text = "TIA Portal";
@@ -138,7 +144,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // lbl_Processes
             // 
             this.lbl_Processes.AutoSize = true;
-            this.lbl_Processes.Location = new System.Drawing.Point(18, 235);
+            this.lbl_Processes.Location = new System.Drawing.Point(18, 202);
             this.lbl_Processes.Name = "lbl_Processes";
             this.lbl_Processes.Size = new System.Drawing.Size(56, 13);
             this.lbl_Processes.TabIndex = 6;
@@ -146,7 +152,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // btn_ConnectTiaPortal
             // 
-            this.btn_ConnectTiaPortal.Location = new System.Drawing.Point(18, 289);
+            this.btn_ConnectTiaPortal.Location = new System.Drawing.Point(18, 256);
             this.btn_ConnectTiaPortal.Name = "btn_ConnectTiaPortal";
             this.btn_ConnectTiaPortal.Size = new System.Drawing.Size(173, 33);
             this.btn_ConnectTiaPortal.TabIndex = 8;
@@ -158,7 +164,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             this.cob_ProcessIds.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cob_ProcessIds.FormattingEnabled = true;
-            this.cob_ProcessIds.Location = new System.Drawing.Point(18, 250);
+            this.cob_ProcessIds.Location = new System.Drawing.Point(18, 217);
             this.cob_ProcessIds.Name = "cob_ProcessIds";
             this.cob_ProcessIds.Size = new System.Drawing.Size(173, 21);
             this.cob_ProcessIds.TabIndex = 7;
@@ -174,7 +180,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // btn_CloseTiaPortal
             // 
-            this.btn_CloseTiaPortal.Location = new System.Drawing.Point(21, 383);
+            this.btn_CloseTiaPortal.Location = new System.Drawing.Point(21, 350);
             this.btn_CloseTiaPortal.Name = "btn_CloseTiaPortal";
             this.btn_CloseTiaPortal.Size = new System.Drawing.Size(170, 33);
             this.btn_CloseTiaPortal.TabIndex = 9;
@@ -199,13 +205,13 @@ namespace Basic_Project_Generator.UserInterfaces
             this.rdb_WithoutUI.Name = "rdb_WithoutUI";
             this.rdb_WithoutUI.Size = new System.Drawing.Size(129, 17);
             this.rdb_WithoutUI.TabIndex = 1;
-            this.rdb_WithoutUI.TabStop = true;
             this.rdb_WithoutUI.Text = "Without user interface";
             this.rdb_WithoutUI.UseVisualStyleBackColor = true;
             // 
             // rdb_WithUI
             // 
             this.rdb_WithUI.AutoSize = true;
+            this.rdb_WithUI.Checked = true;
             this.rdb_WithUI.Location = new System.Drawing.Point(18, 25);
             this.rdb_WithUI.Name = "rdb_WithUI";
             this.rdb_WithUI.Size = new System.Drawing.Size(114, 17);
@@ -216,6 +222,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // grb_TiaPortalProject
             // 
+            this.grb_TiaPortalProject.Controls.Add(this.btn_LoadProject);
             this.grb_TiaPortalProject.Controls.Add(this.btn_CreateNewProject);
             this.grb_TiaPortalProject.Controls.Add(this.txb_TargetDirectory);
             this.grb_TiaPortalProject.Controls.Add(this.lbl_TargetDirectory);
@@ -225,11 +232,10 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_TiaPortalProject.Controls.Add(this.txb_AvailableProjectName);
             this.grb_TiaPortalProject.Controls.Add(this.btn_CloseProject);
             this.grb_TiaPortalProject.Controls.Add(this.btn_SaveProject);
-            this.grb_TiaPortalProject.Controls.Add(this.btn_LoadProject);
             this.grb_TiaPortalProject.Controls.Add(this.btn_OpenProject);
-            this.grb_TiaPortalProject.Location = new System.Drawing.Point(229, 12);
+            this.grb_TiaPortalProject.Location = new System.Drawing.Point(221, 6);
             this.grb_TiaPortalProject.Name = "grb_TiaPortalProject";
-            this.grb_TiaPortalProject.Size = new System.Drawing.Size(211, 436);
+            this.grb_TiaPortalProject.Size = new System.Drawing.Size(211, 395);
             this.grb_TiaPortalProject.TabIndex = 1;
             this.grb_TiaPortalProject.TabStop = false;
             this.grb_TiaPortalProject.Text = "TIA Portal project";
@@ -283,7 +289,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // lbl_ProjectName
             // 
             this.lbl_ProjectName.AutoSize = true;
-            this.lbl_ProjectName.Location = new System.Drawing.Point(18, 235);
+            this.lbl_ProjectName.Location = new System.Drawing.Point(18, 202);
             this.lbl_ProjectName.Name = "lbl_ProjectName";
             this.lbl_ProjectName.Size = new System.Drawing.Size(85, 13);
             this.lbl_ProjectName.TabIndex = 6;
@@ -291,7 +297,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // txb_AvailableProjectName
             // 
-            this.txb_AvailableProjectName.Location = new System.Drawing.Point(18, 250);
+            this.txb_AvailableProjectName.Location = new System.Drawing.Point(18, 217);
             this.txb_AvailableProjectName.Name = "txb_AvailableProjectName";
             this.txb_AvailableProjectName.ReadOnly = true;
             this.txb_AvailableProjectName.Size = new System.Drawing.Size(173, 20);
@@ -300,7 +306,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // btn_CloseProject
             // 
-            this.btn_CloseProject.Location = new System.Drawing.Point(18, 383);
+            this.btn_CloseProject.Location = new System.Drawing.Point(18, 350);
             this.btn_CloseProject.Name = "btn_CloseProject";
             this.btn_CloseProject.Size = new System.Drawing.Size(173, 33);
             this.btn_CloseProject.TabIndex = 10;
@@ -310,7 +316,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // btn_SaveProject
             // 
-            this.btn_SaveProject.Location = new System.Drawing.Point(18, 344);
+            this.btn_SaveProject.Location = new System.Drawing.Point(18, 311);
             this.btn_SaveProject.Name = "btn_SaveProject";
             this.btn_SaveProject.Size = new System.Drawing.Size(173, 33);
             this.btn_SaveProject.TabIndex = 9;
@@ -320,7 +326,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // btn_LoadProject
             // 
-            this.btn_LoadProject.Location = new System.Drawing.Point(18, 289);
+            this.btn_LoadProject.Location = new System.Drawing.Point(18, 257);
             this.btn_LoadProject.Name = "btn_LoadProject";
             this.btn_LoadProject.Size = new System.Drawing.Size(173, 33);
             this.btn_LoadProject.TabIndex = 8;
@@ -356,9 +362,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddNewDevice.Controls.Add(this.lbl_OrderNr);
             this.grb_AddNewDevice.Controls.Add(this.cob_DeviceTemplates);
             this.grb_AddNewDevice.Controls.Add(this.lbl_DeviceTemplates);
-            this.grb_AddNewDevice.Location = new System.Drawing.Point(446, 12);
+            this.grb_AddNewDevice.Location = new System.Drawing.Point(438, 6);
             this.grb_AddNewDevice.Name = "grb_AddNewDevice";
-            this.grb_AddNewDevice.Size = new System.Drawing.Size(211, 436);
+            this.grb_AddNewDevice.Size = new System.Drawing.Size(211, 395);
             this.grb_AddNewDevice.TabIndex = 2;
             this.grb_AddNewDevice.TabStop = false;
             this.grb_AddNewDevice.Text = "Add new device";
@@ -366,7 +372,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(18, 313);
+            this.label4.Location = new System.Drawing.Point(18, 300);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(58, 13);
             this.label4.TabIndex = 15;
@@ -374,7 +380,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // tb_PlcIpAddress
             // 
-            this.tb_PlcIpAddress.Location = new System.Drawing.Point(18, 329);
+            this.tb_PlcIpAddress.Location = new System.Drawing.Point(18, 316);
             this.tb_PlcIpAddress.Name = "tb_PlcIpAddress";
             this.tb_PlcIpAddress.Size = new System.Drawing.Size(173, 20);
             this.tb_PlcIpAddress.TabIndex = 14;
@@ -382,7 +388,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // txb_Station
             // 
-            this.txb_Station.Location = new System.Drawing.Point(18, 170);
+            this.txb_Station.Location = new System.Drawing.Point(18, 157);
             this.txb_Station.Name = "txb_Station";
             this.txb_Station.Size = new System.Drawing.Size(173, 20);
             this.txb_Station.TabIndex = 6;
@@ -391,7 +397,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // lab_Station
             // 
             this.lab_Station.AutoSize = true;
-            this.lab_Station.Location = new System.Drawing.Point(18, 155);
+            this.lab_Station.Location = new System.Drawing.Point(18, 142);
             this.lab_Station.Name = "lab_Station";
             this.lab_Station.Size = new System.Drawing.Size(69, 13);
             this.lab_Station.TabIndex = 5;
@@ -400,7 +406,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // ckb_IncludeFailsafe
             // 
             this.ckb_IncludeFailsafe.AutoSize = true;
-            this.ckb_IncludeFailsafe.Location = new System.Drawing.Point(18, 87);
+            this.ckb_IncludeFailsafe.Location = new System.Drawing.Point(18, 74);
             this.ckb_IncludeFailsafe.Name = "ckb_IncludeFailsafe";
             this.ckb_IncludeFailsafe.Size = new System.Drawing.Size(100, 17);
             this.ckb_IncludeFailsafe.TabIndex = 2;
@@ -410,7 +416,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // lab_TypeIdentifier
             // 
             this.lab_TypeIdentifier.AutoSize = true;
-            this.lab_TypeIdentifier.Location = new System.Drawing.Point(18, 275);
+            this.lab_TypeIdentifier.Location = new System.Drawing.Point(18, 262);
             this.lab_TypeIdentifier.Name = "lab_TypeIdentifier";
             this.lab_TypeIdentifier.Size = new System.Drawing.Size(73, 13);
             this.lab_TypeIdentifier.TabIndex = 11;
@@ -418,7 +424,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // txb_TypeIdentifier
             // 
-            this.txb_TypeIdentifier.Location = new System.Drawing.Point(18, 290);
+            this.txb_TypeIdentifier.Location = new System.Drawing.Point(18, 277);
             this.txb_TypeIdentifier.Name = "txb_TypeIdentifier";
             this.txb_TypeIdentifier.ReadOnly = true;
             this.txb_TypeIdentifier.Size = new System.Drawing.Size(173, 20);
@@ -427,7 +433,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // txb_DeviceName
             // 
-            this.txb_DeviceName.Location = new System.Drawing.Point(18, 130);
+            this.txb_DeviceName.Location = new System.Drawing.Point(18, 117);
             this.txb_DeviceName.Name = "txb_DeviceName";
             this.txb_DeviceName.Size = new System.Drawing.Size(173, 20);
             this.txb_DeviceName.TabIndex = 4;
@@ -436,7 +442,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // lbl_DeviceName
             // 
             this.lbl_DeviceName.AutoSize = true;
-            this.lbl_DeviceName.Location = new System.Drawing.Point(18, 115);
+            this.lbl_DeviceName.Location = new System.Drawing.Point(18, 102);
             this.lbl_DeviceName.Name = "lbl_DeviceName";
             this.lbl_DeviceName.Size = new System.Drawing.Size(70, 13);
             this.lbl_DeviceName.TabIndex = 3;
@@ -445,7 +451,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // btn_AddNewDevice
             // 
             this.btn_AddNewDevice.BackColor = System.Drawing.Color.LightBlue;
-            this.btn_AddNewDevice.Location = new System.Drawing.Point(21, 397);
+            this.btn_AddNewDevice.Location = new System.Drawing.Point(21, 350);
             this.btn_AddNewDevice.Name = "btn_AddNewDevice";
             this.btn_AddNewDevice.Size = new System.Drawing.Size(173, 33);
             this.btn_AddNewDevice.TabIndex = 13;
@@ -455,7 +461,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // txb_Version
             // 
-            this.txb_Version.Location = new System.Drawing.Point(18, 250);
+            this.txb_Version.Location = new System.Drawing.Point(18, 237);
             this.txb_Version.Name = "txb_Version";
             this.txb_Version.Size = new System.Drawing.Size(173, 20);
             this.txb_Version.TabIndex = 10;
@@ -464,7 +470,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // txb_OrderNr
             // 
-            this.txb_OrderNr.Location = new System.Drawing.Point(18, 210);
+            this.txb_OrderNr.Location = new System.Drawing.Point(18, 197);
             this.txb_OrderNr.Name = "txb_OrderNr";
             this.txb_OrderNr.Size = new System.Drawing.Size(173, 20);
             this.txb_OrderNr.TabIndex = 8;
@@ -474,7 +480,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // lbl_Version
             // 
             this.lbl_Version.AutoSize = true;
-            this.lbl_Version.Location = new System.Drawing.Point(18, 235);
+            this.lbl_Version.Location = new System.Drawing.Point(18, 222);
             this.lbl_Version.Name = "lbl_Version";
             this.lbl_Version.Size = new System.Drawing.Size(42, 13);
             this.lbl_Version.TabIndex = 9;
@@ -483,7 +489,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // lbl_OrderNr
             // 
             this.lbl_OrderNr.AutoSize = true;
-            this.lbl_OrderNr.Location = new System.Drawing.Point(18, 195);
+            this.lbl_OrderNr.Location = new System.Drawing.Point(18, 182);
             this.lbl_OrderNr.Name = "lbl_OrderNr";
             this.lbl_OrderNr.Size = new System.Drawing.Size(71, 13);
             this.lbl_OrderNr.TabIndex = 7;
@@ -515,9 +521,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_Compile.Controls.Add(this.cob_DeviceList);
             this.grb_Compile.Controls.Add(this.lib_DeviceList);
             this.grb_Compile.Controls.Add(this.lab_DeviceList);
-            this.grb_Compile.Location = new System.Drawing.Point(862, 12);
+            this.grb_Compile.Location = new System.Drawing.Point(854, 17);
             this.grb_Compile.Name = "grb_Compile";
-            this.grb_Compile.Size = new System.Drawing.Size(211, 436);
+            this.grb_Compile.Size = new System.Drawing.Size(211, 384);
             this.grb_Compile.TabIndex = 3;
             this.grb_Compile.TabStop = false;
             this.grb_Compile.Text = "Compile";
@@ -576,7 +582,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.lib_TraceWriterOutput.HorizontalScrollbar = true;
             this.lib_TraceWriterOutput.Location = new System.Drawing.Point(12, 454);
             this.lib_TraceWriterOutput.Name = "lib_TraceWriterOutput";
-            this.lib_TraceWriterOutput.Size = new System.Drawing.Size(1061, 251);
+            this.lib_TraceWriterOutput.Size = new System.Drawing.Size(1079, 251);
             this.lib_TraceWriterOutput.TabIndex = 4;
             // 
             // grb_AddModule
@@ -586,9 +592,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddModule.Controls.Add(this.btn_AddModule);
             this.grb_AddModule.Controls.Add(this.label2);
             this.grb_AddModule.Controls.Add(this.cob_ModuleTemplates);
-            this.grb_AddModule.Location = new System.Drawing.Point(663, 12);
+            this.grb_AddModule.Location = new System.Drawing.Point(655, 17);
             this.grb_AddModule.Name = "grb_AddModule";
-            this.grb_AddModule.Size = new System.Drawing.Size(193, 190);
+            this.grb_AddModule.Size = new System.Drawing.Size(193, 157);
             this.grb_AddModule.TabIndex = 5;
             this.grb_AddModule.TabStop = false;
             this.grb_AddModule.Text = "Add PLC Module (Manual)";
@@ -611,7 +617,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // btn_AddModule
             // 
-            this.btn_AddModule.Location = new System.Drawing.Point(6, 130);
+            this.btn_AddModule.Location = new System.Drawing.Point(6, 114);
             this.btn_AddModule.Name = "btn_AddModule";
             this.btn_AddModule.Size = new System.Drawing.Size(177, 33);
             this.btn_AddModule.TabIndex = 4;
@@ -641,9 +647,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.groupBox1.Controls.Add(this.btn_ImportSymbolicTable);
             this.groupBox1.Controls.Add(this.clb_ImportedItems);
             this.groupBox1.Controls.Add(this.btn_AddImportedModules);
-            this.groupBox1.Location = new System.Drawing.Point(663, 208);
+            this.groupBox1.Location = new System.Drawing.Point(655, 180);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(193, 240);
+            this.groupBox1.Size = new System.Drawing.Size(193, 221);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Add HW Conf from Excel";
@@ -664,13 +670,13 @@ namespace Basic_Project_Generator.UserInterfaces
             this.clb_ImportedItems.HorizontalScrollbar = true;
             this.clb_ImportedItems.Location = new System.Drawing.Point(6, 69);
             this.clb_ImportedItems.Name = "clb_ImportedItems";
-            this.clb_ImportedItems.Size = new System.Drawing.Size(177, 124);
+            this.clb_ImportedItems.Size = new System.Drawing.Size(177, 94);
             this.clb_ImportedItems.TabIndex = 1;
             this.clb_ImportedItems.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clb_ImportedItems_ItemCheck);
             // 
             // btn_AddImportedModules
             // 
-            this.btn_AddImportedModules.Location = new System.Drawing.Point(6, 201);
+            this.btn_AddImportedModules.Location = new System.Drawing.Point(6, 176);
             this.btn_AddImportedModules.Name = "btn_AddImportedModules";
             this.btn_AddImportedModules.Size = new System.Drawing.Size(177, 33);
             this.btn_AddImportedModules.TabIndex = 0;
@@ -683,19 +689,61 @@ namespace Basic_Project_Generator.UserInterfaces
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
             // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.HW_Siemens);
+            this.tabControl1.Controls.Add(this.HW_Other);
+            this.tabControl1.Controls.Add(this.Tag);
+            this.tabControl1.Location = new System.Drawing.Point(11, 12);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(1084, 436);
+            this.tabControl1.TabIndex = 8;
+            // 
+            // HW_Siemens
+            // 
+            this.HW_Siemens.Controls.Add(this.grb_TiaPortalProject);
+            this.HW_Siemens.Controls.Add(this.groupBox1);
+            this.HW_Siemens.Controls.Add(this.grb_Compile);
+            this.HW_Siemens.Controls.Add(this.grb_TiaPortal);
+            this.HW_Siemens.Controls.Add(this.grb_AddNewDevice);
+            this.HW_Siemens.Controls.Add(this.grb_AddModule);
+            this.HW_Siemens.Location = new System.Drawing.Point(4, 22);
+            this.HW_Siemens.Name = "HW_Siemens";
+            this.HW_Siemens.Padding = new System.Windows.Forms.Padding(3);
+            this.HW_Siemens.Size = new System.Drawing.Size(1076, 410);
+            this.HW_Siemens.TabIndex = 0;
+            this.HW_Siemens.Text = "HW_Siemens";
+            this.HW_Siemens.UseVisualStyleBackColor = true;
+            // 
+            // HW_Other
+            // 
+            this.HW_Other.Location = new System.Drawing.Point(4, 22);
+            this.HW_Other.Name = "HW_Other";
+            this.HW_Other.Padding = new System.Windows.Forms.Padding(3);
+            this.HW_Other.Size = new System.Drawing.Size(1076, 410);
+            this.HW_Other.TabIndex = 1;
+            this.HW_Other.Text = "HW_Other";
+            this.HW_Other.UseVisualStyleBackColor = true;
+            // 
+            // Tag
+            // 
+            this.Tag.Location = new System.Drawing.Point(4, 22);
+            this.Tag.Name = "Tag";
+            this.Tag.Padding = new System.Windows.Forms.Padding(3);
+            this.Tag.Size = new System.Drawing.Size(1076, 410);
+            this.Tag.TabIndex = 2;
+            this.Tag.Text = "Tag";
+            this.Tag.UseVisualStyleBackColor = true;
+            // 
             // BasicProjectGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1099, 716);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.grb_AddModule);
+            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.lib_TraceWriterOutput);
-            this.Controls.Add(this.grb_Compile);
-            this.Controls.Add(this.grb_AddNewDevice);
-            this.Controls.Add(this.grb_TiaPortalProject);
-            this.Controls.Add(this.grb_TiaPortal);
             this.MinimumSize = new System.Drawing.Size(250, 300);
             this.Name = "BasicProjectGenerator";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -712,6 +760,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddModule.ResumeLayout(false);
             this.grb_AddModule.PerformLayout();
             this.groupBox1.ResumeLayout(false);
+            this.tabControl1.ResumeLayout(false);
+            this.HW_Siemens.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -778,6 +828,10 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox tb_PlcIpAddress;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage HW_Siemens;
+        private System.Windows.Forms.TabPage HW_Other;
+        private System.Windows.Forms.TabPage Tag;
     }
 }
 
