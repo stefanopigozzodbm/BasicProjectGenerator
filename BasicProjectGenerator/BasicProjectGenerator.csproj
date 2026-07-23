@@ -193,6 +193,7 @@
     <Compile Include="Models\AccessLevel.cs" />
     <Compile Include="Models\AutoLogoff.cs" />
     <Compile Include="Models\Catalog.cs" />
+    <Compile Include="Models\Configuration\DeviceConfiguration.cs" />
     <Compile Include="Models\DeviceModel.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\DeviceItem.cs" />
@@ -200,9 +201,11 @@
     <Compile Include="Models\ExpModule.cs" />
     <Compile Include="Models\ImportedSymbolItem.cs" />
     <Compile Include="Models\ModuleCatalog.cs" />
+    <Compile Include="Models\Configuration\ModuleConfiguration.cs" />
     <Compile Include="Models\ModuleModel.cs" />
     <Compile Include="Models\PlcAccessLevel.cs" />
-    <Compile Include="Services\SymbolicTableImportService.cs" />
+    <Compile Include="Models\Configuration\SafetyChannelConfiguration.cs" />
+    <Compile Include="Services\ExcelImport\SymbolicTableImportService.cs" />
     <Compile Include="UserInterfaces\BasicProjectGenerator.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -278,13 +281,14 @@
     <Content Include="Assets\ModuleCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-	  <Content Include="Assets\PlcStartupSettings.xml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+    <Content Include="Assets\PlcStartupSettings.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

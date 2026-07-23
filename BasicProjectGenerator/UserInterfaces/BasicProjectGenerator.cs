@@ -718,19 +718,24 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 var catalogDevice = _projectGeneratorService.NewDevice;
                 var intPeriphName = catalogDevice.GetOnboardIoByPosition();
-
                 var startupAttributes = _projectGeneratorService.LoadPlcStartupSettings();
 
+                var config = new DeviceConfiguration
+                {
+                    TypeIdentifier = catalogDevice.TypeIdentifier,
+                    Name = catalogDevice.Name,
+                    DeviceName = catalogDevice.TypeName,
+                    CatalogDevice = catalogDevice,
+                    DigitalInputStartAddress = sourceItem?.DigitalInputStartAddress,
+                    DigitalOutputStartAddress = sourceItem?.DigitalOutputStartAddress,
+                    AnalogInputStartAddress = sourceItem?.AnalogInputStartAddress,
+                    AnalogOutputStartAddress = sourceItem?.AnalogOutputStartAddress,
+                    IntPeriphName = intPeriphName,
+                    IpAddress = tb_PlcIpAddress.Text.Trim(),
+                    StartupAttributes = startupAttributes
+                };
 
-                _projectGeneratorService.AddNewDevice(
-                    catalogDevice,
-                    sourceItem?.DigitalInputStartAddress,
-                    sourceItem?.DigitalOutputStartAddress,
-                    sourceItem?.AnalogInputStartAddress,
-                    sourceItem?.AnalogOutputStartAddress,
-                    intPeriphName,
-                    tb_PlcIpAddress.Text.Trim(),
-                    startupAttributes);
+                _projectGeneratorService.AddNewDevice(config);
 
                 Cursor.Current = Cursors.Default;
 
@@ -909,7 +914,14 @@ namespace Basic_Project_Generator.UserInterfaces
                 if (moduleItem != null)
                 {
                     Cursor.Current = Cursors.WaitCursor;
-                    var added = _projectGeneratorService.AddNewModule(moduleItem.TypeIdentifier, txb_ModuleName.Text.Trim());
+
+                    var config = new ModuleConfiguration
+                    {
+                        TypeIdentifier = moduleItem.TypeIdentifier,
+                        Name = txb_ModuleName.Text.Trim()
+                    };
+
+                    var added = _projectGeneratorService.AddNewModule(config);
                     Cursor.Current = Cursors.Default;
 
                     if (!added)
@@ -1010,8 +1022,18 @@ namespace Basic_Project_Generator.UserInterfaces
                     }
 
                     Cursor.Current = Cursors.WaitCursor;
-                    //var added = _projectGeneratorService.AddNewModule(item.TypeIdentifier, item.Name);
-                    var added = _projectGeneratorService.AddNewModule(item.TypeIdentifier, item.Name, item.InputStartAddress, item.OutputStartAddress, item.NewPotentialGroup);
+
+                    var config = new ModuleConfiguration
+                    {
+                        TypeIdentifier = item.TypeIdentifier,
+                        Name = item.Name,
+                        InputStartAddress = item.InputStartAddress,
+                        OutputStartAddress = item.OutputStartAddress,
+                        NewPotentialGroup = item.NewPotentialGroup,
+                        SafetyChannels = item.SafetyChannels
+                    };
+
+                    var added = _projectGeneratorService.AddNewModule(config);
                     Cursor.Current = Cursors.Default;
 
                     if (added) addedCount++;

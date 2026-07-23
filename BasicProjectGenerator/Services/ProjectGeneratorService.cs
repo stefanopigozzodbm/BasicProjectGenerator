@@ -19,6 +19,7 @@ namespace Basic_Project_Generator.Services
         private readonly TraceWriter _traceWriter;
         private readonly ApiWrapper _apiWrapper;
 
+        private readonly SymbolicTableImportService _symbolicTableImportService;
         #endregion // fields
 
         #region ctor
@@ -27,6 +28,8 @@ namespace Basic_Project_Generator.Services
         {
             _traceWriter = traceWriter;
             _apiWrapper = apiWrapper;
+            _symbolicTableImportService = new SymbolicTableImportService(_traceWriter);
+
             NewProject = new ProjectModel();
             DeviceModel = new DeviceModel
             {
@@ -428,12 +431,12 @@ namespace Basic_Project_Generator.Services
         /// </summary>
         /// <param name="device"></param>
         /// <param name="caller"></param>
-        public void AddNewDevice(Models.Device device,int? digitalInputStartAddress,int? digitalOutputStartAddress,int? analogInputStartAddress,int? analogOutputStartAddress,IReadOnlyDictionary<int, string> intPeriphName,string ipAddress, Dictionary<string, object> startupAttributes, [CallerMemberName] string caller = "")
+        public void AddNewDevice(DeviceConfiguration config, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
-            _apiWrapper.DoAddNewDevice(device.TypeIdentifier, device.Name, device.TypeName, device, digitalInputStartAddress, digitalOutputStartAddress, analogInputStartAddress, analogOutputStartAddress, intPeriphName, ipAddress, startupAttributes);
+            _apiWrapper.DoAddNewDevice(config);
         }
 
         /// <summary>
@@ -479,12 +482,12 @@ namespace Basic_Project_Generator.Services
 
 
 
-        public bool AddNewModule(string typeIdentifier, string name, int? inputStartAddress = null, int? outputStartAddress = null, bool newPotentialGroup = false, [CallerMemberName] string caller = "")
+        public bool AddNewModule(ModuleConfiguration config, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
-            return _apiWrapper.DoAddNewModule(typeIdentifier, name, inputStartAddress, outputStartAddress, newPotentialGroup);
+            return _apiWrapper.DoAddNewModule(config);
         }
 
         public Dictionary<string, object> LoadPlcStartupSettings([CallerMemberName] string caller = "")
@@ -540,8 +543,7 @@ namespace Basic_Project_Generator.Services
         #endregion // Compile
 
         #region TableImport
-        private readonly SymbolicTableImportService _symbolicTableImportService = new SymbolicTableImportService();
-
+  
         public List<ImportedSymbolItem> ImportSymbolicTable(string filePath, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();

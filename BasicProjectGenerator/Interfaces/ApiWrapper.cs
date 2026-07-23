@@ -435,22 +435,31 @@ namespace Basic_Project_Generator.Interfaces
         /// <param name="name"></param>
         /// <param name="deviceName"></param>
         /// <param name="caller"></param>
-        public void DoAddNewDevice(string typeIdentifier, string name, string deviceName,Basic_Project_Generator.Models.Device catalogDevice,int? digitalInputStartAddress, int? digitalOutputStartAddress,int? analogInputStartAddress, int? analogOutputStartAddress,IReadOnlyDictionary<int, string> intPeriphName,string ipAddress, Dictionary<string, object> startupAttributes, [CallerMemberName] string caller = "")
+        /* in analogia a DoAddNewModule ma per i parametri di configurazione del PLC (doaddnewdevice) 
+         * public void DoAddNewDevice(string typeIdentifier, string name, 
+         * string deviceName,Basic_Project_Generator.Models.Device catalogDevice,
+         * int? digitalInputStartAddress, int? digitalOutputStartAddress,int? analogInputStartAddress, 
+         * int? analogOutputStartAddress,IReadOnlyDictionary<int, string> intPeriphName,string ipAddress, 
+         * Dictionary<string, object> startupAttributes, [CallerMemberName] string caller = "")
+        */
+
+        public void DoAddNewDevice(Basic_Project_Generator.Models.DeviceConfiguration config, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
-            Device = CurrentProject.Devices.CreateWithItem(typeIdentifier, name, deviceName);
+            Device = CurrentProject.Devices.CreateWithItem(config.TypeIdentifier, config.Name, config.DeviceName);
             IsModified = CurrentProject.IsModified;
 
             try
             {
                 if (Device != null)
                 {
-                    _traceWriter.Write("Assign IO Add to: " + name);
-                    SetDeviceAddresses(catalogDevice, digitalInputStartAddress, digitalOutputStartAddress, analogInputStartAddress, analogOutputStartAddress, intPeriphName);
-                    SetDeviceIpAddress(Device.DeviceItems[1], ipAddress);
-                    SetDeviceAttributes(Device.DeviceItems[1], startupAttributes);
+                    _traceWriter.Write("Assign IO Add to: " + config.Name);
+                    SetDeviceAddresses(config.CatalogDevice, config.DigitalInputStartAddress, config.DigitalOutputStartAddress,
+                        config.AnalogInputStartAddress, config.AnalogOutputStartAddress, config.IntPeriphName);
+                    SetDeviceIpAddress(Device.DeviceItems[1], config.IpAddress);
+                    SetDeviceAttributes(Device.DeviceItems[1], config.StartupAttributes);
                     
                    
                 }
@@ -725,67 +734,108 @@ namespace Basic_Project_Generator.Interfaces
 
 
         //non compresa CPU -> vd DoAddNewDevice
-        public bool DoAddNewModule(string typeIdentifier, string name, int? inputStartAddress = null, int? outputStartAddress = null, bool newPotentialGroup = false,[CallerMemberName] string caller = "")
+        /*vecchia implementazione prima del 23/07/2926, i parametri passati erano tutti
+         * separati ma la cosa risultava troppo disordinata
+         *...public bool DoAddNewModule(string typeIdentifier, string name, 
+         *int? inputStartAddress = null, int? outputStartAddress = null, 
+         *bool newPotentialGroup = false,[CallerMemberName] string caller = "")*/
+
+        public bool DoAddNewModule(Basic_Project_Generator.Models.ModuleConfiguration config, [CallerMemberName] string caller = "")
+
         {
-        var methodBase = MethodBase.GetCurrentMethod();
-        if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
-        var result = false;
+            var result = false;
 
-        var rack = Device?.DeviceItems.FirstOrDefault();
-        if (rack != null)
-        {
-            var occupiedSlots = rack.DeviceItems.Select(di => di.PositionNumber).ToList();
-
-            for (var slot = 1; slot <= 20; slot++)
+            var rack = Device?.DeviceItems.FirstOrDefault();
+            if (rack != null)
             {
-                if (occupiedSlots.Contains(slot)) continue;
+                var occupiedSlots = rack.DeviceItems.Select(di => di.PositionNumber).ToList();
 
+                for (var slot = 1; slot <= 20; slot++)
+                {
+                    if (occupiedSlots.Contains(slot)) continue;
+
+                    try
+                    {
+                        var newModule = rack.PlugNew(config.TypeIdentifier, config.Name, slot);
+                        if (newModule != null)
+                        {
+                                        IsModified = true;
+                                        result = true;
+                                        _traceWriter.Write("Module plugged in slot " + slot);
+
+                                        SetModuleAddresses(newModule, config.InputStartAddress, config.OutputStartAddress);
+
+                                        var deviceItemIndex = slot + 1;
+                                        SetModulePotentialGroup(config.NewPotentialGroup ? (ulong)1 : 0, deviceItemIndex);
+
+                                        SetModuleSafetyChannels(newModule, config.SafetyChannels);
+
+                                        break;
+                                    }
+                    }
+                    catch (Exception exception)
+                    {
+
+                            if (methodBase.ReflectedType != null)
+                            {
+                                Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception+ "Slot: "+ slot);
+                                _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception.Message + "Slot: " + slot);
+                            }
+                            // Slot non valido per questo modulo -> provo il successivo
+                        }
+                    }
+
+                if (!result)
+                {
+                    _traceWriter.Write("No free/valid slot found for module " + config.Name);
+                }
+            }
+            return result;
+            }
+
+        /// <summary>
+        /// Imposta Failsafe_SensorEvaluation e Failsafe_SensorSupply sui canali indicati di un modulo Safety appena innestato.
+        /// Percorso: moduleDeviceItem.DeviceItems[0].Channels[channelNumber] (confermato via TIA Openness Explorer
+        /// per F-DI 8x24VDC HF; se in futuro un altro modulo Safety avesse struttura diversa, va riverificato).
+        /// </summary>
+        private void SetModuleSafetyChannels(DeviceItem moduleDeviceItem, List<Basic_Project_Generator.Models.SafetyChannelConfiguration> safetyChannels)
+        {
+            if (safetyChannels == null || safetyChannels.Count == 0) return;
+
+            DeviceItem channelHolder;
+            try
+            {
+                channelHolder = moduleDeviceItem.DeviceItems[0];
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Impossibile accedere a DeviceItems[0] su " + moduleDeviceItem.Name + " per configurazione Safety: " + exception.Message);
+                return;
+            }
+
+            foreach (var channelConfig in safetyChannels)
+            {
                 try
                 {
-                    var newModule = rack.PlugNew(typeIdentifier, name, slot);
-                    if (newModule != null)
-                    {
-                        IsModified = true;
-                        result = true;
-                        _traceWriter.Write("Module plugged in slot " + slot);
+                    var channel = channelHolder.Channels[channelConfig.ChannelNumber];
 
-                        //scrittua degli indirizzi
-                        SetModuleAddresses(newModule, inputStartAddress, outputStartAddress);
+                    channel.SetAttribute("Failsafe_SensorEvaluation", channelConfig.FailsafeSensorEvaluation);
+                    channel.SetAttribute("Failsafe_SensorSupply", channelConfig.FailsafeSensorSupply);
+                    channel.SetAttribute("Failsafe_Activated", channelConfig.Failsafe_Activated);
 
-                        //scrittua del gruppo di potenziale (solo per et200sp)
-                        var deviceItemIndex = slot + 1;
-                        SetModulePotentialGroup(newPotentialGroup ? (ulong)1 : 0, deviceItemIndex);
-
-                            //scrittura della configurazione canali (solo per moduli safety)
-                            //TiaPortal.Projects[0].Devices[0].DeviceItems[3].DeviceItems[0].Channels[0]
-
-                            DumpAllAttributes(Device.DeviceItems[1], "sensor");//metodo di debus per ricerca
-
-
-
-                            break;
-                    }
+                    _traceWriter.Write("Channel " + channelConfig.ChannelNumber + " su " + moduleDeviceItem.Name +
+                        ": Failsafe_SensorEvaluation=" + channelConfig.FailsafeSensorEvaluation +
+                        ", Failsafe_SensorSupply=" + channelConfig.FailsafeSensorSupply);
                 }
                 catch (Exception exception)
                 {
-
-                        if (methodBase.ReflectedType != null)
-                        {
-                            Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception);
-                            _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception.Message);
-                        }
-                        // Slot non valido per questo modulo -> provo il successivo
-                    }
+                    _traceWriter.Write("Errore impostando Safety su channel " + channelConfig.ChannelNumber + " di " + moduleDeviceItem.Name + ": " + exception.Message);
                 }
-
-            if (!result)
-            {
-                _traceWriter.Write("No free/valid slot found for module " + name);
             }
         }
-        return result;
-    }
 
         /// <summary>
         /// Imposta l'indirizzo di start su un DeviceItem appena innestato.
@@ -793,65 +843,65 @@ namespace Basic_Project_Generator.Interfaces
         /// o TIA Openness Explorer sul proprio ambiente V21 prima di considerarli definitivi.
         /// </summary>
         private void SetModuleAddresses(DeviceItem deviceItem, int? inputStartAddress, int? outputStartAddress)
+{
+    if (!inputStartAddress.HasValue && !outputStartAddress.HasValue) return;
+
+    // Per i moduli Safety, l'indirizzo delle Q può risultare non scrivibile via Openness:
+    // in quel caso l'unico modo per fissare l'indirizzo dell'uscita è impostare quello dell'Input corrispondente.
+    var outputAddressSetSuccessfully = false;
+    Siemens.Engineering.HW.Address inputAddressFallback = null;
+
+    foreach (var (owner, address) in GetAllAddressesWithOwner(deviceItem))
+    {
+        var ioType = address.GetAttribute("IoType")?.ToString();
+
+        if (ioType == "Input")
         {
-            if (!inputStartAddress.HasValue && !outputStartAddress.HasValue) return;
+            inputAddressFallback = address; // tengo traccia dell'ultimo Input trovato, come possibile fallback
 
-            // Per i moduli Safety, l'indirizzo delle Q può risultare non scrivibile via Openness:
-            // in quel caso l'unico modo per fissare l'indirizzo dell'uscita è impostare quello dell'Input corrispondente.
-            var outputAddressSetSuccessfully = false;
-            Siemens.Engineering.HW.Address inputAddressFallback = null;
-
-            foreach (var (owner, address) in GetAllAddressesWithOwner(deviceItem))
-            {
-                var ioType = address.GetAttribute("IoType")?.ToString();
-
-                if (ioType == "Input")
-                {
-                    inputAddressFallback = address; // tengo traccia dell'ultimo Input trovato, come possibile fallback
-
-                    if (inputStartAddress.HasValue)
-                    {
-                        try
-                        {
-                            address.SetAttribute("StartAddress", inputStartAddress.Value);
-                            _traceWriter.Write("Input start address set to " + inputStartAddress.Value + " on " + deviceItem.Name);
-                        }
-                        catch (Exception exception)
-                        {
-                            _traceWriter.Write("Unable to set input address on " + deviceItem.Name + ": " + exception.Message);
-                        }
-                    }
-                }
-                else if (ioType == "Output" && outputStartAddress.HasValue)
-                {
-                    try
-                    {
-                        address.SetAttribute("StartAddress", outputStartAddress.Value);
-                        _traceWriter.Write("Output start address set to " + outputStartAddress.Value + " on " + deviceItem.Name);
-                        outputAddressSetSuccessfully = true;
-                    }
-                    catch (Exception exception)
-                    {
-                        _traceWriter.Write("Output non scrivibile su " + deviceItem.Name + " (" + exception.Message + "), provo a impostare l'Input corrispondente (probabile modulo Safety).");
-                    }
-                }
-            }
-
-            // Fallback: la scrittura sull'Output è fallita ma l'Excel definisce Q per questo modulo -> imposto l'Input al posto della Q
-            if (outputStartAddress.HasValue && !outputAddressSetSuccessfully && inputAddressFallback != null)
+            if (inputStartAddress.HasValue)
             {
                 try
                 {
-                    inputAddressFallback.SetAttribute("StartAddress", outputStartAddress.Value);
-                    _traceWriter.Write("Modulo Safety: Output " + outputStartAddress.Value + " impostato via Input su " + deviceItem.Name);
+                    address.SetAttribute("StartAddress", inputStartAddress.Value);
+                    _traceWriter.Write("Input start address set to " + inputStartAddress.Value + " on " + deviceItem.Name);
                 }
                 catch (Exception exception)
                 {
-                    _traceWriter.Write("Impossibile impostare l'indirizzo (né Output né Input fallback) su " + deviceItem.Name + ": " + exception.Message);
+                    _traceWriter.Write("Unable to set input address on " + deviceItem.Name + ": " + exception.Message);
                 }
             }
         }
-     
+        else if (ioType == "Output" && outputStartAddress.HasValue)
+        {
+            try
+            {
+                address.SetAttribute("StartAddress", outputStartAddress.Value);
+                _traceWriter.Write("Output start address set to " + outputStartAddress.Value + " on " + deviceItem.Name);
+                outputAddressSetSuccessfully = true;
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Output non scrivibile su " + deviceItem.Name + " (" + exception.Message + "), provo a impostare l'Input corrispondente (probabile modulo Safety).");
+            }
+        }
+    }
+
+    // Fallback: la scrittura sull'Output è fallita ma l'Excel definisce Q per questo modulo -> imposto l'Input al posto della Q
+    if (outputStartAddress.HasValue && !outputAddressSetSuccessfully && inputAddressFallback != null)
+    {
+        try
+        {
+            inputAddressFallback.SetAttribute("StartAddress", outputStartAddress.Value);
+            _traceWriter.Write("Modulo Safety: Output " + outputStartAddress.Value + " impostato via Input su " + deviceItem.Name);
+        }
+        catch (Exception exception)
+        {
+            _traceWriter.Write("Impossibile impostare l'indirizzo (né Output né Input fallback) su " + deviceItem.Name + ": " + exception.Message);
+        }
+    }
+}
+
 
         /// <summary>
         /// Imposta il Potential Group relativamente al modulo appena aggiunto
@@ -879,7 +929,7 @@ namespace Basic_Project_Generator.Interfaces
         {
             foreach (var address in deviceItem.Addresses)
             {
-              
+
                 yield return (deviceItem, address);
             }
 
@@ -968,163 +1018,163 @@ namespace Basic_Project_Generator.Interfaces
         }
 
 
-        #endregion // Device
+#endregion // Device
 
 
-        #region Debug
+#region Debug
 
-        /// <summary>
-        /// METODO DI DEBUG: stampa tutti gli attributi disponibili su un DeviceItem,
-        /// utile per scoprire il nome esatto di un parametro senza aprire TIA Openness Explorer.
-        /// </summary>
-        private void DumpAllAttributes(DeviceItem deviceItem, string filter = null)
-        {
-           // _traceWriter.Write("--- Attributi di " + deviceItem.Name + " ---");
-            Debug.WriteLine("DumpAllAttributes: " + "--- Attributi di " + deviceItem.Name + " ---");
-
-            foreach (var attributeInfo in deviceItem.GetAttributeInfos())
-            {
-                if (filter == null || attributeInfo.Name.ToLowerInvariant().Contains(filter.ToLowerInvariant()))
-                {
-                    var supportedTypes = string.Join(", ", attributeInfo.SupportedTypes.Select(t => t.Name));
-
-
-                    try
-                    {
-                        
-                        var value = deviceItem.GetAttribute(attributeInfo.Name);
-                        Debug.WriteLine("DumpAllAttributes: " + attributeInfo.Name + " = " + value + "  [SupportedTypes: " + supportedTypes + "]");
-                        //_traceWriter.Write(attributeInfo.Name + " = " + value + "  [Type: " + attributeInfo.Type + "]");
-                    }
-                    catch
-                    {
-                        Debug.WriteLine("DumpAllAttributes: " + attributeInfo.Name + " = (non leggibile)  [SupportedTypes: " + supportedTypes + "]");
-                        //_traceWriter.Write(attributeInfo.Name + " = (non leggibile)  [Type: " + attributeInfo.Type + "]");
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region Compile
-
-        /// <summary>
-        /// Compile a device
-        /// </summary>
-        /// <param name="deviceItem"></param>
-        /// <param name="caller"></param>
-        public void DoCompileDevice(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
+/// <summary>
+/// METODO DI DEBUG: stampa tutti gli attributi disponibili su un DeviceItem,
+/// utile per scoprire il nome esatto di un parametro senza aprire TIA Openness Explorer.
+/// </summary>
+private void DumpAllAttributes(DeviceItem deviceItem, string filter = null)
 {
-    var methodBase = MethodBase.GetCurrentMethod();
-    if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+   // _traceWriter.Write("--- Attributi di " + deviceItem.Name + " ---");
+    Debug.WriteLine("DumpAllAttributes: " + "--- Attributi di " + deviceItem.Name + " ---");
 
-    var deviceNotFound = true;
-    foreach (var device in CurrentProject.Devices)
+    foreach (var attributeInfo in deviceItem.GetAttributeInfos())
     {
-        if (device.Name == deviceItem.DeviceName)
+        if (filter == null || attributeInfo.Name.ToLowerInvariant().Contains(filter.ToLowerInvariant()))
         {
-            var deviceItemComposition = device.DeviceItems;
-            foreach (var item in deviceItemComposition)
+            var supportedTypes = string.Join(", ", attributeInfo.SupportedTypes.Select(t => t.Name));
+
+
+            try
             {
-                if (item.Name == deviceItem.Name)
-                {
-                    var softwareContainer = item.GetService<SoftwareContainer>();
-                    if (softwareContainer != null)
-                    {
-                        if (softwareContainer.Software is PlcSoftware)
-                        {
-                            var controllerTarget = softwareContainer.Software as PlcSoftware;
-                            if (controllerTarget != null)
-                            {
-                                deviceNotFound = false;
-                                var plcCompiler = controllerTarget.GetService<ICompilable>();
-                                var plcCompilerResult = plcCompiler.Compile();
-                                var compilerMessage = "Compiling Software of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                                _traceWriter.Write(compilerMessage);
-                                if (plcCompilerResult.Messages.Count > 0)
-                                {
-                                    if (plcCompilerResult.Messages != null && plcCompilerResult.Messages.Count > 0)
-                                    {
-                                        GetCompilerMessages("", plcCompilerResult.Messages);
-                                    }
-                                }
-                            }
-                        }
-                        if (softwareContainer.Software is HmiTarget)
-                        {
-                            var hmiTarget = softwareContainer.Software as HmiTarget;
-                            if (hmiTarget != null)
-                            {
-                                deviceNotFound = false;
-                                var hmiCompiler = hmiTarget.GetService<ICompilable>();
-                                var hmiCompilerResult = hmiCompiler.Compile();
-                                var compilerMessage = "Compiling HMI of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                                _traceWriter.Write(compilerMessage);
-                                if (hmiCompilerResult.Messages.Count > 0)
-                                {
-                                    if (hmiCompilerResult.Messages != null && hmiCompilerResult.Messages.Count > 0)
-                                    {
-                                        GetCompilerMessages("", hmiCompilerResult.Messages);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    var compileProvider = item.GetService<ICompilable>();
-                    if (compileProvider != null)
-                    {
-                        deviceNotFound = false;
-                        var compileResult = compileProvider.Compile();
-                        var compilerMessage = "Compiling Hardware of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                        _traceWriter.Write(compilerMessage);
-                        if (compileResult.Messages.Count > 0)
-                        {
-                            if (compileResult.Messages != null && compileResult.Messages.Count > 0)
-                            {
-                                GetCompilerMessages("", compileResult.Messages);
-                            }
-                        }
-                    }
-                }
+
+                var value = deviceItem.GetAttribute(attributeInfo.Name);
+                Debug.WriteLine("DumpAllAttributes: " + attributeInfo.Name + " = " + value + "  [SupportedTypes: " + supportedTypes + "]");
+                //_traceWriter.Write(attributeInfo.Name + " = " + value + "  [Type: " + attributeInfo.Type + "]");
+            }
+            catch
+            {
+                Debug.WriteLine("DumpAllAttributes: " + attributeInfo.Name + " = (non leggibile)  [SupportedTypes: " + supportedTypes + "]");
+                //_traceWriter.Write(attributeInfo.Name + " = (non leggibile)  [Type: " + attributeInfo.Type + "]");
             }
         }
-    }
-
-    if (deviceNotFound)
-    {
-        _traceWriter.Write("No device found to compile!");
     }
 }
 
-        /// <summary>
-        /// Retrieve recursive the compile messages
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="messageComposition"></param>
-        private void GetCompilerMessages(string path, CompilerResultMessageComposition messageComposition)
+#endregion
+
+#region Compile
+
+/// <summary>
+/// Compile a device
+/// </summary>
+/// <param name="deviceItem"></param>
+/// <param name="caller"></param>
+public void DoCompileDevice(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
+{
+var methodBase = MethodBase.GetCurrentMethod();
+if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+var deviceNotFound = true;
+foreach (var device in CurrentProject.Devices)
+{
+if (device.Name == deviceItem.DeviceName)
+{
+    var deviceItemComposition = device.DeviceItems;
+    foreach (var item in deviceItemComposition)
+    {
+        if (item.Name == deviceItem.Name)
         {
-            foreach (var message in messageComposition)
+            var softwareContainer = item.GetService<SoftwareContainer>();
+            if (softwareContainer != null)
             {
-                if (message.Messages != null && message.Messages.Count > 0)
+                if (softwareContainer.Software is PlcSoftware)
                 {
-                    GetCompilerMessages(message.Path, message.Messages);
+                    var controllerTarget = softwareContainer.Software as PlcSoftware;
+                    if (controllerTarget != null)
+                    {
+                        deviceNotFound = false;
+                        var plcCompiler = controllerTarget.GetService<ICompilable>();
+                        var plcCompilerResult = plcCompiler.Compile();
+                        var compilerMessage = "Compiling Software of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                        _traceWriter.Write(compilerMessage);
+                        if (plcCompilerResult.Messages.Count > 0)
+                        {
+                            if (plcCompilerResult.Messages != null && plcCompilerResult.Messages.Count > 0)
+                            {
+                                GetCompilerMessages("", plcCompilerResult.Messages);
+                            }
+                        }
+                    }
                 }
-                if (!string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
+                if (softwareContainer.Software is HmiTarget)
                 {
-                    var compilerMessage = "Path: " + path + " / State: " + message.State + " / Description: " + message.Description;
-                    _traceWriter.Write(compilerMessage);
+                    var hmiTarget = softwareContainer.Software as HmiTarget;
+                    if (hmiTarget != null)
+                    {
+                        deviceNotFound = false;
+                        var hmiCompiler = hmiTarget.GetService<ICompilable>();
+                        var hmiCompilerResult = hmiCompiler.Compile();
+                        var compilerMessage = "Compiling HMI of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                        _traceWriter.Write(compilerMessage);
+                        if (hmiCompilerResult.Messages.Count > 0)
+                        {
+                            if (hmiCompilerResult.Messages != null && hmiCompilerResult.Messages.Count > 0)
+                            {
+                                GetCompilerMessages("", hmiCompilerResult.Messages);
+                            }
+                        }
+                    }
                 }
-                if (string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
+            }
+            var compileProvider = item.GetService<ICompilable>();
+            if (compileProvider != null)
+            {
+                deviceNotFound = false;
+                var compileResult = compileProvider.Compile();
+                var compilerMessage = "Compiling Hardware of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                _traceWriter.Write(compilerMessage);
+                if (compileResult.Messages.Count > 0)
                 {
-                    var compilerMessage = "State: " + message.State + " / Description: " + message.Description;
-                    _traceWriter.Write(compilerMessage);
+                    if (compileResult.Messages != null && compileResult.Messages.Count > 0)
+                    {
+                        GetCompilerMessages("", compileResult.Messages);
+                    }
                 }
             }
         }
+    }
+}
+}
 
-        #endregion // Compile
+if (deviceNotFound)
+{
+_traceWriter.Write("No device found to compile!");
+}
+}
 
-        #endregion // methods
+/// <summary>
+/// Retrieve recursive the compile messages
+/// </summary>
+/// <param name="path"></param>
+/// <param name="messageComposition"></param>
+private void GetCompilerMessages(string path, CompilerResultMessageComposition messageComposition)
+{
+    foreach (var message in messageComposition)
+    {
+        if (message.Messages != null && message.Messages.Count > 0)
+        {
+            GetCompilerMessages(message.Path, message.Messages);
         }
+        if (!string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
+        {
+            var compilerMessage = "Path: " + path + " / State: " + message.State + " / Description: " + message.Description;
+            _traceWriter.Write(compilerMessage);
+        }
+        if (string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
+        {
+            var compilerMessage = "State: " + message.State + " / Description: " + message.Description;
+            _traceWriter.Write(compilerMessage);
+        }
+    }
+}
+
+#endregion // Compile
+
+#endregion // methods
+}
 }

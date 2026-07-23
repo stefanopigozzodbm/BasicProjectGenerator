@@ -15,6 +15,9 @@ namespace Basic_Project_Generator.Models
         public string FirmwareVersion { get; set; }
         public int SlotNumber { get; set; }
 
+        public bool IsSafety { get; set; } // aggiunta per definire se il modulo di espansione letto dall'excel è safety o non
+
+
         public string TypeIdentifier => "OrderNumber:" + OrderNumber + "/" + FirmwareVersion;
         public string Name => TemplateName;
     }
