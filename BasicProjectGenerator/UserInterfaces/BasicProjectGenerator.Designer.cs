@@ -42,6 +42,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.rdb_WithoutUI = new System.Windows.Forms.RadioButton();
             this.rdb_WithUI = new System.Windows.Forms.RadioButton();
             this.grb_TiaPortalProject = new System.Windows.Forms.GroupBox();
+            this.btn_LoadProject = new System.Windows.Forms.Button();
             this.btn_CreateNewProject = new System.Windows.Forms.Button();
             this.txb_TargetDirectory = new System.Windows.Forms.TextBox();
             this.lbl_TargetDirectory = new System.Windows.Forms.Label();
@@ -51,7 +52,6 @@ namespace Basic_Project_Generator.UserInterfaces
             this.txb_AvailableProjectName = new System.Windows.Forms.TextBox();
             this.btn_CloseProject = new System.Windows.Forms.Button();
             this.btn_SaveProject = new System.Windows.Forms.Button();
-            this.btn_LoadProject = new System.Windows.Forms.Button();
             this.btn_OpenProject = new System.Windows.Forms.Button();
             this.grb_AddNewDevice = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -93,8 +93,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.HW_Siemens = new System.Windows.Forms.TabPage();
             this.HW_Other = new System.Windows.Forms.TabPage();
-            this.Tag = new System.Windows.Forms.TabPage();
             this.button1 = new System.Windows.Forms.Button();
+            this.Tag = new System.Windows.Forms.TabPage();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -242,6 +242,16 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_TiaPortalProject.TabStop = false;
             this.grb_TiaPortalProject.Text = "TIA Portal project";
             // 
+            // btn_LoadProject
+            // 
+            this.btn_LoadProject.Location = new System.Drawing.Point(18, 257);
+            this.btn_LoadProject.Name = "btn_LoadProject";
+            this.btn_LoadProject.Size = new System.Drawing.Size(173, 33);
+            this.btn_LoadProject.TabIndex = 8;
+            this.btn_LoadProject.Text = "Load project";
+            this.btn_LoadProject.UseVisualStyleBackColor = true;
+            this.btn_LoadProject.Click += new System.EventHandler(this.btn_LoadProject_Click);
+            // 
             // btn_CreateNewProject
             // 
             this.btn_CreateNewProject.Location = new System.Drawing.Point(18, 32);
@@ -325,16 +335,6 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_SaveProject.Text = "Save project";
             this.btn_SaveProject.UseVisualStyleBackColor = true;
             this.btn_SaveProject.Click += new System.EventHandler(this.btn_SaveProject_Click);
-            // 
-            // btn_LoadProject
-            // 
-            this.btn_LoadProject.Location = new System.Drawing.Point(18, 257);
-            this.btn_LoadProject.Name = "btn_LoadProject";
-            this.btn_LoadProject.Size = new System.Drawing.Size(173, 33);
-            this.btn_LoadProject.TabIndex = 8;
-            this.btn_LoadProject.Text = "Load project";
-            this.btn_LoadProject.UseVisualStyleBackColor = true;
-            this.btn_LoadProject.Click += new System.EventHandler(this.btn_LoadProject_Click);
             // 
             // btn_OpenProject
             // 
@@ -729,16 +729,6 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Other.Text = "HW_Other";
             this.HW_Other.UseVisualStyleBackColor = true;
             // 
-            // Tag
-            // 
-            this.Tag.Location = new System.Drawing.Point(4, 22);
-            this.Tag.Name = "Tag";
-            this.Tag.Padding = new System.Windows.Forms.Padding(3);
-            this.Tag.Size = new System.Drawing.Size(1076, 410);
-            this.Tag.TabIndex = 2;
-            this.Tag.Text = "Tag";
-            this.Tag.UseVisualStyleBackColor = true;
-            // 
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(24, 32);
@@ -748,6 +738,16 @@ namespace Basic_Project_Generator.UserInterfaces
             this.button1.Text = "button1";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // Tag
+            // 
+            this.Tag.Location = new System.Drawing.Point(4, 22);
+            this.Tag.Name = "Tag";
+            this.Tag.Padding = new System.Windows.Forms.Padding(3);
+            this.Tag.Size = new System.Drawing.Size(1076, 410);
+            this.Tag.TabIndex = 2;
+            this.Tag.Text = "Tag";
+            this.Tag.UseVisualStyleBackColor = true;
             // 
             // BasicProjectGenerator
             // 

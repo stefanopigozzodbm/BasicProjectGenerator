@@ -278,6 +278,7 @@
     <Content Include="Assets\DeviceCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\IOLink_StartupSettings.xml" />
     <Content Include="Assets\ModuleCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

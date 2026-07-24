@@ -1,4 +1,5 @@
 ﻿using NPOI.SS.Formula.Functions;
+using NPOI.XSSF.Streaming.Values;
 using Siemens.Collaboration.Net.Logging;
 using Siemens.Engineering;
 using Siemens.Engineering.Compiler;
@@ -6,6 +7,7 @@ using Siemens.Engineering.Hmi;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.HW.Features;
 using Siemens.Engineering.Library;
+using Siemens.Engineering.Library.MasterCopies;
 using Siemens.Engineering.SW;
 using System;
 using System.Collections.Generic;
@@ -262,13 +264,59 @@ namespace Basic_Project_Generator.Interfaces
 
             UserGlobalLibrary userLib = TiaPortal.GlobalLibraries.Open(fileInfo, OpenMode.ReadOnly);
 
-            
+            //var itemList = TiaPortal.HardwareCatalog.Find("AL1102");
+
+
+
+            //var first = itemList.First();
+
+            //Debug.WriteLine(first.TypeIdentifier);
+            var itemList = TiaPortal.HardwareCatalog.Find("AL1102");
+            Debug.WriteLine("Trovati " + itemList.Count + " risultati");
+            _traceWriter.Write("Trovati " + itemList.Count + " risultati");
+            var first = itemList.First();
+            foreach (var item in itemList)
+            {
+                Debug.WriteLine(first.TypeIdentifier);
+                Debug.WriteLine(item.GetType().Name + " -> " + item.ToString());
+                _traceWriter.Write(item.GetType().Name + " -> " + item.ToString());
+            }
+
+            foreach (var item in itemList)
+            {
+                var entry = item as Siemens.Engineering.HW.HardwareCatalog.CatalogEntry;
+                if (entry == null) continue;
+
+                _traceWriter.Write("--- CatalogEntry ---");
+                foreach (var prop in entry.GetType().GetProperties())
+                {
+                    try
+                    {
+                        var value = prop.GetValue(entry);
+                        Debug.WriteLine(prop.Name + " = " + value);
+                        _traceWriter.Write(prop.Name + " = " + value);
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.WriteLine(prop.Name + " = (non leggibile: " + exception.Message + ")");
+                        _traceWriter.Write(prop.Name + " = (non leggibile: " + exception.Message + ")");
+                    }
+                }
+            }
+
+
+
+
+
+
 
             if (userLib != null)
             {
                 CurrentUserGLobalLibrary = userLib;
                 result = true;
             }
+
+            DumpLibraryStructure();
 
             return result;
         }
@@ -489,10 +537,12 @@ namespace Basic_Project_Generator.Interfaces
                     _traceWriter.Write("Assign IO Add to: " + config.Name);
                     SetDeviceAddresses(config.CatalogDevice, config.DigitalInputStartAddress, config.DigitalOutputStartAddress,
                         config.AnalogInputStartAddress, config.AnalogOutputStartAddress, config.IntPeriphName);
-                    SetDeviceIpAddress(Device.DeviceItems[1], config.IpAddress);
-                    SetDeviceAttributes(Device.DeviceItems[1], config.StartupAttributes);
                     
-                   
+                    SetDeviceIpAddress(Device.DeviceItems[1], config.StartupIpAddresses.TryGetValue("Intereface1", out var ipAddress) ? ipAddress.ToString() : string.Empty);
+                    
+                    SetDeviceAttributes(Device.DeviceItems[1], config.StartupAttributes);
+
+                  
                 }
             }
             catch (Exception exception)
@@ -1103,16 +1153,102 @@ private void DumpAllAttributes(DeviceItem deviceItem, string filter = null)
     }
 }
 
-#endregion
+        /// <summary>
+        /// METODO TEMPORANEO DI DEBUG: stampa l'albero di cartelle e Master Copy della libreria aperta,
+        /// per verificare nomi reali prima di scrivere codice di piazzamento.
+        /// </summary>
+        public void DumpLibraryStructure()
+        {
+            if (CurrentUserGLobalLibrary == null)
+            {
+                Debug.WriteLine("Nessuna libreria aperta.");
+                _traceWriter.Write("Nessuna libreria aperta.");
+                return;
+            }
 
-#region Compile
+            Debug.WriteLine("--- Struttura libreria: " + CurrentUserGLobalLibrary.Name + " ---");
+            _traceWriter.Write("--- Struttura libreria: " + CurrentUserGLobalLibrary.Name + " ---");
+            DumpMasterCopyFolderRecursive(CurrentUserGLobalLibrary.MasterCopyFolder, "");
+        }
 
-/// <summary>
-/// Compile a device
-/// </summary>
-/// <param name="deviceItem"></param>
-/// <param name="caller"></param>
-public void DoCompileDevice(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
+        private void DumpMasterCopyFolderRecursive(MasterCopyFolder folder, string indent)
+        {
+            foreach (var masterCopy in folder.MasterCopies)
+            {
+                Debug.WriteLine(indent + "[MasterCopy] " + masterCopy.Name);
+                _traceWriter.Write(indent + "[MasterCopy] " + masterCopy.Name);
+            }
+
+            foreach (var subFolder in folder.Folders)
+            {
+               Debug.WriteLine(indent + "[Folder] " + subFolder.Name);
+                _traceWriter.Write(indent + "[Folder] " + subFolder.Name);
+                DumpMasterCopyFolderRecursive(subFolder, indent + "  ");
+            }
+        }
+
+
+        /// <summary>
+        /// BOZZA NON VERIFICATA. Copia una Master Copy dalla libreria globale aperta alla libreria di progetto,
+        /// poi ne piazza un'istanza nella DeviceItemComposition indicata (es. le porte del master IO-Link).
+        /// </summary>
+        private bool PlaceFromLibrary(string masterCopyName, DeviceItem targetContainer, string instanceName)
+        {
+            try
+            {
+                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGLobalLibrary.MasterCopyFolder, masterCopyName);
+                if (sourceMasterCopy == null)
+                {
+                    _traceWriter.Write("Master Copy '" + masterCopyName + "' non trovata nella libreria globale.");
+                    return false;
+                }
+
+                var projectLibrary = CurrentProject.ProjectLibrary; // <-- da verificare
+                var projectMasterCopy = projectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy); // <-- da verificare
+
+                var newItem = targetContainer.DeviceItems.CreateFrom(projectMasterCopy); // <-- il punto più incerto
+                if (newItem != null)
+                {
+                    newItem.Name = instanceName;
+                    IsModified = true;
+                    _traceWriter.Write("Piazzato '" + masterCopyName + "' come '" + instanceName + "' su " + targetContainer.Name);
+                    return true;
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore piazzando '" + masterCopyName + "' da libreria: " + exception.Message);
+            }
+
+            return false;
+        }
+
+        private MasterCopy FindMasterCopyRecursive(MasterCopyFolder folder, string name)
+        {
+            foreach (var masterCopy in folder.MasterCopies)
+            {
+                if (masterCopy.Name == name) return masterCopy;
+            }
+
+            foreach (var subFolder in folder.Folders)
+            {
+                var found = FindMasterCopyRecursive(subFolder, name);
+                if (found != null) return found;
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Compile
+
+        /// <summary>
+        /// Compile a device
+        /// </summary>
+        /// <param name="deviceItem"></param>
+        /// <param name="caller"></param>
+        public void DoCompileDevice(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
 {
 var methodBase = MethodBase.GetCurrentMethod();
 if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);

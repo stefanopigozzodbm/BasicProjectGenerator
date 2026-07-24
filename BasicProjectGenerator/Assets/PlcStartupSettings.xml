@@ -3,7 +3,7 @@
 <!--Utile per presettare in fase di configurazione dei dati sulla CPU DeviceItems[1]-->
 <StartupSettings>
 	
-	
+	<!--Attribute del PLC basta inserirli qui per assegnarli-->
 	<Attribute>
 		<Name>StartupConfigurationTimeout</Name>
 		<Value>5000</Value>
@@ -28,5 +28,21 @@
 		<Name>SystemMemoryByteAddress</Name>
 		<Value>0</Value>
 	</Attribute>
+
+	<Attribute>
+		<Name>SystemMemoryByteAddress</Name>
+		<Value>0</Value>
+	</Attribute>
+
+	<!-- IpAddress è un attributo del PLC ma non è assegnabile come gli altri, sopra è su un'altro percorso -->
+	<IpAddresses>
+		<IpAddress>
+			<Name>Intereface1</Name><!--default IP address per il PLC -->
+			<Firstoctet>10</Firstoctet> 
+			<Secondoctet>0</Secondoctet>
+			<Thirdoctet>0</Thirdoctet>
+			<Fourthoctet>1</Fourthoctet>
+		</IpAddress>
+	</IpAddresses>
 	
 </StartupSettings>

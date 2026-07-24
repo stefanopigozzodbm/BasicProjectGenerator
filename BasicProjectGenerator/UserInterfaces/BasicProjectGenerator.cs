@@ -725,7 +725,15 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 var catalogDevice = _projectGeneratorService.NewDevice;
                 var intPeriphName = catalogDevice.GetOnboardIoByPosition();
-                var startupAttributes = _projectGeneratorService.LoadPlcStartupSettings();
+                var (startupAttributes,startupIpAddresses) = _projectGeneratorService.LoadPlcStartupSettings();
+
+                //ovveride dell'indirizzo i de dafult su PlcStartupSettings.xml
+                //se diversamente specificato sul campo di input tb_PlcIpAddress
+                var overrideIpAddress = (tb_PlcIpAddress.Text.Trim());
+                if (overrideIpAddress!=(startupIpAddresses.TryGetValue("Intereface1", out var ipAddress) ? ipAddress.ToString() : string.Empty))
+                {
+                    startupIpAddresses["Intereface1"] = overrideIpAddress;
+                }
 
                 var config = new DeviceConfiguration
                 {
@@ -738,10 +746,10 @@ namespace Basic_Project_Generator.UserInterfaces
                     AnalogInputStartAddress = sourceItem?.AnalogInputStartAddress,
                     AnalogOutputStartAddress = sourceItem?.AnalogOutputStartAddress,
                     IntPeriphName = intPeriphName,
-                    IpAddress = tb_PlcIpAddress.Text.Trim(),
-                    StartupAttributes = startupAttributes
+                    StartupAttributes = startupAttributes,
+                    StartupIpAddresses = startupIpAddresses
                 };
-
+                
                 _projectGeneratorService.AddNewDevice(config);
 
                 Cursor.Current = Cursors.Default;

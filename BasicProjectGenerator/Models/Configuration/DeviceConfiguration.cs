@@ -15,7 +15,7 @@ namespace Basic_Project_Generator.Models
         public int? AnalogInputStartAddress { get; set; }
         public int? AnalogOutputStartAddress { get; set; }
         public IReadOnlyDictionary<int, string> IntPeriphName { get; set; }
-        public string IpAddress { get; set; }
         public Dictionary<string, object> StartupAttributes { get; set; }
+        public Dictionary<string, object> StartupIpAddresses { get; set; }
     }
 }

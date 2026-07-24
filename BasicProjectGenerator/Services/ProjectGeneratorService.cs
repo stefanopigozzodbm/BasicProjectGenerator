@@ -552,15 +552,17 @@ namespace Basic_Project_Generator.Services
             return _apiWrapper.DoAddNewModule(config);
         }
 
-        public Dictionary<string, object> LoadPlcStartupSettings([CallerMemberName] string caller = "")
+        public (Dictionary<string, object> dictAttribute, Dictionary<string, object> dictIpAddress) LoadPlcStartupSettings([CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
-            var result = new Dictionary<string, object>();
+            var attributeDict = new Dictionary<string, object>();
+            var ipAddressDict = new Dictionary<string, object>();
 
             var doc = XDocument.Load("Assets\\PlcStartupSettings.xml");
 
+            //ricerca di tutti gli attributi del PLC e dei valori associati, se sono numeri o booleani li converte in int o bool
             foreach (var element in doc.Root.Elements("Attribute"))
             {
                 var name = element.Element("Name")?.Value;
@@ -570,19 +572,49 @@ namespace Basic_Project_Generator.Services
 
                 if (int.TryParse(rawValue, out var intValue))
                 {
-                    result[name] = intValue;
+                    attributeDict[name] = intValue;
                 }
                 else if (bool.TryParse(rawValue, out var boolValue))
                 {
-                    result[name] = boolValue;
+                    attributeDict[name] = boolValue;
                 }
                 else
                 {
-                    result[name] = rawValue;
+                    attributeDict[name] = rawValue;
                 }
             }
 
-            return result;
+            // Parsing degli IpAddresses
+            // Si accede al nodo <IpAddresses> e poi a tutti gli elementi <IpAddress> contenuti
+            var ipElements = doc.Root.Element("IpAddresses")?.Elements("IpAddress");
+
+            if (ipElements != null)
+            {
+                foreach (var ipElement in ipElements)
+                {
+                    var interfaceName = ipElement.Element("Name")?.Value;
+
+                    var octet1 = ipElement.Element("Firstoctet")?.Value;
+                    var octet2 = ipElement.Element("Secondoctet")?.Value;
+                    var octet3 = ipElement.Element("Thirdoctet")?.Value;
+                    var octet4 = ipElement.Element("Fourthoctet")?.Value;
+
+                    // Salta se manca il nome dell'interfaccia o uno degli ottetti
+                    if (string.IsNullOrWhiteSpace(interfaceName) ||
+                        octet1 == null || octet2 == null || octet3 == null || octet4 == null)
+                    {
+                        continue;
+                    }
+
+                    // Unisce gli ottetti formattando la stringa "X.X.X.X"
+                    var ipString = $"{octet1}.{octet2}.{octet3}.{octet4}";
+
+                    ipAddressDict[interfaceName] = ipString;
+                }
+            }
+
+
+            return (attributeDict,ipAddressDict);
         }
 
         #endregion // Device
