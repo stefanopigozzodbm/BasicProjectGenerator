@@ -194,12 +194,16 @@
     <Compile Include="Models\AutoLogoff.cs" />
     <Compile Include="Models\Catalog.cs" />
     <Compile Include="Models\Configuration\DeviceConfiguration.cs" />
+    <Compile Include="Models\Configuration\IOLinkAddressCursor.cs" />
+    <Compile Include="Models\Configuration\IOLinkMasterModule.cs" />
+    <Compile Include="Models\Configuration\IOLinkSlaveModule.cs" />
     <Compile Include="Models\DeviceModel.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\DeviceItem.cs" />
     <Compile Include="Models\DisplayAutoLogoff.cs" />
     <Compile Include="Models\ExpModule.cs" />
     <Compile Include="Models\ImportedSymbolItem.cs" />
+    <Compile Include="Models\IpSubnet.cs" />
     <Compile Include="Models\ModuleCatalog.cs" />
     <Compile Include="Models\Configuration\ModuleConfiguration.cs" />
     <Compile Include="Models\ModuleModel.cs" />

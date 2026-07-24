@@ -1,4 +1,5 @@
-﻿using NPOI.SS.Formula.Functions;
+﻿using Basic_Project_Generator.Models.Configuration;
+using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.Streaming.Values;
 using Siemens.Collaboration.Net.Logging;
 using Siemens.Engineering;
@@ -106,6 +107,12 @@ namespace Basic_Project_Generator.Interfaces
         }
 
         public Device Device
+        {
+            get;
+            set;
+        }
+
+        public IpSubnet IpAddress
         {
             get;
             set;
@@ -537,8 +544,11 @@ namespace Basic_Project_Generator.Interfaces
                     _traceWriter.Write("Assign IO Add to: " + config.Name);
                     SetDeviceAddresses(config.CatalogDevice, config.DigitalInputStartAddress, config.DigitalOutputStartAddress,
                         config.AnalogInputStartAddress, config.AnalogOutputStartAddress, config.IntPeriphName);
-                    
-                    SetDeviceIpAddress(Device.DeviceItems[1], config.StartupIpAddresses.TryGetValue("Intereface1", out var ipAddress) ? ipAddress.ToString() : string.Empty);
+
+                    IpAddress = new IpSubnet(config.StartupIpAddresses.TryGetValue("Intereface1", out var ipAddress) ? ipAddress.ToString() : string.Empty);
+                  
+
+                    SetDeviceIpAddress(Device.DeviceItems[1], IpAddress.GetFullIp());
                     
                     SetDeviceAttributes(Device.DeviceItems[1], config.StartupAttributes);
 
@@ -805,6 +815,64 @@ namespace Basic_Project_Generator.Interfaces
             foreach (var childItem in deviceItem.DeviceItems)
             {
                 if (TrySetIpAddressRecursive(childItem, ipAddress, currentPath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+
+        /// <summary>
+        /// Imposta Il Device Number sull'interfaccia PROFINET 
+        /// Cerca ricorsivamente, tra il DeviceItem d e i suoi figli, il primo che espone
+        /// il servizio NetworkInterface, e ne imposta il primo Node.
+        /// </summary>
+        private void SetDeviceNumber(DeviceItem plcDeviceItem, int deviceNumber)
+        {
+            if (deviceNumber <= 0 || deviceNumber > 512)
+            {
+                _traceWriter.Write("DeviceNumber: '" + deviceNumber + "', fuori range 1-512");
+                return;
+            }
+
+           
+            if (TrySetDeviceNumberRecursive(plcDeviceItem, deviceNumber))
+            {
+                _traceWriter.Write("DeviceNumber " + deviceNumber + " impostato su " + plcDeviceItem.Name);
+            }
+            else
+            {
+                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + plcDeviceItem.Name + ", deviceNumber non impostato.");
+            }
+        }
+
+        private bool TrySetDeviceNumberRecursive(DeviceItem deviceItem, int deviceNumber, string path = "")
+        {
+            var currentPath = string.IsNullOrEmpty(path) ? deviceItem.Name : path + " / " + deviceItem.Name;
+
+            try
+            {
+                var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                {
+                    networkInterface.IoConnectors[0].SetAttribute("PnDeviceNumber", deviceNumber);
+                    _traceWriter.Write("NetworkInterface trovata al percorso: " + currentPath);
+                    Debug.WriteLine("NetworkInterface trovata al percorso: " + currentPath);
+                    return true; 
+
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore impostando DeviceNumber su " + currentPath + ": " + exception.Message);
+            }
+
+            foreach (var childItem in deviceItem.DeviceItems)
+            {
+                if (TrySetDeviceNumberRecursive(childItem, deviceNumber, currentPath))
                 {
                     return true;
                 }
@@ -1115,17 +1183,151 @@ namespace Basic_Project_Generator.Interfaces
             return Convert.ChangeType(rawValue, targetType);
         }
 
+        #region IOLink
 
-#endregion // Device
+        public bool DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex, string instanceName, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            try
+            {
+                var itemList = TiaPortal.HardwareCatalog.Find(config.Code);
+                var masterEntry = itemList
+                    .OfType<Siemens.Engineering.HW.HardwareCatalog.CatalogEntry>()
+                    .FirstOrDefault(e => e.ArticleNumber == config.Code && e.TypeIdentifier.Contains("/DAP/"));
+
+                if (masterEntry == null)
+                {
+                    _traceWriter.Write("Master IO-Link '" + config.Code + "' non trovato nel catalogo HW (DAP).");
+                    return false;
+                }
+
+                var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, instanceName, instanceName); // <-- da verificare
+
+                if (newDevice == null)
+                {
+                    _traceWriter.Write("Creazione master IO-Link '" + instanceName + "' fallita.");
+                    return false;
+                }
+
+                IsModified = true;
+                _traceWriter.Write("Master IO-Link '" + instanceName + "' creato da catalogo HW.");
+
+                var ipLastOctet = config.GetIpLastOctet(occurrenceIndex);
+                var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
+
+                //VERIFICARE: i nomi degli attributi "DeviceNumber" e "Address" sono corretti? (TIA Openness Explorer)
+                //SetDeviceIpAddress(newDevice.DeviceItems[1], "?.?.?." + ipLastOctet); // <-- da comporre con la subnet reale del PLC
+                SetDeviceIpAddress(newDevice.DeviceItems[1], IpAddress.GetSubnetPrefixWithDot() + ipLastOctet);
+
+                //newDevice.DeviceItems[1].SetAttribute("DeviceNumber", deviceNumber); // <-- nome attributo da verificare
+                SetDeviceNumber(newDevice.DeviceItems[1], deviceNumber);
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore aggiungendo master IO-Link '" + config.Code + "': " + exception.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Piazza uno slave IO-Link (da Master Copy di libreria) sulla porta indicata del master,
+        /// assegna gli indirizzi Input/Output dal cursore corrente, poi avanza il cursore in base
+        /// alla Length (bit) effettivamente occupata dal nuovo slave.
+        /// </summary>
+        public bool DoAddIOLinkSlave(DeviceItem masterDeviceItem, IOLinkSlaveModule config, int portIndex, string instanceName, IOLinkAddressCursor cursor, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            try
+            {
+                var portsContainer = FindPortsContainer(masterDeviceItem); // <-- vedi nota sotto sul percorso "8 Ports_1"
+                if (portsContainer == null)
+                {
+                    _traceWriter.Write("Contenitore porte non trovato su " + masterDeviceItem.Name);
+                    return false;
+                }
+
+                var targetPort = portsContainer.DeviceItems[portIndex]; // <-- da verificare: le porte sono indicizzate 0-7 qui?
+
+                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGLobalLibrary.MasterCopyFolder, config.MasterCopyName);
+                if (sourceMasterCopy == null)
+                {
+                    _traceWriter.Write("Master Copy '" + config.MasterCopyName + "' non trovata in libreria.");
+                    return false;
+                }
+
+                var projectMasterCopy = CurrentProject.ProjectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy); // <-- da verificare
+                var newItem = targetPort.DeviceItems.CreateFrom(projectMasterCopy); // <-- da verificare
+
+                if (newItem == null)
+                {
+                    _traceWriter.Write("Piazzamento slave '" + config.MasterCopyName + "' su porta " + portIndex + " fallito.");
+                    return false;
+                }
+
+                newItem.Name = instanceName;
+                IsModified = true;
+
+                foreach (var (owner, address) in GetAllAddressesWithOwner(newItem))
+                {
+                    var ioType = address.GetAttribute("IoType")?.ToString();
+                    var lengthBits = Convert.ToInt32(address.GetAttribute("Length"));
+                    var lengthBytes = lengthBits / 8;
+
+                    if (ioType == "Input")
+                    {
+                        address.SetAttribute("StartAddress", cursor.NextInputAddress);
+                        _traceWriter.Write(instanceName + ": Input StartAddress=" + cursor.NextInputAddress + " (Length=" + lengthBytes + " byte)");
+                        cursor.NextInputAddress += lengthBytes;
+                    }
+                    else if (ioType == "Output")
+                    {
+                        address.SetAttribute("StartAddress", cursor.NextOutputAddress);
+                        _traceWriter.Write(instanceName + ": Output StartAddress=" + cursor.NextOutputAddress + " (Length=" + lengthBytes + " byte)");
+                        cursor.NextOutputAddress += lengthBytes;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore piazzando slave '" + config.MasterCopyName + "': " + exception.Message);
+                return false;
+            }
+        }
+
+        /// <summary> <-- DA VERIFICARE con TIA Openness Explorer sul vostro master reale già piazzato </summary>
+        private DeviceItem FindPortsContainer(DeviceItem masterDeviceItem)
+        {
+            foreach (var child in masterDeviceItem.DeviceItems)
+            {
+                if (child.Name != null && child.Name.Contains("Port"))
+                {
+                    return child;
+                }
+            }
+            return null;
+        }
+
+        #endregion
 
 
-#region Debug
+        #endregion // Device
 
-/// <summary>
-/// METODO DI DEBUG: stampa tutti gli attributi disponibili su un DeviceItem,
-/// utile per scoprire il nome esatto di un parametro senza aprire TIA Openness Explorer.
-/// </summary>
-private void DumpAllAttributes(DeviceItem deviceItem, string filter = null)
+
+        #region Debug
+
+        /// <summary>
+        /// METODO DI DEBUG: stampa tutti gli attributi disponibili su un DeviceItem,
+        /// utile per scoprire il nome esatto di un parametro senza aprire TIA Openness Explorer.
+        /// </summary>
+        private void DumpAllAttributes(DeviceItem deviceItem, string filter = null)
 {
    // _traceWriter.Write("--- Attributi di " + deviceItem.Name + " ---");
     Debug.WriteLine("DumpAllAttributes: " + "--- Attributi di " + deviceItem.Name + " ---");

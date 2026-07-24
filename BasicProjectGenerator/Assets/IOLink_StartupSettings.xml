@@ -1,47 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <IOLinkCatalog>
 
-	<!--indirizzi IO di partenza per gli slave che andranno collegati sotto il master -->
+	<!--indirizzi IO di partenza per gli slave che andranno collegati sotto il master.
+	    Ogni occorrenza successiva dello stesso master nel progetto avanza di AddressStep 
+	    rispetto alla precedente (calcolato a runtime, non elencato a mano).-->
 	<IOLinkMasterModule>
 		<Code>AL1102</Code>
 		<MasterCopyName>AL1102</MasterCopyName>
-		
-		<InputStartAddresses>
-			<Address>1000</Address>
-			<Address>1300</Address>
-			<Address>1600</Address>
-			<Address>1900</Address>
-			<!-- almeno 10 -->
-		</InputStartAddresses>
-		
-		<OutputStartAddresses>
-			<Address>1000</Address>
-			<Address>1300</Address>
-			<Address>1600</Address>
-			<Address>1900</Address>
-			<!-- almeno 10 -->
-		</OutputStartAddresses>
-
-		<IpAddresses> 
-			<!--ip riferito solo all'ultimo ottetto in quanto la subnetwork potrebbe cambiare sul PLCStartupSettings.xml
-			che comunque potrebbe subire un overwriting da interfaccia grafica-->
-			<IPAddress>6</IPAddress>
-			<IPAddress>7</IPAddress>
-			<IPAddress>8</IPAddress>
-			<IPAddress>9</IPAddress>
-			<!-- almeno 10 -->
-		</IpAddresses>
-
-		<DeviceNumbers>
-			<!--DeviceNumber = all'ultimo ottetto dell'indirizzo IP-->
-			<DeviceNumber>6</DeviceNumber>
-			<DeviceNumber>7</DeviceNumber>
-			<DeviceNumber>8</DeviceNumber>
-			<DeviceNumber>9</DeviceNumber>
-			<!-- almeno 10 -->
-		</DeviceNumbers>
-		
+		<BaseInputStartAddress>1000</BaseInputStartAddress>
+		<BaseOutputStartAddress>1000</BaseOutputStartAddress>
+		<AddressStep>300</AddressStep>
+		<!--passo di incremento degli indirizzi IO (32byte*8 ingressi)-->
+		<BaseIpLastOctet>6</BaseIpLastOctet>
+		<!--ultimo otteto ip di partenza-->
+		<BaseDeviceNumber>6</BaseDeviceNumber>
+		<!--per ogni master successivo nello stesso progetto, l'ultimo ottetto dell'IP e il DeviceNumber aumentano di 1-->
+		<IpDeviceStep>1</IpDeviceStep>
+		<!--per ogni master successivo nello stesso progetto, l'ultimo ottetto dell'IP e il DeviceNumber aumentano di 1	-->
 	</IOLinkMasterModule>
 
+	<IOLinkMasterModule>
+		<Code>AL1100</Code>
+		<MasterCopyName>AL1100</MasterCopyName>
+		<BaseInputStartAddress>1000</BaseInputStartAddress>
+		<BaseOutputStartAddress>1000</BaseOutputStartAddress>
+		<AddressStep>300</AddressStep>
+		<!--passo di incremento degli indirizzi IO (32byte*8 ingressi)-->
+		<BaseIpLastOctet>6</BaseIpLastOctet>
+		<!--ultimo otteto ip di partenza-->
+		<BaseDeviceNumber>6</BaseDeviceNumber>
+		<!--per ogni master successivo nello stesso progetto, l'ultimo ottetto dell'IP e il DeviceNumber aumentano di 1-->
+		<IpDeviceStep>1</IpDeviceStep>
+		<!--per ogni master successivo nello stesso progetto, l'ultimo ottetto dell'IP e il DeviceNumber aumentano di 1	-->
+	</IOLinkMasterModule>
 
 </IOLinkCatalog>

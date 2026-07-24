@@ -1,5 +1,6 @@
 ﻿using Basic_Project_Generator.Interfaces;
 using Basic_Project_Generator.Models;
+using Basic_Project_Generator.Models.Configuration;
 using Basic_Project_Generator.UserInterfaces;
 using Siemens.Engineering.Library;
 using System;
@@ -540,6 +541,52 @@ namespace Basic_Project_Generator.Services
             ModuleModel.LoadModuleCatalog(ModuleCatalogXml);
             ModuleCatalogLoaded = true;
             return ModuleCatalogLoaded;
+        }
+
+        public List<IOLinkMasterModule> LoadIOLinkMasterCatalog([CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var result = new List<IOLinkMasterModule>();
+            var doc = XDocument.Load("Assets\\IOLink_StartupSettings.xml");
+
+            foreach (var element in doc.Root.Elements("IOLinkMasterModule"))
+            {
+                result.Add(new IOLinkMasterModule
+                {
+                    Code = element.Element("Code")?.Value,
+                    MasterCopyName = element.Element("MasterCopyName")?.Value,
+                    BaseInputStartAddress = int.Parse(element.Element("BaseInputStartAddress")?.Value ?? "0"),
+                    BaseOutputStartAddress = int.Parse(element.Element("BaseOutputStartAddress")?.Value ?? "0"),
+                    AddressStep = int.Parse(element.Element("AddressStep")?.Value ?? "0"),
+                    BaseIpLastOctet = int.Parse(element.Element("BaseIpLastOctet")?.Value ?? "0"),
+                    BaseDeviceNumber = int.Parse(element.Element("BaseDeviceNumber")?.Value ?? "0"),
+                    IpDeviceStep = int.Parse(element.Element("IpDeviceStep")?.Value ?? "0")
+                });
+            }
+
+            return result;
+        }
+
+        public List<IOLinkSlaveModule> LoadIOLinkSlaveCatalog([CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var result = new List<IOLinkSlaveModule>();
+            var doc = XDocument.Load("Assets\\IOLink_StartupSettings.xml");
+
+            foreach (var element in doc.Root.Elements("IOLinkExpModule").Concat(doc.Root.Elements("IOLinkSensorModule")))
+            {
+                result.Add(new IOLinkSlaveModule
+                {
+                    Code = element.Element("Code")?.Value,
+                    MasterCopyName = element.Element("MasterCopyName")?.Value
+                });
+            }
+
+            return result;
         }
 
 
