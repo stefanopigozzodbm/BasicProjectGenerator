@@ -16,9 +16,9 @@
         public int BaseDeviceNumber { get; set; }
         public int IpDeviceStep { get; set; }
 
-        public int GetInputStartAddress(int occurrenceIndex) => BaseInputStartAddress + occurrenceIndex * AddressStep;
-        public int GetOutputStartAddress(int occurrenceIndex) => BaseOutputStartAddress + occurrenceIndex * AddressStep;
-        public int GetIpLastOctet(int occurrenceIndex) => BaseIpLastOctet + occurrenceIndex * IpDeviceStep;
-        public int GetDeviceNumber(int occurrenceIndex) => BaseDeviceNumber + occurrenceIndex * IpDeviceStep;
+        public int GetInputStartAddress(int occurrenceIndex) => BaseInputStartAddress + occurrenceIndex * AddressStep; // ritorna l'indirizzo di partenza Input per la N-esima occorrenza dello stesso MODELLO di master presente in progetto
+        public int GetOutputStartAddress(int occurrenceIndex) => BaseOutputStartAddress + occurrenceIndex * AddressStep; // ritorna l'indirizzo di partenza Output per la N-esima occorrenza dello stesso MODELLO di master presente in progetto
+        public int GetIpLastOctet(int occurrenceIndex) => BaseIpLastOctet + occurrenceIndex * IpDeviceStep; // ritorna l'ultimo ottetto dell'IP per la N-esima occorrenza dello stesso MODELLO di master presente in progetto
+        public int GetDeviceNumber(int occurrenceIndex) => BaseDeviceNumber + occurrenceIndex * IpDeviceStep; // analogo a GetIpLastOctet, ma per il DeviceNumber (per i master IO-Link che lo richiedono)
     }
 }

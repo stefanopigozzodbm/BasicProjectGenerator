@@ -697,6 +697,32 @@ namespace Basic_Project_Generator.Services
         }
         #endregion
 
+        #region Debug
+
+        public bool DebugTest(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
+        {
+
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            
+
+            var result = false;
+            
+                if (_apiWrapper.DoTestDebug(deviceItem, caller))
+                {
+                    result = true;
+                }
+            
+            return result;
+
+
+
+        }
+
+        #endregion
+
+
         #endregion // methods
     }
 }

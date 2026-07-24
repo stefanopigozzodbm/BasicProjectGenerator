@@ -1115,6 +1115,24 @@ namespace Basic_Project_Generator.UserInterfaces
 
            
         }
+
+        #region Debug
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            _traceWriter.Write(methodBase.Name);
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            var deviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem;
+
+            _projectGeneratorService.DebugTest(deviceItem);
+
+            Cursor.Current = Cursors.Default;
+        }
+
+        #endregion
+
         #endregion
 
         #endregion
@@ -1122,5 +1140,5 @@ namespace Basic_Project_Generator.UserInterfaces
         #endregion // methods
 
 
-}
+    }
 }

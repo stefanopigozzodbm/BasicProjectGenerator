@@ -95,6 +95,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Other = new System.Windows.Forms.TabPage();
             this.button1 = new System.Windows.Forms.Button();
             this.Tag = new System.Windows.Forms.TabPage();
+            this.button2 = new System.Windows.Forms.Button();
+            this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -720,6 +722,8 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // HW_Other
             // 
+            this.HW_Other.Controls.Add(this.comboBox2);
+            this.HW_Other.Controls.Add(this.button2);
             this.HW_Other.Controls.Add(this.button1);
             this.HW_Other.Location = new System.Drawing.Point(4, 22);
             this.HW_Other.Name = "HW_Other";
@@ -748,6 +752,25 @@ namespace Basic_Project_Generator.UserInterfaces
             this.Tag.TabIndex = 2;
             this.Tag.Text = "Tag";
             this.Tag.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(138, 32);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(93, 23);
+            this.button2.TabIndex = 1;
+            this.button2.Text = "TEST/DEBUG";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // comboBox2
+            // 
+            this.comboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox2.FormattingEnabled = true;
+            this.comboBox2.Location = new System.Drawing.Point(253, 34);
+            this.comboBox2.Name = "comboBox2";
+            this.comboBox2.Size = new System.Drawing.Size(173, 21);
+            this.comboBox2.TabIndex = 9;
             // 
             // BasicProjectGenerator
             // 
@@ -847,6 +870,8 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.TabPage HW_Other;
         private System.Windows.Forms.TabPage Tag;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.ComboBox comboBox2;
     }
 }
 

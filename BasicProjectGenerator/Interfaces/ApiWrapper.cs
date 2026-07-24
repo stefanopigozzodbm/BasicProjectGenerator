@@ -1,4 +1,5 @@
-﻿using Basic_Project_Generator.Models.Configuration;
+﻿//using Basic_Project_Generator.Models;
+using Basic_Project_Generator.Models.Configuration;
 using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.Streaming.Values;
 using Siemens.Collaboration.Net.Logging;
@@ -17,6 +18,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -278,38 +280,38 @@ namespace Basic_Project_Generator.Interfaces
             //var first = itemList.First();
 
             //Debug.WriteLine(first.TypeIdentifier);
-            var itemList = TiaPortal.HardwareCatalog.Find("AL1102");
-            Debug.WriteLine("Trovati " + itemList.Count + " risultati");
-            _traceWriter.Write("Trovati " + itemList.Count + " risultati");
-            var first = itemList.First();
-            foreach (var item in itemList)
-            {
-                Debug.WriteLine(first.TypeIdentifier);
-                Debug.WriteLine(item.GetType().Name + " -> " + item.ToString());
-                _traceWriter.Write(item.GetType().Name + " -> " + item.ToString());
-            }
+            //var itemList = TiaPortal.HardwareCatalog.Find("AL1102");
+            //Debug.WriteLine("Trovati " + itemList.Count + " risultati");
+            //_traceWriter.Write("Trovati " + itemList.Count + " risultati");
+            //var first = itemList.First();
+            //foreach (var item in itemList)
+            //{
+            //    Debug.WriteLine(first.TypeIdentifier);
+            //    Debug.WriteLine(item.GetType().Name + " -> " + item.ToString());
+            //    _traceWriter.Write(item.GetType().Name + " -> " + item.ToString());
+            //}
 
-            foreach (var item in itemList)
-            {
-                var entry = item as Siemens.Engineering.HW.HardwareCatalog.CatalogEntry;
-                if (entry == null) continue;
+            //foreach (var item in itemList)
+            //{
+            //    var entry = item as Siemens.Engineering.HW.HardwareCatalog.CatalogEntry;
+            //    if (entry == null) continue;
 
-                _traceWriter.Write("--- CatalogEntry ---");
-                foreach (var prop in entry.GetType().GetProperties())
-                {
-                    try
-                    {
-                        var value = prop.GetValue(entry);
-                        Debug.WriteLine(prop.Name + " = " + value);
-                        _traceWriter.Write(prop.Name + " = " + value);
-                    }
-                    catch (Exception exception)
-                    {
-                        Debug.WriteLine(prop.Name + " = (non leggibile: " + exception.Message + ")");
-                        _traceWriter.Write(prop.Name + " = (non leggibile: " + exception.Message + ")");
-                    }
-                }
-            }
+            //    _traceWriter.Write("--- CatalogEntry ---");
+            //    foreach (var prop in entry.GetType().GetProperties())
+            //    {
+            //        try
+            //        {
+            //            var value = prop.GetValue(entry);
+            //            Debug.WriteLine(prop.Name + " = " + value);
+            //            _traceWriter.Write(prop.Name + " = " + value);
+            //        }
+            //        catch (Exception exception)
+            //        {
+            //            Debug.WriteLine(prop.Name + " = (non leggibile: " + exception.Message + ")");
+            //            _traceWriter.Write(prop.Name + " = (non leggibile: " + exception.Message + ")");
+            //        }
+            //    }
+            //}
 
 
 
@@ -1215,11 +1217,14 @@ namespace Basic_Project_Generator.Interfaces
                 _traceWriter.Write("Master IO-Link '" + instanceName + "' creato da catalogo HW.");
 
                 var ipLastOctet = config.GetIpLastOctet(occurrenceIndex);
+                //  xx non è mai stato popolato perchè potrebbe non venire mai creato un plc        
+                var totalIpAddress = IpAddress.GetSubnetPrefixWithDot() + ipLastOctet.ToString();
                 var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
+
 
                 //VERIFICARE: i nomi degli attributi "DeviceNumber" e "Address" sono corretti? (TIA Openness Explorer)
                 //SetDeviceIpAddress(newDevice.DeviceItems[1], "?.?.?." + ipLastOctet); // <-- da comporre con la subnet reale del PLC
-                SetDeviceIpAddress(newDevice.DeviceItems[1], IpAddress.GetSubnetPrefixWithDot() + ipLastOctet);
+                SetDeviceIpAddress(newDevice.DeviceItems[1], totalIpAddress);
 
                 //newDevice.DeviceItems[1].SetAttribute("DeviceNumber", deviceNumber); // <-- nome attributo da verificare
                 SetDeviceNumber(newDevice.DeviceItems[1], deviceNumber);
@@ -1439,6 +1444,73 @@ namespace Basic_Project_Generator.Interfaces
             }
 
             return null;
+        }
+
+
+        public bool DoTestDebug(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
+        {
+            var result = false;
+
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+
+            // DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex, string instanceName, [CallerMemberName] string caller = "")
+
+             var test_config = new IOLinkMasterModule();
+            test_config.Code="AL1102";
+            test_config.MasterCopyName = "AL1102";
+            test_config.BaseInputStartAddress = 1100;
+            test_config.BaseOutputStartAddress = 1100;
+            test_config.BaseIpLastOctet = 99;
+            test_config.BaseDeviceNumber = 98;
+
+            var actIpAddress = null;
+            var deviceNotFound = true;
+            foreach (var device in CurrentProject.Devices)
+            {
+                if (device.Name == deviceItem.DeviceName) //s71500_1
+                {
+                    var deviceItemComposition = device.DeviceItems;
+                    foreach (var item in deviceItemComposition)
+                    {
+                        if (item.Name == deviceItem.Name) //18a1
+                        {
+
+                            var networkInterface = item.DeviceItems[2].GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+
+                            if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                            {
+                                deviceNotFound = false;
+                                actIpAddress = networkInterface.Nodes[0].GetAttribute("Address");
+
+                                _traceWriter.Write("NetworkInterface trovata con actIpAddress " + actIpAddress);
+                               
+                                return true;
+                            }
+
+
+                        }
+                    }
+                }
+            }
+
+            if (deviceNotFound)
+            {
+                _traceWriter.Write("No device found to compile!");
+            }
+        
+            
+
+            if (test_config != null)
+            {
+                DoAddIOLinkMaster(test_config,0,"AL1102",caller); ///!! passare questo parametro actIpAddress oppure popolare IpAddress..da vedere
+
+                result = true;
+            }
+
+
+            return result;
         }
 
         #endregion
