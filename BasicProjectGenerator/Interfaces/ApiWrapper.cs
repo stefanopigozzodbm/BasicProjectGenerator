@@ -78,6 +78,12 @@ namespace Basic_Project_Generator.Interfaces
             set;
         }
 
+        public UserGlobalLibrary CurrentUserGLobalLibrary
+        {
+            get;
+            set;
+        }
+
         public Project AvailableProject
         {
             get;
@@ -251,11 +257,20 @@ namespace Basic_Project_Generator.Interfaces
         /// <param name="caller"></param>
         public bool DoOpenLibrary(string path, [CallerMemberName] string caller = "")
         {
-
+            var result = false;
             FileInfo fileInfo = new FileInfo(path); 
 
             UserGlobalLibrary userLib = TiaPortal.GlobalLibraries.Open(fileInfo, OpenMode.ReadOnly);
-            return true;
+
+            
+
+            if (userLib != null)
+            {
+                CurrentUserGLobalLibrary = userLib;
+                result = true;
+            }
+
+            return result;
         }
 
         #endregion // TIA Portal
