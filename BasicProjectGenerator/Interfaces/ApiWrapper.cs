@@ -85,7 +85,7 @@ namespace Basic_Project_Generator.Interfaces
             set;
         }
 
-        public UserGlobalLibrary CurrentUserGLobalLibrary
+        public UserGlobalLibrary CurrentUserGlobalLibrary
         {
             get;
             set;
@@ -277,55 +277,11 @@ namespace Basic_Project_Generator.Interfaces
 
             UserGlobalLibrary userLib = TiaPortal.GlobalLibraries.Open(fileInfo, OpenMode.ReadOnly);
 
-            //var itemList = TiaPortal.HardwareCatalog.Find("AL1102");
-
-
-
-            //var first = itemList.First();
-
-            //Debug.WriteLine(first.TypeIdentifier);
-            //var itemList = TiaPortal.HardwareCatalog.Find("AL1102");
-            //Debug.WriteLine("Trovati " + itemList.Count + " risultati");
-            //_traceWriter.Write("Trovati " + itemList.Count + " risultati");
-            //var first = itemList.First();
-            //foreach (var item in itemList)
-            //{
-            //    Debug.WriteLine(first.TypeIdentifier);
-            //    Debug.WriteLine(item.GetType().Name + " -> " + item.ToString());
-            //    _traceWriter.Write(item.GetType().Name + " -> " + item.ToString());
-            //}
-
-            //foreach (var item in itemList)
-            //{
-            //    var entry = item as Siemens.Engineering.HW.HardwareCatalog.CatalogEntry;
-            //    if (entry == null) continue;
-
-            //    _traceWriter.Write("--- CatalogEntry ---");
-            //    foreach (var prop in entry.GetType().GetProperties())
-            //    {
-            //        try
-            //        {
-            //            var value = prop.GetValue(entry);
-            //            Debug.WriteLine(prop.Name + " = " + value);
-            //            _traceWriter.Write(prop.Name + " = " + value);
-            //        }
-            //        catch (Exception exception)
-            //        {
-            //            Debug.WriteLine(prop.Name + " = (non leggibile: " + exception.Message + ")");
-            //            _traceWriter.Write(prop.Name + " = (non leggibile: " + exception.Message + ")");
-            //        }
-            //    }
-            //}
-
-
-
-
-
-
+            
 
             if (userLib != null)
             {
-                CurrentUserGLobalLibrary = userLib;
+                CurrentUserGlobalLibrary = userLib;
                 result = true;
             }
 
@@ -1415,7 +1371,7 @@ namespace Basic_Project_Generator.Interfaces
             {
                 
 
-                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGLobalLibrary.MasterCopyFolder, config.MasterCopyName);
+                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGlobalLibrary.MasterCopyFolder, config.MasterCopyName);
                 if (sourceMasterCopy == null)
                 {
                     _traceWriter.Write("Master Copy '" + config.MasterCopyName + "' non trovata in libreria.");
@@ -1570,16 +1526,16 @@ namespace Basic_Project_Generator.Interfaces
         /// </summary>
         public void DumpLibraryStructure()
         {
-            if (CurrentUserGLobalLibrary == null)
+            if (CurrentUserGlobalLibrary == null)
             {
                 Debug.WriteLine("Nessuna libreria aperta.");
                 _traceWriter.Write("Nessuna libreria aperta.");
                 return;
             }
 
-            Debug.WriteLine("--- Struttura libreria: " + CurrentUserGLobalLibrary.Name + " ---");
-            _traceWriter.Write("--- Struttura libreria: " + CurrentUserGLobalLibrary.Name + " ---");
-            DumpMasterCopyFolderRecursive(CurrentUserGLobalLibrary.MasterCopyFolder, "");
+            Debug.WriteLine("--- Struttura libreria: " + CurrentUserGlobalLibrary.Name + " ---");
+            _traceWriter.Write("--- Struttura libreria: " + CurrentUserGlobalLibrary.Name + " ---");
+            DumpMasterCopyFolderRecursive(CurrentUserGlobalLibrary.MasterCopyFolder, "");
         }
 
         private void DumpMasterCopyFolderRecursive(MasterCopyFolder folder, string indent)
@@ -1607,7 +1563,7 @@ namespace Basic_Project_Generator.Interfaces
         {
             try
             {
-                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGLobalLibrary.MasterCopyFolder, masterCopyName);
+                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGlobalLibrary.MasterCopyFolder, masterCopyName);
                 if (sourceMasterCopy == null)
                 {
                     _traceWriter.Write("Master Copy '" + masterCopyName + "' non trovata nella libreria globale.");
