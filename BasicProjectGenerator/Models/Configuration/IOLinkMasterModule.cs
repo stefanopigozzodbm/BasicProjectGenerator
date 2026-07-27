@@ -13,6 +13,7 @@
         public int BaseOutputStartAddress { get; set; }
         public int AddressStep { get; set; }
         public int BaseIpLastOctet { get; set; }
+        public string SubnetIp { get; set; }
         public int BaseDeviceNumber { get; set; }
         public int IpDeviceStep { get; set; }
 

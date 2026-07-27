@@ -1218,7 +1218,8 @@ namespace Basic_Project_Generator.Interfaces
 
                 var ipLastOctet = config.GetIpLastOctet(occurrenceIndex);
                 //  xx non è mai stato popolato perchè potrebbe non venire mai creato un plc        
-                var totalIpAddress = IpAddress.GetSubnetPrefixWithDot() + ipLastOctet.ToString();
+                IpSubnet SelectedPlcIpAddress = new IpSubnet(config.SubnetIp);
+                var totalIpAddress = SelectedPlcIpAddress.GetSubnetPrefixWithDot() + ipLastOctet.ToString();
                 var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
 
 
@@ -1457,7 +1458,7 @@ namespace Basic_Project_Generator.Interfaces
 
             // DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex, string instanceName, [CallerMemberName] string caller = "")
 
-             var test_config = new IOLinkMasterModule();
+            var test_config = new IOLinkMasterModule();
             test_config.Code="AL1102";
             test_config.MasterCopyName = "AL1102";
             test_config.BaseInputStartAddress = 1100;
@@ -1465,7 +1466,7 @@ namespace Basic_Project_Generator.Interfaces
             test_config.BaseIpLastOctet = 99;
             test_config.BaseDeviceNumber = 98;
 
-            var actIpAddress = null;
+         
             var deviceNotFound = true;
             foreach (var device in CurrentProject.Devices)
             {
@@ -1482,11 +1483,12 @@ namespace Basic_Project_Generator.Interfaces
                             if (networkInterface != null && networkInterface.Nodes.Count > 0)
                             {
                                 deviceNotFound = false;
-                                actIpAddress = networkInterface.Nodes[0].GetAttribute("Address");
+                                var actIpAddress = networkInterface.Nodes[0].GetAttribute("Address");
 
                                 _traceWriter.Write("NetworkInterface trovata con actIpAddress " + actIpAddress);
+
+                                test_config.SubnetIp = actIpAddress.ToString();
                                
-                                return true;
                             }
 
 
