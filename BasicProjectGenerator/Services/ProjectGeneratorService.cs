@@ -704,9 +704,7 @@ namespace Basic_Project_Generator.Services
 
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
-
-            
-
+           
             var result = false;
             
                 if (_apiWrapper.DoTestDebug(deviceItem, caller))
@@ -716,10 +714,10 @@ namespace Basic_Project_Generator.Services
             
             return result;
 
-
-
         }
 
+
+        
         #endregion
 
 

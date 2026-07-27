@@ -1131,6 +1131,9 @@ namespace Basic_Project_Generator.UserInterfaces
             Cursor.Current = Cursors.Default;
         }
 
+
+
+
         #endregion
 
         #endregion

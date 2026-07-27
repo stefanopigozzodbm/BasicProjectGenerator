@@ -5,5 +5,7 @@
     {
         public string Code { get; set; }
         public string MasterCopyName { get; set; }
+
+        public int PortNumber { get; set; } = 0;
     }
 }
