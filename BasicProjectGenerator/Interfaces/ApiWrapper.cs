@@ -400,6 +400,7 @@ namespace Basic_Project_Generator.Interfaces
                 {
                     CurrentProject = newProject;
                     result = true;
+                   
                 }
             }
             if (loadOpenProject && accessGranted && processId != -1)
@@ -771,7 +772,7 @@ namespace Basic_Project_Generator.Interfaces
         /// NOTA: nomi "NetworkInterface"/"Address" da riconfermare con TIA Openness Explorer
         /// se il PLC ha più interfacce (es. seconda PROFINET) e serve puntarne una specifica.
         /// </summary>
-        private void SetDeviceIpAddress(DeviceItem plcDeviceItem, string ipAddress)
+        private void SetDeviceIpAddress(DeviceItem DeviceItem, string ipAddress)
         {
             if (string.IsNullOrWhiteSpace(ipAddress))
             {
@@ -784,13 +785,13 @@ namespace Basic_Project_Generator.Interfaces
                 return;
             }
 
-            if (TrySetIpAddressRecursive(plcDeviceItem, ipAddress))
+            if (TrySetIpAddressRecursive(DeviceItem, ipAddress))
             {
-                _traceWriter.Write("IP " + ipAddress + " impostato su " + plcDeviceItem.Name);
+                _traceWriter.Write("IP " + ipAddress + " impostato su " + DeviceItem.Name);
             }
             else
             {
-                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + plcDeviceItem.Name + ", IP non impostato.");
+                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + DeviceItem.Name + ", IP non impostato.");
             }
         }
 
@@ -832,7 +833,7 @@ namespace Basic_Project_Generator.Interfaces
         /// Cerca ricorsivamente, tra il DeviceItem d e i suoi figli, il primo che espone
         /// il servizio NetworkInterface, e ne imposta il primo Node.
         /// </summary>
-        private void SetDeviceNumber(DeviceItem plcDeviceItem, int deviceNumber)
+        private void SetDeviceNumber(DeviceItem DeviceItem, int deviceNumber)
         {
             if (deviceNumber <= 0 || deviceNumber > 512)
             {
@@ -841,13 +842,13 @@ namespace Basic_Project_Generator.Interfaces
             }
 
            
-            if (TrySetDeviceNumberRecursive(plcDeviceItem, deviceNumber))
+            if (TrySetDeviceNumberRecursive(DeviceItem, deviceNumber))
             {
-                _traceWriter.Write("DeviceNumber " + deviceNumber + " impostato su " + plcDeviceItem.Name);
+                _traceWriter.Write("DeviceNumber " + deviceNumber + " impostato su " + DeviceItem.Name);
             }
             else
             {
-                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + plcDeviceItem.Name + ", deviceNumber non impostato.");
+                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + DeviceItem.Name + ", deviceNumber non impostato.");
             }
         }
 
@@ -882,6 +883,123 @@ namespace Basic_Project_Generator.Interfaces
 
             return false;
         }
+
+
+        /// <summary>
+        /// Imposta la IOSystem sull'interfaccia di rete del DeviceItem passato puo essere l'iolinkMaster  
+        /// Cerca ricorsivamente, tra il DeviceItem d e i suoi figli, il primo che espone
+        /// il servizio NetworkInterface, e ne imposta il primo Node.
+        /// </summary>
+        private void SetIoSystem(DeviceItem DeviceItem, IoSystem iosytem)
+        {
+            if (iosytem == null)
+            {
+                _traceWriter.Write("IOSystem: '" + iosytem.ToString() + "Nulla! ");
+                return;
+            }
+
+
+            if (TrySetIoSystemRecursive(DeviceItem, iosytem))
+            {
+                _traceWriter.Write("IOSystem " + iosytem.ToString() + " impostata su " + DeviceItem.Name);
+            }
+            else
+            {
+                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + DeviceItem.Name + ", IOSystem non impostata.");
+            }
+        }
+
+        private bool TrySetIoSystemRecursive(DeviceItem deviceItem, IoSystem iosytem, string path = "")
+        {
+            var currentPath = string.IsNullOrEmpty(path) ? deviceItem.Name : path + " / " + deviceItem.Name;
+
+            try
+            {
+                var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                {
+                    networkInterface.IoConnectors[0].ConnectToIoSystem(iosytem);
+                        
+                    _traceWriter.Write("NetworkInterface trovata al percorso imposta IoSystem: " + currentPath);
+                    Debug.WriteLine("NetworkInterface trovata al percorso imposta IoSystem: " + currentPath);
+                    return true;
+
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore impostando IOSystem su " + currentPath + ": " + exception.Message);
+            }
+
+            foreach (var childItem in deviceItem.DeviceItems)
+            {
+                if (TrySetIoSystemRecursive(childItem, iosytem, currentPath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
+        /// Imposta la Subnet sull'interfaccia di rete del DeviceItem passato puo essere l'iolinkMaster  
+        /// Cerca ricorsivamente, tra il DeviceItem d e i suoi figli, il primo che espone
+        /// il servizio NetworkInterface, e ne imposta il primo Node.
+        /// </summary>
+        private void SetSubnet(DeviceItem DeviceItem, Subnet subnet)
+        {
+            if (subnet == null)
+            {
+                _traceWriter.Write("subnet: '" + subnet.ToString() + "Nulla! ");
+                return;
+            }
+
+
+            if (TrySetSubnetRecursive(DeviceItem, subnet))
+            {
+                _traceWriter.Write("Subnet " + subnet.ToString() + " impostata su " + DeviceItem.Name);
+            }
+            else
+            {
+                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + DeviceItem.Name + ", subnet non impostata.");
+            }
+        }
+
+        private bool TrySetSubnetRecursive(DeviceItem deviceItem, Subnet subnet, string path = "")
+        {
+            var currentPath = string.IsNullOrEmpty(path) ? deviceItem.Name : path + " / " + deviceItem.Name;
+
+            try
+            {
+                var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                {
+                    networkInterface.Nodes[0].ConnectToSubnet(subnet);
+
+                    _traceWriter.Write("NetworkInterface trovata al percorso imposta Subnet: " + currentPath);
+                    Debug.WriteLine("NetworkInterface trovata al percorso imposta Subnet: " + currentPath);
+                    return true;
+
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore impostando Subnet su " + currentPath + ": " + exception.Message);
+            }
+
+            foreach (var childItem in deviceItem.DeviceItems)
+            {
+                if (TrySetSubnetRecursive(childItem, subnet, currentPath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 
 
         //non compresa CPU -> vd DoAddNewDevice
@@ -1187,7 +1305,7 @@ namespace Basic_Project_Generator.Interfaces
 
         #region IOLink
 
-        public bool DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex, string instanceName, [CallerMemberName] string caller = "")
+        public bool DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex, string instanceName,Subnet subnet,IoSystem ioSystem, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -1205,7 +1323,7 @@ namespace Basic_Project_Generator.Interfaces
                     return false;
                 }
 
-                var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, instanceName, instanceName); // <-- da verificare
+                var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, instanceName, instanceName); 
 
                 if (newDevice == null)
                 {
@@ -1222,12 +1340,12 @@ namespace Basic_Project_Generator.Interfaces
                 var totalIpAddress = SelectedPlcIpAddress.GetSubnetPrefixWithDot() + ipLastOctet.ToString();
                 var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
 
+                SetSubnet(newDevice.DeviceItems[1], subnet);
 
-                //VERIFICARE: i nomi degli attributi "DeviceNumber" e "Address" sono corretti? (TIA Openness Explorer)
-                //SetDeviceIpAddress(newDevice.DeviceItems[1], "?.?.?." + ipLastOctet); // <-- da comporre con la subnet reale del PLC
+                SetIoSystem(newDevice.DeviceItems[1], ioSystem);
+
                 SetDeviceIpAddress(newDevice.DeviceItems[1], totalIpAddress);
 
-                //newDevice.DeviceItems[1].SetAttribute("DeviceNumber", deviceNumber); // <-- nome attributo da verificare
                 SetDeviceNumber(newDevice.DeviceItems[1], deviceNumber);
 
                 return true;
@@ -1451,6 +1569,8 @@ namespace Basic_Project_Generator.Interfaces
         public bool DoTestDebug(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
         {
             var result = false;
+            IoSystem ioSystem = null;
+
 
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -1466,7 +1586,8 @@ namespace Basic_Project_Generator.Interfaces
             test_config.BaseIpLastOctet = 99;
             test_config.BaseDeviceNumber = 98;
 
-         
+
+            #region Estrazione IP del PLC dal progetto per inserire correttamente DeviceNumber su IOlink Master e connetterlo alla rete PROFINET del PLC + Estrazione IOSystem per inserire correttamente DeviceNumber su IOlink Master e connetterlo alla rete PROFINET del PLC
             var deviceNotFound = true;
             foreach (var device in CurrentProject.Devices)
             {
@@ -1478,7 +1599,9 @@ namespace Basic_Project_Generator.Interfaces
                         if (item.Name == deviceItem.Name) //18a1
                         {
 
-                            var networkInterface = item.DeviceItems[2].GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                            var networkInterface = item.DeviceItems[2].GetService<Siemens.Engineering.HW.Features.NetworkInterface>(); //#2 perchè è l'interfaccia PROFINET interface_1 
+                            ioSystem = networkInterface.IoControllers[0].IoSystem; 
+
 
                             if (networkInterface != null && networkInterface.Nodes.Count > 0)
                             {
@@ -1496,6 +1619,14 @@ namespace Basic_Project_Generator.Interfaces
                     }
                 }
             }
+            #endregion
+
+            #region Estranione Subnet dal PLC per inserire correttamente DeviceNumber su IOlink Master e connetterlo alla rete PROFINET del PLC
+            Subnet subnet = CurrentProject.Subnets[0];
+
+            #endregion
+
+          
 
             if (deviceNotFound)
             {
@@ -1506,7 +1637,7 @@ namespace Basic_Project_Generator.Interfaces
 
             if (test_config != null)
             {
-                DoAddIOLinkMaster(test_config,0,"AL1102",caller); ///!! passare questo parametro actIpAddress oppure popolare IpAddress..da vedere
+                DoAddIOLinkMaster(test_config,0,"AL1102",subnet, ioSystem,caller); ///!! passare questo parametro actIpAddress oppure popolare IpAddress..da vedere
 
                 result = true;
             }
