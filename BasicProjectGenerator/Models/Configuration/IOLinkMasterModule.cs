@@ -8,8 +8,8 @@ namespace Basic_Project_Generator.Models.Configuration
     /// </summary>
     public class IOLinkMasterModule
     {
-        public string Code { get; set; }
         public string MasterCopyName { get; set; }
+        public string Code { get; set; }
         public int BaseInputStartAddress { get; set; }
         public int BaseOutputStartAddress { get; set; }
         public int AddressStep { get; set; }

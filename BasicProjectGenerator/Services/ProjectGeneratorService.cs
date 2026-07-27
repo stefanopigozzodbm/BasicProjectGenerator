@@ -555,8 +555,8 @@ namespace Basic_Project_Generator.Services
             {
                 result.Add(new IOLinkMasterModule
                 {
-                    Code = element.Element("Code")?.Value,
-                    MasterCopyName = element.Element("MasterCopyName")?.Value,
+                    MasterCopyName = element.Element("Code")?.Value,
+                    Code = element.Element("MasterCopyName")?.Value,
                     BaseInputStartAddress = int.Parse(element.Element("BaseInputStartAddress")?.Value ?? "0"),
                     BaseOutputStartAddress = int.Parse(element.Element("BaseOutputStartAddress")?.Value ?? "0"),
                     AddressStep = int.Parse(element.Element("AddressStep")?.Value ?? "0"),
@@ -581,8 +581,8 @@ namespace Basic_Project_Generator.Services
             {
                 result.Add(new IOLinkSlaveModule
                 {
-                    Code = element.Element("Code")?.Value,
-                    MasterCopyName = element.Element("MasterCopyName")?.Value
+                    MasterCopyName = element.Element("Code")?.Value,
+                    Code = element.Element("MasterCopyName")?.Value
                 });
             }
 

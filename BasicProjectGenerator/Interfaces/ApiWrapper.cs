@@ -1313,34 +1313,34 @@ namespace Basic_Project_Generator.Interfaces
         /// Piazza un Master Io-Link (da Master catalogo HW) sulla Subnet , IoSystem del PLC (in dbm genreicamente 1) con le config derivanti dal
         /// file excel e da IOLink_StartupSettings.xml
                /// </summary>
-        public bool DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex, string instanceName,Subnet subnet,IoSystem ioSystem, [CallerMemberName] string caller = "")
+        public bool DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex,Subnet subnet,IoSystem ioSystem, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
             try
             {
-                var itemList = TiaPortal.HardwareCatalog.Find(config.Code);
+                var itemList = TiaPortal.HardwareCatalog.Find(config.MasterCopyName);
                 var masterEntry = itemList
                     .OfType<Siemens.Engineering.HW.HardwareCatalog.CatalogEntry>()
-                    .FirstOrDefault(e => e.ArticleNumber == config.Code && e.TypeIdentifier.Contains("/DAP/"));
+                    .FirstOrDefault(e => e.ArticleNumber == config.MasterCopyName && e.TypeIdentifier.Contains("/DAP/"));
 
                 if (masterEntry == null)
                 {
-                    _traceWriter.Write("Master IO-Link '" + config.Code + "' non trovato nel catalogo HW (DAP).");
+                    _traceWriter.Write("Master IO-Link '" + config.MasterCopyName + "' non trovato nel catalogo HW (DAP).");
                     return false;
                 }
 
-                var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, instanceName, instanceName); 
+                var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, config.MasterCopyName, config.Code); 
 
                 if (newDevice == null)
                 {
-                    _traceWriter.Write("Creazione master IO-Link '" + instanceName + "' fallita.");
+                    _traceWriter.Write("Creazione master IO-Link '" + config.MasterCopyName + "' fallita.");
                     return false;
                 }
 
                 IsModified = true;
-                _traceWriter.Write("Master IO-Link '" + instanceName + "' creato da catalogo HW.");
+                _traceWriter.Write("Master IO-Link '" + config.MasterCopyName + "' creato da catalogo HW.");
 
                 var ipLastOctet = config.GetIpLastOctet(occurrenceIndex);
                 //  xx non è mai stato popolato perchè potrebbe non venire mai creato un plc        
@@ -1348,13 +1348,33 @@ namespace Basic_Project_Generator.Interfaces
                 var totalIpAddress = SelectedPlcIpAddress.GetSubnetPrefixWithDot() + ipLastOctet.ToString();
                 var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
 
-                SetSubnet(newDevice.DeviceItems[1], subnet);
+                try
+                {
+                    newDevice.DeviceItems[1].SetAttribute("Name", config.Code);
 
-                SetIoSystem(newDevice.DeviceItems[1], ioSystem);
+                    SetSubnet(newDevice.DeviceItems[1], subnet);
 
-                SetDeviceIpAddress(newDevice.DeviceItems[1], totalIpAddress);
+                    SetIoSystem(newDevice.DeviceItems[1], ioSystem);
 
-                SetDeviceNumber(newDevice.DeviceItems[1], deviceNumber);
+                    SetDeviceIpAddress(newDevice.DeviceItems[1], totalIpAddress);
+
+                    SetDeviceNumber(newDevice.DeviceItems[1], deviceNumber);
+
+
+                }
+                
+                catch (Exception exception)
+                {
+
+                    if (methodBase.ReflectedType != null)
+                    {
+                        Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+                        _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+                    }
+                    // Slot non valido per questo modulo -> provo il successivo
+                }
+
+            
 
                 #region aggiunta Slave IO-Link
 
@@ -1375,7 +1395,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore aggiungendo master IO-Link '" + config.Code + "': " + exception.Message);
+                _traceWriter.Write("Errore aggiungendo master IO-Link '" + config.MasterCopyName + "': " + exception.Message);
                 return false;
             }
         }
@@ -1395,10 +1415,10 @@ namespace Basic_Project_Generator.Interfaces
             {
                 
 
-                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGLobalLibrary.MasterCopyFolder, config.Code);
+                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGLobalLibrary.MasterCopyFolder, config.MasterCopyName);
                 if (sourceMasterCopy == null)
                 {
-                    _traceWriter.Write("Master Copy '" + config.Code + "' non trovata in libreria.");
+                    _traceWriter.Write("Master Copy '" + config.MasterCopyName + "' non trovata in libreria.");
                     return false;
                 }
 
@@ -1406,7 +1426,6 @@ namespace Basic_Project_Generator.Interfaces
 
                 var newSlaveModuleDeviceItem = DeviceItems.CreateFrom(projectMasterCopy); // piazza il master copy appena creato nella cartella DeviceItems del master
 
-                //string projectMasterCopyTypeIdentifier = newSlaveModuleDeviceItem.GetAttribute("TypeIdentifier").ToString();
 
                 var portsContainer = FindPortsContainer(masterDeviceItem); // <-- vedi nota sotto sul percorso "8 Ports_1"
                 if (portsContainer == null)
@@ -1418,7 +1437,7 @@ namespace Basic_Project_Generator.Interfaces
                 var slaveModulePlugable = CheckPortCanPlugMove(portsContainer, newSlaveModuleDeviceItem, config.PortNumber);
                 if (!slaveModulePlugable)
                 {
-                    _traceWriter.Write("Impossibile piazzare slave '" + config.Code + "' sulla porta " + config.PortNumber);
+                    _traceWriter.Write("Impossibile piazzare slave '" + config.MasterCopyName + "' sulla porta " + config.PortNumber);
                     return false;
                 }
 
@@ -1434,7 +1453,7 @@ namespace Basic_Project_Generator.Interfaces
                             _traceWriter.Write("newSlaveModule plugged in slot " + config.PortNumber);
 
                             //assegna nome personalizzato al singolo IOlink_Slave
-                            newSlaveModule.SetAttribute("Name", config.MasterCopyName);
+                            newSlaveModule.SetAttribute("Name", config.Code);
 
 
                             foreach (var (owner, address) in GetAllAddressesWithOwner(newSlaveModule))
@@ -1446,13 +1465,13 @@ namespace Basic_Project_Generator.Interfaces
                                 if (ioType == "Input")
                                 {
                                     address.SetAttribute("StartAddress", cursor.NextInputAddress);
-                                    _traceWriter.Write(config.MasterCopyName + ": Input StartAddress=" + cursor.NextInputAddress + " (Length=" + lengthBytes + " byte)");
+                                    _traceWriter.Write(config.Code + ": Input StartAddress=" + cursor.NextInputAddress + " (Length=" + lengthBytes + " byte)");
                                     cursor.NextInputAddress += lengthBytes;
                                 }
                                 else if (ioType == "Output")
                                 {
                                     address.SetAttribute("StartAddress", cursor.NextOutputAddress);
-                                    _traceWriter.Write(config.MasterCopyName + ": Output StartAddress=" + cursor.NextOutputAddress + " (Length=" + lengthBytes + " byte)");
+                                    _traceWriter.Write(config.Code + ": Output StartAddress=" + cursor.NextOutputAddress + " (Length=" + lengthBytes + " byte)");
                                     cursor.NextOutputAddress += lengthBytes;
                                 }
                             }
@@ -1477,7 +1496,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore piazzando slave '" + config.Code + "': " + exception.Message);
+                _traceWriter.Write("Errore piazzando slave '" + config.MasterCopyName + "': " + exception.Message);
                 return false;
             }
         }
@@ -1644,25 +1663,25 @@ namespace Basic_Project_Generator.Interfaces
 
 
             var test_config = new IOLinkMasterModule();
-            test_config.Code="AL1102";
-            test_config.MasterCopyName = "AL1102";
-            test_config.BaseInputStartAddress = 1100;
-            test_config.BaseOutputStartAddress = 1100;
-            test_config.BaseIpLastOctet = 99;
-            test_config.BaseDeviceNumber = 99;
+            test_config.MasterCopyName="AL1102";
+            test_config.Code = "AL1102_1";
+            test_config.BaseInputStartAddress = 1100; //questi non devo passarglieli qui ma devono autocalcoarsi in base BaseInputStartAddress IN IOLink_StartupSettings + OFFSET nello stesso file
+            test_config.BaseOutputStartAddress = 1100; // idem a ingressi
+            test_config.BaseIpLastOctet = 98; //idem a ingressi ma con il relativo start adress e offset
+            test_config.BaseDeviceNumber = 98; //idem a ingressi ma con il relativo start adress e offset
 
             // --- PRIMO SLAVE ---
             var test_config_slave1 = new IOLinkSlaveModule(); // Creiamo l'Oggetto 1
-            test_config_slave1.Code = "AL2401";
-            test_config_slave1.MasterCopyName = "XYZ_AL2401_descriz";
+            test_config_slave1.MasterCopyName = "AL2401";
+            test_config_slave1.Code = "XYZ_AL2401_descriz";
             test_config_slave1.PortNumber = 1;
 
             test_config.AddSlave(test_config_slave1); // Aggiungiamo l'Oggetto 1 alla lista
 
             // --- SECONDO SLAVE ---
             var test_config_slave2 = new IOLinkSlaveModule(); // Creiamo l'Oggetto 2 (FONDAMENTALE!)
-            test_config_slave2.Code = "TP3232";
-            test_config_slave2.MasterCopyName = "XYZ_TP3232_descriz";
+            test_config_slave2.MasterCopyName = "TP3232";
+            test_config_slave2.Code = "XYZ_TP3232_descriz";
             test_config_slave2.PortNumber = 2;
 
             test_config.AddSlave(test_config_slave2); // Aggiungiamo l'Oggetto 2 alla lista
@@ -1719,7 +1738,7 @@ namespace Basic_Project_Generator.Interfaces
 
             if (test_config != null)
             {
-                DoAddIOLinkMaster(test_config, 0,"AL1102",subnet, ioSystem,caller); ///!! passare questo parametro actIpAddress oppure popolare IpAddress..da vedere
+                DoAddIOLinkMaster(test_config, 0,subnet, ioSystem,caller); ///!! passare questo parametro actIpAddress oppure popolare IpAddress..da vedere
 
                 result = true;
             }
