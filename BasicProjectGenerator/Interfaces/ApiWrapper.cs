@@ -1368,7 +1368,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 foreach (var slave in config.SlaveModules)
                 {
-                    DoAddIOLinkSlave(newDevice.DeviceItems[1], slave,cursor, caller);
+                    DoAddIOLinkSlave(newDevice.DeviceItems,newDevice.DeviceItems[1], slave,cursor, caller);
                 }
                 #endregion
                 return true;
@@ -1385,7 +1385,7 @@ namespace Basic_Project_Generator.Interfaces
         /// assegna gli indirizzi Input/Output dal cursore corrente, poi avanza il cursore in base
         /// alla Length (bit) effettivamente occupata dal nuovo slave.
         /// </summary>
-        public bool DoAddIOLinkSlave(DeviceItem masterDeviceItem, IOLinkSlaveModule config, IOLinkAddressCursor cursor, [CallerMemberName] string caller = "")
+        public bool DoAddIOLinkSlave(DeviceItemComposition DeviceItems, DeviceItem masterDeviceItem, IOLinkSlaveModule config, IOLinkAddressCursor cursor, [CallerMemberName] string caller = "")
         {
             var result = false;
             var methodBase = MethodBase.GetCurrentMethod();
@@ -1404,7 +1404,9 @@ namespace Basic_Project_Generator.Interfaces
 
                 var projectMasterCopy = CurrentProject.ProjectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy); // funziona ma se c'è gia lo dupplica
 
-                string projectMasterCopyTypeIdentifier = projectMasterCopy.GetAttribute("TypeIdentifier").ToString();
+                var newSlaveModuleDeviceItem = DeviceItems.CreateFrom(projectMasterCopy); // piazza il master copy appena creato nella cartella DeviceItems del master
+
+                //string projectMasterCopyTypeIdentifier = newSlaveModuleDeviceItem.GetAttribute("TypeIdentifier").ToString();
 
                 var portsContainer = FindPortsContainer(masterDeviceItem); // <-- vedi nota sotto sul percorso "8 Ports_1"
                 if (portsContainer == null)
@@ -1413,7 +1415,7 @@ namespace Basic_Project_Generator.Interfaces
                     return false;
                 }
 
-                var slaveModulePlugable = !CheckPortCanPlugNew(portsContainer, projectMasterCopyTypeIdentifier, config.PortNumber, config.MasterCopyName);
+                var slaveModulePlugable = CheckPortCanPlugMove(portsContainer, newSlaveModuleDeviceItem, config.PortNumber);
                 if (!slaveModulePlugable)
                 {
                     _traceWriter.Write("Impossibile piazzare slave '" + config.Code + "' sulla porta " + config.PortNumber);
@@ -1424,12 +1426,16 @@ namespace Basic_Project_Generator.Interfaces
                 {
                     try
                     {
-                        var newSlaveModule = portsContainer.PlugNew(projectMasterCopyTypeIdentifier, config.MasterCopyName, config.PortNumber);
+                        var newSlaveModule = portsContainer.PlugMove(newSlaveModuleDeviceItem, config.PortNumber); // ho gia il DeviceItem NON lo devo creare col plugnew altrinenti perdo le informazioni di libreria
                         if (newSlaveModule != null)
                         {
                             IsModified = true;
                             result = true;
                             _traceWriter.Write("newSlaveModule plugged in slot " + config.PortNumber);
+
+                            //assegna nome personalizzato al singolo IOlink_Slave
+                            newSlaveModule.SetAttribute("Name", config.MasterCopyName);
+
 
                             foreach (var (owner, address) in GetAllAddressesWithOwner(newSlaveModule))
                             {
@@ -1489,14 +1495,14 @@ namespace Basic_Project_Generator.Interfaces
             return null;
         }
 
-        private Boolean CheckPortCanPlugNew(DeviceItem targetPort,string typeIdentifier, int PortNumber, string slaveMasterCopyName)
+        private Boolean CheckPortCanPlugMove(DeviceItem targetPort,DeviceItem slaveMasterCopy, int PortNumber)
         {
             if (PortNumber > 8 || PortNumber < 1)
             {
                 _traceWriter.Write("PortNumber: '" + PortNumber + "', fuori range 1-8");
                 return false;
             }
-            return targetPort.CanPlugNew(typeIdentifier, slaveMasterCopyName, PortNumber);//ex typeidentifier = "GSD: GSDML - V2.34 - IFM - AL1102 - 20181105.XML / SM / IDS_1 Port x IO - Link 4I"
+            return targetPort.CanPlugMove(slaveMasterCopy, PortNumber);//ex typeidentifier = "GSD: GSDML - V2.34 - IFM - AL1102 - 20181105.XML / SM / IDS_1 Port x IO - Link 4I"
         }
 
         #endregion
@@ -1723,20 +1729,7 @@ namespace Basic_Project_Generator.Interfaces
         }
 
 
-        public bool DoTestDebugAddSlave(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
-        {
-            var result = false;
-          
-
-
-            var methodBase = MethodBase.GetCurrentMethod();
-            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
-
-            ///
-
-            return result;
-
-        }
+      
         #endregion
 
             #region Compile
