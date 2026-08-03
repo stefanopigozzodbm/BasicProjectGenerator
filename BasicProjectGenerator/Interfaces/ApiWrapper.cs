@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -515,7 +516,13 @@ namespace Basic_Project_Generator.Interfaces
                     
                     SetDeviceAttributes(Device.DeviceItems[1], config.StartupAttributes);
 
-                  
+                    Subnet subnet = DoCreateSubnet("System:Subnet.Ethernet", "PN/IE_1");
+
+                    SetSubnet(Device.DeviceItems[1], subnet);
+
+                    DoCreateIOSystem(Device.DeviceItems[1],"IO_System_DBM");
+
+
                 }
             }
             catch (Exception exception)
@@ -902,6 +909,108 @@ namespace Basic_Project_Generator.Interfaces
             return false;
         }
 
+        private bool TryCreateIoSystemRecursive(DeviceItem deviceItem,string ioSystemName, string path = "")
+        {
+            var currentPath = string.IsNullOrEmpty(path) ? deviceItem.Name : path + " / " + deviceItem.Name;
+
+            try
+            {
+                var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                {
+                    networkInterface.IoControllers[0].CreateIoSystem(ioSystemName);
+
+                    _traceWriter.Write("Iosytem creato al percorso: " + currentPath);
+                  
+                    return true;
+
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore creando IOSystem su " + currentPath + ": " + exception.Message);
+
+                return false;
+            }
+
+            foreach (var childItem in deviceItem.DeviceItems)
+            {
+                if (TryCreateIoSystemRecursive(childItem, ioSystemName, currentPath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+        private bool DoCreateIOSystem(DeviceItem deviceItem,String ioSystemName)
+        {
+            if (ioSystemName == "")
+            {
+                _traceWriter.Write("IOSystem: '" + ioSystemName + " stringa invalida ");
+                return false;
+            }
+
+
+
+            try
+            {
+                if (TryCreateIoSystemRecursive(deviceItem, ioSystemName))
+                {
+                    _traceWriter.Write("IOSystem " + ioSystemName + " creata con successo.");
+                    return true;
+                }
+                else
+                {
+                    _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + deviceItem.Name + ", IOSystem non creata.");
+                    return false;
+                }
+            }
+
+            catch (Exception exception)
+            {
+
+                _traceWriter.Write("Errore creando IOSystem su  " + exception.Message);
+                return false;
+            }
+
+        }
+        private Subnet DoCreateSubnet(String subnetName,String subnetDescription)
+        {
+            if (subnetName == "")
+            {
+                _traceWriter.Write("Subnet: '" + subnetName + " stringa invalida ");
+                return null;
+            }
+
+            try {
+
+                Subnet subnet_check = CurrentProject.Subnets[0]; // quest array è vuoto se non esiste la subnet, quindi provo a prenderne una esistente... per il momento va bene cosi
+                return subnet_check;
+            }
+
+            catch (Exception exception)
+            {
+
+                _traceWriter.Write("Subnet " + subnetName + " non esistente, creo una nuova Subnet: " + exception.Message);
+            }
+
+
+            try
+            {
+                return CurrentProject.Subnets.Create(subnetName, subnetDescription);//("System:Subnet.Ethernet", "PN/IE_1");
+                _traceWriter.Write("Subnet " + subnetName + " creata con successo.");
+
+            }
+            catch (Exception exception)
+            {
+
+                _traceWriter.Write("Errore impostando IOSystem su " + exception.Message);
+                return null;
+            }
+        }
 
         /// <summary>
         /// Imposta la Subnet sull'interfaccia di rete del DeviceItem passato puo essere l'iolinkMaster  
@@ -1457,6 +1566,47 @@ namespace Basic_Project_Generator.Interfaces
             }
         }
 
+
+
+        public bool DoAddIOLinkMasterFromPlc(IOLinkMasterModule config, int occurrenceIndex, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        {
+            IoSystem ioSystem = null;
+            Subnet subnet = null;
+
+            foreach (var device in CurrentProject.Devices)
+            {
+                if (device.Name != plcDeviceItem.DeviceName) continue;
+
+                foreach (var item in device.DeviceItems)
+                {
+                    if (item.Name != plcDeviceItem.Name) continue;
+
+                    var networkInterface = item.DeviceItems[2].GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                    if (networkInterface == null || networkInterface.Nodes.Count == 0)
+                    {
+                        _traceWriter.Write("NetworkInterface del PLC non trovata o senza nodi.");
+                        return false;
+                    }
+
+                    ioSystem = networkInterface.IoControllers[0].IoSystem;
+                    config.SubnetIp = networkInterface.Nodes[0].GetAttribute("Address")?.ToString();
+                }
+            }
+
+
+            //CurrentProject.Subnets.Create("System:Subnet.Ethernet", "PN/IE_1");
+            subnet = CurrentProject.Subnets[0]; // stesso limite già presente in DoTestDebug: prima subnet del progetto
+
+            if (ioSystem == null || string.IsNullOrWhiteSpace(config.SubnetIp))
+            {
+                _traceWriter.Write("Impossibile determinare IoSystem/IP del PLC per il master '" + config.Code + "'.");
+                return false;
+            }
+
+            return DoAddIOLinkMaster(config, occurrenceIndex, subnet, ioSystem, caller);
+        }
+
+
         /// <summary> <-- DA VERIFICARE con TIA Openness Explorer sul vostro master reale già piazzato </summary>
         private DeviceItem FindPortsContainer(DeviceItem masterDeviceItem)
         {
@@ -1679,11 +1829,13 @@ namespace Basic_Project_Generator.Interfaces
             #endregion
 
             #region Estranione Subnet dal PLC per inserire correttamente DeviceNumber su IOlink Master e connetterlo alla rete PROFINET del PLC
-            Subnet subnet = CurrentProject.Subnets[0];
 
+
+            Subnet subnet = CurrentProject.Subnets[0];
+           
             #endregion
 
-          
+
 
             if (deviceNotFound)
             {

@@ -1,6 +1,7 @@
 ﻿using Basic_Project_Generator.Interfaces;
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Services;
+using Org.BouncyCastle.Tls;
 using Siemens.Engineering;
 using Siemens.Engineering.Library;
 using System;
@@ -1051,6 +1052,22 @@ namespace Basic_Project_Generator.UserInterfaces
                     if (added) addedCount++;
                     else { errorCount++; _traceWriter.Write("Fallito: " + item.Name); }
                 }
+
+
+                // 3) Creare la Subnet e la Io-System (equivalente click destro sopra PLC AddSubnet e AddIOSystem)
+                /// lo fa quando inserisce PLC _projectGeneratorService.CreateSubnet();
+
+
+
+
+                // test 03/08/26 per insezione moduli master io link da excel
+
+
+                var deviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem;
+
+                _projectGeneratorService.AddIOLinkMastersFromImport(_importedItems, deviceItem);
+
+
 
                 MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

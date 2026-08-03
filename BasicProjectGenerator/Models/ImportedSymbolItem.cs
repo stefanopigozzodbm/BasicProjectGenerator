@@ -30,6 +30,9 @@ namespace Basic_Project_Generator.Models
         // Compatibilità con AddNewModule esistente (moduli: sempre puramente digitali o analogici)
         public int? InputStartAddress => DigitalInputStartAddress ?? AnalogInputStartAddress;
         public int? OutputStartAddress => DigitalOutputStartAddress ?? AnalogOutputStartAddress;
+        public bool IsIOLinkMaster { get; set; }
+        public string IOLinkMasterCode { get; set; } // es. "AL1102", per il lookup nel catalogo statico
+        public List<IOLinkPortAssignment> IOLinkPorts { get; set; } = new List<IOLinkPortAssignment>();
 
 
     }

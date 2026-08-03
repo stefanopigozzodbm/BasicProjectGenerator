@@ -2,6 +2,7 @@
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Models.Configuration;
 using Basic_Project_Generator.UserInterfaces;
+//using Siemens.Engineering.HW;
 using Siemens.Engineering.Library;
 using System;
 using System.Collections.Generic;
@@ -468,6 +469,12 @@ namespace Basic_Project_Generator.Services
 
         #endregion // TIA Portal Project
 
+        #region Subnet and IoSystem
+
+        //per ora creato tutto dentro apiwrapper.cs nella parte di addnewdevice, ma in futuro si potrebbe creare un metodo separato per creare la subnet e l'io system, in modo da poterlo richiamare anche in altri contesti
+
+        #endregion
+
         #region Device
 
         /// <summary>
@@ -590,6 +597,53 @@ namespace Basic_Project_Generator.Services
         }
 
 
+        public void AddIOLinkMastersFromImport(List<ImportedSymbolItem> importedItems, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var masterCatalog = LoadIOLinkMasterCatalog();
+            var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in importedItems.Where(i => i.IsIOLinkMaster))
+            {
+                var template = masterCatalog.FirstOrDefault(m => string.Equals(m.MasterCopyName, item.IOLinkMasterCode, StringComparison.OrdinalIgnoreCase));
+                if (template == null)
+                {
+                    _traceWriter.Write("Nessuna voce di catalogo trovata per master IO-Link '" + item.IOLinkMasterCode + "'.");
+                    continue;
+                }
+
+                var occurrenceIndex = occurrenceCounters.TryGetValue(template.MasterCopyName, out var count) ? count : 0;
+                occurrenceCounters[template.MasterCopyName] = occurrenceIndex + 1;
+
+                var runtimeConfig = new IOLinkMasterModule
+                {
+                    MasterCopyName = template.MasterCopyName,
+                    Code = item.Name, // sigla, es. "321A1"
+                    BaseInputStartAddress = template.BaseInputStartAddress,
+                    BaseOutputStartAddress = template.BaseOutputStartAddress,
+                    AddressStep = template.AddressStep,
+                    BaseIpLastOctet = template.BaseIpLastOctet,
+                    BaseDeviceNumber = template.BaseDeviceNumber,
+                    IpDeviceStep = template.IpDeviceStep
+                };
+
+                foreach (var port in item.IOLinkPorts)
+                {
+                    runtimeConfig.AddSlave(new IOLinkSlaveModule
+                    {
+                        MasterCopyName = port.Code,        // chiave libreria, es. "AL2401"/"TP3232"
+                        Code = port.InstanceName,          // nome istanza composto
+                        PortNumber = port.PortNumber
+                    });
+                }
+
+                _apiWrapper.DoAddIOLinkMasterFromPlc(runtimeConfig, occurrenceIndex, plcDeviceItem, caller);
+            }
+        }
+
+
 
         public bool AddNewModule(ModuleConfiguration config, [CallerMemberName] string caller = "")
         {
@@ -693,7 +747,8 @@ namespace Basic_Project_Generator.Services
             LoadDeviceCatalog();
             LoadModuleCatalog();
 
-            return _symbolicTableImportService.Import(filePath, DeviceModel.DeviceCatalog, ModuleModel.ModuleCatalog);
+            var ioLinkMasterCatalog = LoadIOLinkMasterCatalog();
+            return _symbolicTableImportService.Import(filePath, DeviceModel.DeviceCatalog, ModuleModel.ModuleCatalog, ioLinkMasterCatalog);
         }
         #endregion
 

@@ -203,6 +203,7 @@
     <Compile Include="Models\DisplayAutoLogoff.cs" />
     <Compile Include="Models\ExpModule.cs" />
     <Compile Include="Models\ImportedSymbolItem.cs" />
+    <Compile Include="Models\IOLinkPortAssignment.cs" />
     <Compile Include="Models\IpSubnet.cs" />
     <Compile Include="Models\ModuleCatalog.cs" />
     <Compile Include="Models\Configuration\ModuleConfiguration.cs" />
@@ -282,7 +283,13 @@
     <Content Include="Assets\DeviceCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\IOLink_StartupSettings.xml" />
+	  
+
+	  <Content Include="Assets\IOLink_StartupSettings.xml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  
+	  
     <Content Include="Assets\ModuleCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
