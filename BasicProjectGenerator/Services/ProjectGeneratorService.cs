@@ -2,6 +2,8 @@
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Models.Configuration;
 using Basic_Project_Generator.UserInterfaces;
+using NPOI.SS.UserModel;
+
 //using Siemens.Engineering.HW;
 using Siemens.Engineering.Library;
 using System;
@@ -719,13 +721,14 @@ namespace Basic_Project_Generator.Services
             return _apiWrapper.DoAddNewModule(config);
         }
 
-        public (Dictionary<string, object> dictAttribute, Dictionary<string, object> dictIpAddress) LoadPlcStartupSettings([CallerMemberName] string caller = "")
+        public (Dictionary<string, object> dictAttribute, Dictionary<string, object> dictIpAddress, Dictionary<string, object> startupSecurutyPolicys) LoadPlcStartupSettings([CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
             var attributeDict = new Dictionary<string, object>();
             var ipAddressDict = new Dictionary<string, object>();
+            var startupSecurutyPolicys = new Dictionary<string, object>();
 
             var doc = XDocument.Load("Assets\\PlcStartupSettings.xml");
 
@@ -781,7 +784,37 @@ namespace Basic_Project_Generator.Services
             }
 
 
-            return (attributeDict,ipAddressDict);
+            // Parsing degli SecurityPolicy
+            // Si accede al nodo <SecurityPolicys> e poi a tutti gli elementi <Attribute> contenuti
+            var securityPolicys = doc.Root.Element("SecurityPolicys")?.Elements("SecurityPolicy");
+
+            if (securityPolicys != null)
+            {
+                foreach (var securityPolicy in securityPolicys)
+                {
+                    
+                    var policyName = securityPolicy.Element("Name")?.Value;
+                    var rawValue = securityPolicy.Element("Value")?.Value;
+
+                    if (string.IsNullOrWhiteSpace(policyName) || rawValue == null) continue;
+
+                    if (System.Int16.TryParse(rawValue, out var intValue))
+                    {
+                        startupSecurutyPolicys[policyName] = intValue;
+                    }
+                    else if (System.Boolean.TryParse(rawValue, out var boolValue))
+                    {
+                        startupSecurutyPolicys[policyName] = boolValue;
+                    }
+                    else
+                    {
+                        startupSecurutyPolicys[policyName] = rawValue;
+                    }
+                }
+            }
+
+
+            return (attributeDict,ipAddressDict,startupSecurutyPolicys);
         }
 
         #endregion // Device

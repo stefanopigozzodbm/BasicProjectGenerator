@@ -17,5 +17,8 @@ namespace Basic_Project_Generator.Models
         public IReadOnlyDictionary<int, string> IntPeriphName { get; set; }
         public Dictionary<string, object> StartupAttributes { get; set; }
         public Dictionary<string, object> StartupIpAddresses { get; set; }
+        public Dictionary<string, object> StartupSecurutyPolicy { get; set; }
+
+        
     }
 }

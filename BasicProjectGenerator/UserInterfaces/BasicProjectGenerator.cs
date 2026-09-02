@@ -726,7 +726,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 var catalogDevice = _projectGeneratorService.NewDevice;
                 var intPeriphName = catalogDevice.GetOnboardIoByPosition();
-                var (startupAttributes,startupIpAddresses) = _projectGeneratorService.LoadPlcStartupSettings();
+                var (startupAttributes,startupIpAddresses,startupSecurutyPolicy) = _projectGeneratorService.LoadPlcStartupSettings();
 
                 //ovveride dell'indirizzo i de dafult su PlcStartupSettings.xml
                 //se diversamente specificato sul campo di input tb_PlcIpAddress
@@ -748,7 +748,9 @@ namespace Basic_Project_Generator.UserInterfaces
                     AnalogOutputStartAddress = sourceItem?.AnalogOutputStartAddress,
                     IntPeriphName = intPeriphName,
                     StartupAttributes = startupAttributes,
-                    StartupIpAddresses = startupIpAddresses
+                    StartupIpAddresses = startupIpAddresses,
+                    StartupSecurutyPolicy = startupSecurutyPolicy
+
                 };
                 
                 _projectGeneratorService.AddNewDevice(config);

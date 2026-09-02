@@ -11,6 +11,7 @@ using Siemens.Engineering.HW.Features;
 using Siemens.Engineering.Library;
 using Siemens.Engineering.Library.MasterCopies;
 using Siemens.Engineering.SW;
+using Siemens.Engineering.Umac;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,6 +20,7 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -522,7 +524,11 @@ namespace Basic_Project_Generator.Interfaces
                     SetSubnet(Device.DeviceItems[1], subnet);
 
                     DoCreateIOSystem(Device.DeviceItems[1],"IO_System_DBM");
-                    
+
+                    //securty policy come specifiche interne DBM
+                    SetPlcSecurityPolicy(config.StartupSecurutyPolicy);
+
+
 
 
                 }
@@ -672,7 +678,39 @@ namespace Basic_Project_Generator.Interfaces
             }
         }
 
-              
+
+        /// <summary>
+        /// Set Project Proction Policy
+        /// </summary>
+        /// <param name="project"></param>
+        private void SetPlcSecurityPolicy(Dictionary<string, object> attributeList, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+            {
+
+                var passwordPolicy = CurrentProject.GetService<PasswordPolicyConfigurator>();
+
+
+                if (CurrentProject != null)
+                {
+                    foreach (var kvp in attributeList)
+                    {
+                        try
+                        {
+                            passwordPolicy.SetAttribute(kvp.Key, kvp.Value);
+                            _traceWriter.Write("Settato Attributo Policy" + kvp.Key + "al valore" + kvp.Value);
+                        }
+                        catch (Exception exception)
+                        {
+                            _traceWriter.Write("Errore impostando " + kvp.Key + ": " + exception.Message);
+                        }
+                    }
+                }
+            }
+        }
+
+
 
         /// <summary>
         /// Imposta l'indirizzo di start su PLC (Device)

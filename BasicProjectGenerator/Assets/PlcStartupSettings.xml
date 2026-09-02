@@ -44,5 +44,57 @@
 			<Fourthoctet>1</Fourthoctet>
 		</IpAddress>
 	</IpAddresses>
+
+	<!-- Security Policy appaiono quando inserisco il PLC ma non fanno parte del albero PLC ,appartengono infatti a Project -->
+	<SecurityPolicys>
+		
+		<SecurityPolicy>
+			<Name>EnablePasswordAging</Name>
+			<Value>False</Value>
+		</SecurityPolicy>
+
+
+		<SecurityPolicy>
+			<Name>IncludesLowerCaseAndUpperCaseCharacters</Name>
+			<Value>True</Value>
+		</SecurityPolicy>
+
+
+		<SecurityPolicy>
+			<Name>MinimumLength</Name>
+			<Value>8</Value>
+		</SecurityPolicy>
+
+
+		<SecurityPolicy>
+			<Name>MinimumNumericCharacterLength</Name>
+			<Value>1</Value>
+		</SecurityPolicy>
+
+
+		<SecurityPolicy>
+			<Name>MinimumSpecialCharacterLength</Name>
+			<Value>0</Value>
+		</SecurityPolicy>
+
+
+		<SecurityPolicy>
+			<Name>MinimumUserPasswordsBlockedForReuse</Name>
+			<Value>10</Value>
+		</SecurityPolicy>
+
+
+		<SecurityPolicy>
+			<Name>PasswordValidity</Name>
+			<Value>60</Value>
+		</SecurityPolicy>
+
+
+		<SecurityPolicy>
+			<Name>PasswordValidityPrewarningTime</Name>
+			<Value>7</Value>
+		</SecurityPolicy>
+		
+	</SecurityPolicys>
 	
 </StartupSettings>
