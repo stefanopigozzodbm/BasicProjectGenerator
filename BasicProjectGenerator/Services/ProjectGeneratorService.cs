@@ -469,9 +469,64 @@ namespace Basic_Project_Generator.Services
 
         #endregion // TIA Portal Project
 
+        /// <summary>
+        ///implementato 31/08/2026
+        ///per ora creato tutto dentro apiwrapper.cs nella parte di addnewdevice,
+        ///ma in futuro si potrebbe creare un metodo separato per creare la subnet e l'io system,
+        ///in modo da poterlo richiamare anche in altri contesti
+        /// </summary>
         #region Subnet and IoSystem
 
-        //per ora creato tutto dentro apiwrapper.cs nella parte di addnewdevice, ma in futuro si potrebbe creare un metodo separato per creare la subnet e l'io system, in modo da poterlo richiamare anche in altri contesti
+        /// <summary>
+        /// Add a new subnet to project
+        /// </summary>
+        /// <param name="caller"></param>
+        public void AddNewSubnet(String subnetName= "System:Subnet.Ethernet", String subnetDescription= "PN/IE_1", [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            if(string.IsNullOrEmpty(subnetName))
+            {
+                _traceWriter.Write("Subnet name is empty. Cannot create subnet.");
+                return;
+            }
+            if(string.IsNullOrEmpty(subnetDescription))
+            {
+                _traceWriter.Write("Subnet description is empty. Cannot create subnet.");
+                return;
+            }
+            
+
+            _apiWrapper.DoCreateSubnet(subnetName, subnetDescription);
+        }
+
+        /// <summary>
+        /// Add a new IoSystem to project
+        /// </summary>
+        /// <param name="caller"></param>
+        public void AddNewIoSystem(String ioSystemName, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            if (string.IsNullOrEmpty(ioSystemName))
+            {
+                _traceWriter.Write("ioSystemName name is empty. Cannot create ioSystemName.");
+                return;
+            }
+            if (string.IsNullOrEmpty(ioSystemName))
+            {
+                _traceWriter.Write("ioSystemName description is empty. Cannot create ioSystemName.");
+                return;
+            }
+
+
+            _apiWrapper.DoCreateIOSystem(ioSystemName, plcDeviceItem);
+        }
+
+
+
 
         #endregion
 

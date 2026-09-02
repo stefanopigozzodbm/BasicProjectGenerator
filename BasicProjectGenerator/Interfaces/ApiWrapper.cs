@@ -25,6 +25,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Windows.Forms;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 using static System.Windows.Forms.LinkLabel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
@@ -521,6 +522,7 @@ namespace Basic_Project_Generator.Interfaces
                     SetSubnet(Device.DeviceItems[1], subnet);
 
                     DoCreateIOSystem(Device.DeviceItems[1],"IO_System_DBM");
+                    
 
 
                 }
@@ -977,7 +979,7 @@ namespace Basic_Project_Generator.Interfaces
             }
 
         }
-        private Subnet DoCreateSubnet(String subnetName,String subnetDescription)
+        public Subnet DoCreateSubnet(String subnetName,String subnetDescription)
         {
             if (subnetName == "")
             {
@@ -1000,8 +1002,9 @@ namespace Basic_Project_Generator.Interfaces
 
             try
             {
-                return CurrentProject.Subnets.Create(subnetName, subnetDescription);//("System:Subnet.Ethernet", "PN/IE_1");
                 _traceWriter.Write("Subnet " + subnetName + " creata con successo.");
+                return CurrentProject.Subnets.Create(subnetName, subnetDescription);//("System:Subnet.Ethernet", "PN/IE_1");
+                
 
             }
             catch (Exception exception)
@@ -1010,6 +1013,59 @@ namespace Basic_Project_Generator.Interfaces
                 _traceWriter.Write("Errore impostando IOSystem su " + exception.Message);
                 return null;
             }
+        }
+
+        public void DoCreateIOSystem(String ioSystemName, Models.DeviceItem plcDeviceItem,[CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+
+            foreach (var device in CurrentProject.Devices)
+            {
+                if (device.Name != plcDeviceItem.DeviceName) continue;
+
+                foreach (var item in device.DeviceItems)
+                {
+                    if (item.Name != plcDeviceItem.Name) continue;
+                    //solo se è stato trovato il PLC a cui associare l'IOSystem
+
+                    
+
+                    try
+                    {
+                        if (string.IsNullOrEmpty(ioSystemName))
+                        {
+                            _traceWriter.Write("IoSystem name is empty. Cannot create iosystem.");
+                            return;
+                        }
+
+                        if (item.DeviceItems[1] != null)
+                        {
+                            _traceWriter.Write("DoCreateIOSystem: " + ioSystemName);
+                            DoCreateIOSystem(item.DeviceItems[2], ioSystemName); // il 2 è giusto perchè vado a filtrare anche il Name
+
+                        }
+                        else
+                        {
+                            //scaturisce se richiamo la creazione di un IOSytem senza PLC esistente per cui Deivce = null
+                            _traceWriter.Write("Device null, cannot create IOSystem");
+                            return;
+
+                        }
+
+                    }
+                    catch (Exception exception)
+                    {
+
+                        _traceWriter.Write("DoCreateIOSystem - exception: " + exception.Message);
+
+                    }
+
+                }
+            }
+
+
         }
 
         /// <summary>
