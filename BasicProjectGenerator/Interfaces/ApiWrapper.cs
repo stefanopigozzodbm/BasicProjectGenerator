@@ -979,7 +979,12 @@ namespace Basic_Project_Generator.Interfaces
             }
 
         }
-        public Subnet DoCreateSubnet(String subnetName,String subnetDescription)
+
+        /// <summary>
+        /// Metodo chiamabile esternamente (ex. da ProjectGeneratorService)
+        /// per creare una nuova subnet, se non esiste già, e restituirla al chiamante.
+        /// </summary>
+        private Subnet DoCreateSubnet(String subnetName,String subnetDescription)
         {
             if (subnetName == "")
             {
@@ -1015,7 +1020,11 @@ namespace Basic_Project_Generator.Interfaces
             }
         }
 
-        public void DoCreateIOSystem(String ioSystemName, Models.DeviceItem plcDeviceItem,[CallerMemberName] string caller = "")
+        /// <summary>
+        /// Metodo chiamabile esternamente (ex. da ProjectGeneratorService)
+        /// per cercare il plcDeviceItem dato come oggetto Models.DeviceItem e creare una nuova IOSystem con il nome passato come parametro.
+        /// </summary>
+        public void DoFindPlcAndCreateIOSystem(String ioSystemName, Models.DeviceItem plcDeviceItem,[CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -1059,6 +1068,64 @@ namespace Basic_Project_Generator.Interfaces
                     {
 
                         _traceWriter.Write("DoCreateIOSystem - exception: " + exception.Message);
+
+                    }
+
+                }
+            }
+
+
+        }
+
+        /// <summary>
+        /// Metodo chiamabile esternamente (ex. da ProjectGeneratorService)
+        /// per collegare la Subnet appena creata al PLC dato come oggetto Models.DeviceItem.
+        /// </summary>
+        public void DoCreateSubnetAndConnectToPlc(String subnetName, String subnetDescription,Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            Subnet subnet = DoCreateSubnet(subnetName, subnetDescription);
+
+            foreach (var device in CurrentProject.Devices)
+            {
+                if (device.Name != plcDeviceItem.DeviceName) continue;
+
+                foreach (var item in device.DeviceItems)
+                {
+                    if (item.Name != plcDeviceItem.Name) continue;
+                    //solo se è stato trovato il PLC a cui associare l'IOSystem
+
+
+
+                    try
+                    {
+                        if (subnet==null)
+                        {
+                            _traceWriter.Write("Subnet is empty. Cannot set subnet.");
+                            return;
+                        }
+
+                        if (item.DeviceItems[1] != null)
+                        {
+                            _traceWriter.Write("SetSubnet: " + subnet);
+                            SetSubnet(item.DeviceItems[2], subnet); // il 2 è giusto perchè vado a filtrare anche il Name
+
+                        }
+                        else
+                        {
+                            //scaturisce se richiamo la creazione di un IOSytem senza PLC esistente per cui Deivce = null
+                            _traceWriter.Write("Subnet null, cannot create connection to plc");
+                            return;
+
+                        }
+
+                    }
+                    catch (Exception exception)
+                    {
+
+                        _traceWriter.Write("DoFindAndSetSubnet - exception: " + exception.Message);
 
                     }
 
@@ -1484,13 +1551,13 @@ namespace Basic_Project_Generator.Interfaces
 
                 }
                 
-                catch (Exception exception)
+                catch (Exception e)
                 {
 
                     if (methodBase.ReflectedType != null)
                     {
-                        Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
-                        _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+                        Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + "Exception: " + e.Message);
+                        _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + "Exception: " + e.Message);
                     }
                     // Slot non valido per questo modulo -> provo il successivo
                 }

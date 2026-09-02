@@ -481,7 +481,7 @@ namespace Basic_Project_Generator.Services
         /// Add a new subnet to project
         /// </summary>
         /// <param name="caller"></param>
-        public void AddNewSubnet(String subnetName= "System:Subnet.Ethernet", String subnetDescription= "PN/IE_1", [CallerMemberName] string caller = "")
+        public void AddNewSubnetAndConnectToPlc(Models.DeviceItem plcDeviceItem,String subnetName= "System:Subnet.Ethernet", String subnetDescription= "PN/IE_1", [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -498,7 +498,7 @@ namespace Basic_Project_Generator.Services
             }
             
 
-            _apiWrapper.DoCreateSubnet(subnetName, subnetDescription);
+            _apiWrapper.DoCreateSubnetAndConnectToPlc(subnetName, subnetDescription, plcDeviceItem,caller);
         }
 
         /// <summary>
@@ -522,7 +522,7 @@ namespace Basic_Project_Generator.Services
             }
 
 
-            _apiWrapper.DoCreateIOSystem(ioSystemName, plcDeviceItem);
+            _apiWrapper.DoFindPlcAndCreateIOSystem(ioSystemName, plcDeviceItem);
         }
 
 

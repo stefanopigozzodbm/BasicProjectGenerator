@@ -987,6 +987,8 @@ namespace Basic_Project_Generator.UserInterfaces
 
         private void btn_AddImportedModules_Click(object sender, EventArgs e)
         {
+
+            _projectGeneratorService.OpenLibrary();
             try
             {
                 // 1) Se è spuntata una CPU, creala per prima (apre la finestra di sicurezza PLC)
@@ -1054,16 +1056,17 @@ namespace Basic_Project_Generator.UserInterfaces
                 }
 
 
+
+
                 // 3) Creare la Subnet e la Io-System (equivalente click destro sopra PLC AddSubnet e AddIOSystem)
-                /// lo fa quando inserisce PLC _projectGeneratorService.CreateSubnet();
-
-                _projectGeneratorService.AddNewSubnet("System:Subnet.Ethernet", "PN/IE_1");
-
-                
-                // test 03/08/26 per insezione moduli master io link da excel
 
 
                 var deviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem; // PLC
+
+
+               
+
+                _projectGeneratorService.AddNewSubnetAndConnectToPlc(deviceItem,"System:Subnet.Ethernet", "PN/IE_1");
 
                 //per aggiungere l'IO system mi serve almeno il IO controler quindi il PLC.
                 //se aggiungo moduli senza PLC non posso assegnare alcun IP
@@ -1071,7 +1074,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 _projectGeneratorService.AddNewIoSystem("IO_System_DBM", deviceItem);
 
-                bisogna creare la connessione con la subnet""!!!
+                
 
                 _projectGeneratorService.AddIOLinkMastersFromImport(_importedItems, deviceItem);
 
