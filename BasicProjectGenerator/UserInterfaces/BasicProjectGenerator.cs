@@ -992,6 +992,20 @@ namespace Basic_Project_Generator.UserInterfaces
             try
             {
                 // 1) Se è spuntata una CPU, creala per prima (apre la finestra di sicurezza PLC)
+
+                // Costruisco la lista dei soli item spuntati, stesso criterio già usato per moduli/device sopra
+                //questa serve solo per i moduli IOlink, potrebbe essere fusa con quella sotto ma
+                //per il momento la tengo separata
+
+                var checkedItems = new List<ImportedSymbolItem>();
+                for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
+                {
+                    if (clb_ImportedItems.GetItemChecked(i))
+                    {
+                        checkedItems.Add(_importedItems[i]);
+                    }
+                }
+
                 var checkedDeviceItems = new List<ImportedSymbolItem>();
                 for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
                 {
@@ -1015,9 +1029,13 @@ namespace Basic_Project_Generator.UserInterfaces
                     }
                 }
 
+
+
                 // 2) Aggiungo i moduli spuntati
                 var addedCount = 0;
+                var masterAddedCount=0;
                 var errorCount = 0;
+                var masterErrorCount = 0;
 
                 for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
                 {
@@ -1074,16 +1092,17 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 _projectGeneratorService.AddNewIoSystem("IO_System_DBM", deviceItem);
 
-                
 
-                _projectGeneratorService.AddIOLinkMastersFromImport(_importedItems, deviceItem);
 
-                
-
+                var (masterAdded, totalSlavesAdded) = _projectGeneratorService.AddIOLinkMastersFromImport(checkedItems, deviceItem);
+                masterErrorCount = checkedItems.Count - masterAdded;
 
 
 
                 MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(masterAdded + " moduli Master aggiunti, " + masterErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(totalSlavesAdded + " moduli Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             }
             catch (Exception exception)
             {

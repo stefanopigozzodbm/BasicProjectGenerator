@@ -1501,9 +1501,10 @@ namespace Basic_Project_Generator.Interfaces
         /// Piazza un Master Io-Link (da Master catalogo HW) sulla Subnet , IoSystem del PLC (in dbm genreicamente 1) con le config derivanti dal
         /// file excel e da IOLink_StartupSettings.xml
                /// </summary>
-        public bool DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex,Subnet subnet,IoSystem ioSystem, [CallerMemberName] string caller = "")
+        public (bool MasterAdded, int SlaveAddedCount) DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex,Subnet subnet,IoSystem ioSystem, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
+            var slaveAddedCount = 0;
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
             try
@@ -1516,7 +1517,7 @@ namespace Basic_Project_Generator.Interfaces
                 if (masterEntry == null)
                 {
                     _traceWriter.Write("Master IO-Link '" + config.MasterCopyName + "' non trovato nel catalogo HW (DAP).");
-                    return false;
+                    return (false,slaveAddedCount);
                 }
 
                 var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, config.MasterCopyName, config.Code); 
@@ -1524,7 +1525,7 @@ namespace Basic_Project_Generator.Interfaces
                 if (newDevice == null)
                 {
                     _traceWriter.Write("Creazione master IO-Link '" + config.MasterCopyName + "' fallita.");
-                    return false;
+                    return (false,slaveAddedCount);
                 }
 
                 IsModified = true;
@@ -1574,17 +1575,20 @@ namespace Basic_Project_Generator.Interfaces
                     NextOutputAddress = config.GetOutputStartAddress(occurrenceIndex)
                 };
 
+                var added = false;
                 foreach (var slave in config.SlaveModules)
                 {
-                    DoAddIOLinkSlave(newDevice.DeviceItems,newDevice.DeviceItems[1], slave,cursor, caller);
+                    added = false;
+                    added = DoAddIOLinkSlave(newDevice.DeviceItems,newDevice.DeviceItems[1], slave,cursor, caller);
+                    if (added) slaveAddedCount++;
                 }
                 #endregion
-                return true;
+                return (true,slaveAddedCount); //primo ritorno aggiunta del master, secondo quanti slave aggiunti
             }
             catch (Exception exception)
             {
                 _traceWriter.Write("Errore aggiungendo master IO-Link '" + config.MasterCopyName + "': " + exception.Message);
-                return false;
+                return (false,slaveAddedCount);
             }
         }
 
@@ -1691,7 +1695,7 @@ namespace Basic_Project_Generator.Interfaces
 
 
 
-        public bool DoAddIOLinkMasterFromPlc(IOLinkMasterModule config, int occurrenceIndex, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        public (bool MasterAdded, int SlaveAddedCount) DoAddIOLinkMasterFromPlc(IOLinkMasterModule config, int occurrenceIndex, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
         {
             IoSystem ioSystem = null;
             Subnet subnet = null;
@@ -1708,7 +1712,7 @@ namespace Basic_Project_Generator.Interfaces
                     if (networkInterface == null || networkInterface.Nodes.Count == 0)
                     {
                         _traceWriter.Write("NetworkInterface del PLC non trovata o senza nodi.");
-                        return false;
+                        return (false,0);
                     }
 
                     ioSystem = networkInterface.IoControllers[0].IoSystem;
@@ -1723,7 +1727,7 @@ namespace Basic_Project_Generator.Interfaces
             if (ioSystem == null || string.IsNullOrWhiteSpace(config.SubnetIp))
             {
                 _traceWriter.Write("Impossibile determinare IoSystem/IP del PLC per il master '" + config.Code + "'.");
-                return false;
+                return (false,0);
             }
 
             return DoAddIOLinkMaster(config, occurrenceIndex, subnet, ioSystem, caller);

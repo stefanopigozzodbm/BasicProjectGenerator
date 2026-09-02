@@ -652,11 +652,13 @@ namespace Basic_Project_Generator.Services
         }
 
 
-        public void AddIOLinkMastersFromImport(List<ImportedSymbolItem> importedItems, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        public (int MasterAddedCount, int TotalSlaveAddedCount) AddIOLinkMastersFromImport(List<ImportedSymbolItem> importedItems, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
+            var masterAddedCount = 0;
+            var totalSlaveAddedCount = 0;
             var masterCatalog = LoadIOLinkMasterCatalog();
             var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -694,8 +696,17 @@ namespace Basic_Project_Generator.Services
                     });
                 }
 
-                _apiWrapper.DoAddIOLinkMasterFromPlc(runtimeConfig, occurrenceIndex, plcDeviceItem, caller);
-            }
+                var(isAdded, slaveCount) = _apiWrapper.DoAddIOLinkMasterFromPlc(runtimeConfig, occurrenceIndex, plcDeviceItem, caller);
+
+                if (isAdded)
+                {
+                    masterAddedCount += masterAddedCount;
+                    totalSlaveAddedCount += slaveCount;
+                }
+            }//fine for master
+
+            return (masterAddedCount, totalSlaveAddedCount);
+            
         }
 
 
