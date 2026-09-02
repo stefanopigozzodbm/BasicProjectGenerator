@@ -19,6 +19,8 @@ namespace Basic_Project_Generator.Services
         private const int ColumnIndirizzo = 8;    // colonna I
         private const int ColumnPotentialGroup = 9;  // colonna J
         private const int ColumnDescrizione1 = 11; // colonna L
+        private const int ColumnDescrizione2 = 12; // colonna M
+        private const int ColumnNote = 13; // colonna N
         private const int ColumnPin1 = 15;         // colonna P
         private const int ColumnPin2 = 16;         // colonna Q
         private const int ColumnConnettore = ColumnPotentialGroup; // colonna J, riletta con significato diverso sulle righe C/Q
@@ -35,112 +37,7 @@ namespace Basic_Project_Generator.Services
             _traceWriter = traceWriter;
         }
 
-        /* public List<ImportedSymbolItem> Import(string filePath, Catalog deviceCatalog, ModuleCatalog moduleCatalog)
-         {
-             var result = new List<ImportedSymbolItem>();
-             ImportedSymbolItem currentItem = null;
-             var currentSafetyRows = new List<(string Description, string Pin1Raw, string Pin2Raw, string Indirizzo)>();
-
-             using (var stream = File.OpenRead(filePath))
-             {
-                 var workbook = WorkbookFactory.Create(stream);
-                 var sheet = workbook.GetSheetAt(0);
-
-                 for (var r = 1; r <= sheet.LastRowNum; r++)
-                 {
-                     var row = sheet.GetRow(r);
-                     if (row == null) continue;
-
-                     var orderNumber = GetCellText(row, ColumnCodiceUnita);
-
-                     if (!string.IsNullOrWhiteSpace(orderNumber))
-                     {
-                         // Prima di passare alla scheda successiva, finalizzo i canali Safety di quella precedente
-                         FinalizeSafetyChannels(currentItem, currentSafetyRows);
-                         currentSafetyRows = new List<(string, string, string, string)>();
-
-                         currentItem = new ImportedSymbolItem
-                         {
-                             Name = GetCellText(row, ColumnSiglaScheda),
-                             OrderNumber = orderNumber,
-                             ItemType = SymbolItemType.Unknown,
-                             NewPotentialGroup = GetCellText(row, ColumnPotentialGroup).Trim() == "1"
-                         };
-
-                         var normalized = Normalize(orderNumber);
-
-                         var deviceMatch = deviceCatalog?.DeviceItemComposition?
-                             .FirstOrDefault(d => Normalize(d.OrderNumber) == normalized);
-
-                         if (deviceMatch != null)
-                         {
-                             currentItem.ItemType = SymbolItemType.Device;
-                             currentItem.TypeIdentifier = deviceMatch.TypeIdentifier;
-                             currentItem.MatchedDevice = deviceMatch;
-                         }
-                         else
-                         {
-                             var moduleMatch = moduleCatalog?.ModuleItemComposition?
-                                 .FirstOrDefault(m => Normalize(m.OrderNumber) == normalized);
-
-                             if (moduleMatch != null)
-                             {
-                                 currentItem.ItemType = SymbolItemType.Module;
-                                 currentItem.TypeIdentifier = moduleMatch.TypeIdentifier;
-                                 currentItem.IsSafetyModule = moduleMatch.IsSafety;
-                             }
-                         }
-
-                         result.Add(currentItem);
-                         continue;
-                     }
-
-                     if (currentItem == null) continue;
-
-                     var tipologia = GetCellText(row, ColumnTipologia);
-                     var indirizzo = GetCellText(row, ColumnIndirizzo);
-
-                     if (string.IsNullOrWhiteSpace(tipologia) || string.IsNullOrWhiteSpace(indirizzo)) continue;
-
-                     if (TryGetCategory(tipologia, out var category) && TryGetStartAddress(indirizzo, out var startAddress))
-                     {
-                         switch (category)
-                         {
-                             case AddressCategory.DigitalInput:
-                                 if (currentItem.DigitalInputStartAddress == null) currentItem.DigitalInputStartAddress = startAddress;
-                                 break;
-                             case AddressCategory.DigitalOutput:
-                                 if (currentItem.DigitalOutputStartAddress == null) currentItem.DigitalOutputStartAddress = startAddress;
-                                 break;
-                             case AddressCategory.AnalogInput:
-                                 if (currentItem.AnalogInputStartAddress == null) currentItem.AnalogInputStartAddress = startAddress;
-                                 break;
-                             case AddressCategory.AnalogOutput:
-                                 if (currentItem.AnalogOutputStartAddress == null) currentItem.AnalogOutputStartAddress = startAddress;
-                                 break;
-                         }
-                     }
-
-                     // Solo per moduli Safety di ingressi: accumulo Descrizione1/Pin1/Pin2 delle righe "I"
-                     if (currentItem.IsSafetyModule && (category == AddressCategory.DigitalInput || category == AddressCategory.DigitalOutput))
-                     {
-                         var description = GetCellText(row, ColumnDescrizione1);
-                         var pin1Raw = GetCellText(row, ColumnPin1);
-                         var pin2Raw = GetCellText(row, ColumnPin2);
-
-                         if (!string.IsNullOrWhiteSpace(description))
-                         {
-                             currentSafetyRows.Add((description, pin1Raw, pin2Raw, indirizzo));
-                         }
-                     }
-                 }
-             }
-
-             FinalizeSafetyChannels(currentItem, currentSafetyRows); // finalizza l'ultima scheda del file
-
-             return result;
-         }
-        */
+     
 
 
         public List<ImportedSymbolItem> Import(string filePath, Catalog deviceCatalog, ModuleCatalog moduleCatalog,
@@ -224,6 +121,7 @@ namespace Basic_Project_Generator.Services
                         }
                         else if (masterMatch != null)
                         {
+                            currentItem.ItemType = SymbolItemType.IOLinkMaster;
                             currentItem.IsIOLinkMaster = true;
                             currentItem.IOLinkMasterCode = masterMatch.MasterCopyName;
                         }
@@ -243,11 +141,22 @@ namespace Basic_Project_Generator.Services
                         if (int.TryParse(indirizzo, out var globalIndex))
                         {
                             var portNumber = (globalIndex % 8) + 1;
-                            var descrizione = GetCellText(row, ColumnDescrizione1);
+                            var descrizioneColumnDescizione1 = GetCellText(row, ColumnDescrizione1);
+                            var descrizioneColumnDescizione2 = GetCellText(row, ColumnDescrizione2);
+                            var descrizioneColumnNote = GetCellText(row, ColumnNote).Trim();
+                            // var descrizione = GetCellText(row, ColumnDescrizione1);
+                            //modificato per adattarsi a quello che è il simbolico fatto a mano da reparto elettrico (concatenazione della colonna L-M-N)
+                            // Concatena solo i valori non vuoti inserendo uno spazio
+                            var descrizione = string.Join(" ", new[] { descrizioneColumnDescizione1, descrizioneColumnDescizione2, descrizioneColumnNote }
+                                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
                             var connettore = GetCellText(row, ColumnConnettore);
 
+                            //filtro per descizione su colonna L Descizione1 = RESERVE
                             var isReserve = ReserveKeywords.Any(k => string.Equals(descrizione?.Trim(), k, StringComparison.OrdinalIgnoreCase));
-                            var isExpansionMarker = string.Equals(descrizione?.Trim(), ExpansionDescriptionMarker, StringComparison.OrdinalIgnoreCase);
+
+                            //filtro per descizione su colonna L Descizione1 = ExpansionDescriptionMarker = SLAVE IO LONK DI 8P
+                            var isExpansionMarker = string.Equals(descrizioneColumnDescizione1?.Trim(), ExpansionDescriptionMarker, StringComparison.OrdinalIgnoreCase);
 
                             if (isExpansionMarker && !string.IsNullOrWhiteSpace(connettore))
                             {
@@ -274,7 +183,7 @@ namespace Basic_Project_Generator.Services
                                     PortNumber = portNumber,
                                     Kind = IOLinkPortKind.Sensor,
                                     Code = connettore, // chiave di ricerca in libreria (es. "TP3232")
-                                    InstanceName = currentItem.Name + "-" + descrizione + "_" + connettore
+                                    InstanceName = currentItem.Name + "_" + descrizione + "_" + connettore
                                 });
                             }
                         }

@@ -524,9 +524,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_Compile.Controls.Add(this.cob_DeviceList);
             this.grb_Compile.Controls.Add(this.lib_DeviceList);
             this.grb_Compile.Controls.Add(this.lab_DeviceList);
-            this.grb_Compile.Location = new System.Drawing.Point(854, 6);
+            this.grb_Compile.Location = new System.Drawing.Point(1060, 6);
             this.grb_Compile.Name = "grb_Compile";
-            this.grb_Compile.Size = new System.Drawing.Size(211, 384);
+            this.grb_Compile.Size = new System.Drawing.Size(211, 395);
             this.grb_Compile.TabIndex = 3;
             this.grb_Compile.TabStop = false;
             this.grb_Compile.Text = "Compile";
@@ -585,7 +585,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.lib_TraceWriterOutput.HorizontalScrollbar = true;
             this.lib_TraceWriterOutput.Location = new System.Drawing.Point(12, 454);
             this.lib_TraceWriterOutput.Name = "lib_TraceWriterOutput";
-            this.lib_TraceWriterOutput.Size = new System.Drawing.Size(1079, 251);
+            this.lib_TraceWriterOutput.Size = new System.Drawing.Size(1284, 251);
             this.lib_TraceWriterOutput.TabIndex = 4;
             // 
             // grb_AddModule
@@ -652,7 +652,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.groupBox1.Controls.Add(this.btn_AddImportedModules);
             this.groupBox1.Location = new System.Drawing.Point(655, 180);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(193, 221);
+            this.groupBox1.Size = new System.Drawing.Size(399, 221);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Add HW Conf from Excel";
@@ -673,7 +673,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.clb_ImportedItems.HorizontalScrollbar = true;
             this.clb_ImportedItems.Location = new System.Drawing.Point(6, 69);
             this.clb_ImportedItems.Name = "clb_ImportedItems";
-            this.clb_ImportedItems.Size = new System.Drawing.Size(177, 94);
+            this.clb_ImportedItems.Size = new System.Drawing.Size(387, 94);
             this.clb_ImportedItems.TabIndex = 1;
             this.clb_ImportedItems.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clb_ImportedItems_ItemCheck);
             // 
@@ -700,7 +700,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.tabControl1.Location = new System.Drawing.Point(11, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1084, 436);
+            this.tabControl1.Size = new System.Drawing.Size(1285, 436);
             this.tabControl1.TabIndex = 8;
             // 
             // HW_Siemens
@@ -714,7 +714,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Siemens.Location = new System.Drawing.Point(4, 22);
             this.HW_Siemens.Name = "HW_Siemens";
             this.HW_Siemens.Padding = new System.Windows.Forms.Padding(3);
-            this.HW_Siemens.Size = new System.Drawing.Size(1076, 410);
+            this.HW_Siemens.Size = new System.Drawing.Size(1277, 410);
             this.HW_Siemens.TabIndex = 0;
             this.HW_Siemens.Text = "HW_Siemens";
             this.HW_Siemens.UseVisualStyleBackColor = true;
@@ -766,7 +766,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(1099, 716);
+            this.ClientSize = new System.Drawing.Size(1308, 716);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.lib_TraceWriterOutput);
             this.MinimumSize = new System.Drawing.Size(250, 300);

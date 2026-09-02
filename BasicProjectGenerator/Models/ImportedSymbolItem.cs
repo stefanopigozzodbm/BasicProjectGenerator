@@ -9,7 +9,9 @@ namespace Basic_Project_Generator.Models
     {
         Unknown,
         Device,
-        Module
+        Module,
+        IOLinkMaster
+
     }
 
     public class ImportedSymbolItem

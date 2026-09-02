@@ -662,7 +662,7 @@ namespace Basic_Project_Generator.Services
             var masterCatalog = LoadIOLinkMasterCatalog();
             var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var item in importedItems.Where(i => i.IsIOLinkMaster))
+            foreach (var item in importedItems.Where(i => i.IsIOLinkMaster)) //questo filtra tutti moduli selezionati che non siano master io link
             {
                 var template = masterCatalog.FirstOrDefault(m => string.Equals(m.MasterCopyName, item.IOLinkMasterCode, StringComparison.OrdinalIgnoreCase));
                 if (template == null)
@@ -700,7 +700,7 @@ namespace Basic_Project_Generator.Services
 
                 if (isAdded)
                 {
-                    masterAddedCount += masterAddedCount;
+                    masterAddedCount ++;
                     totalSlaveAddedCount += slaveCount;
                 }
             }//fine for master

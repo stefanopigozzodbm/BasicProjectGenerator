@@ -975,6 +975,7 @@ namespace Basic_Project_Generator.UserInterfaces
                     _traceWriter.Write("Import: " +
                         _importedItems.Count(i => i.ItemType == SymbolItemType.Device) + " device, " +
                         _importedItems.Count(i => i.ItemType == SymbolItemType.Module) + " moduli, " +
+                        _importedItems.Count(i => i.ItemType == SymbolItemType.IOLinkMaster) + " IOLinkMaster, " +
                         _importedItems.Count(i => i.ItemType == SymbolItemType.Unknown) + " non riconosciuti.");
                 }
             }
@@ -1005,7 +1006,7 @@ namespace Basic_Project_Generator.UserInterfaces
                         checkedItems.Add(_importedItems[i]);
                     }
                 }
-
+                
                 var checkedDeviceItems = new List<ImportedSymbolItem>();
                 for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
                 {
@@ -1033,7 +1034,6 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 // 2) Aggiungo i moduli spuntati
                 var addedCount = 0;
-                var masterAddedCount=0;
                 var errorCount = 0;
                 var masterErrorCount = 0;
 
@@ -1184,6 +1184,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
 
 
+
         #endregion
 
         #endregion
@@ -1192,6 +1193,6 @@ namespace Basic_Project_Generator.UserInterfaces
 
         #endregion // methods
 
-
+       
     }
 }
