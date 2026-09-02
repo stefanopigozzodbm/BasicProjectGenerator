@@ -10,6 +10,7 @@ using Siemens.Engineering.HW;
 using Siemens.Engineering.HW.Features;
 using Siemens.Engineering.Library;
 using Siemens.Engineering.Library.MasterCopies;
+using Siemens.Engineering.Security;
 using Siemens.Engineering.SW;
 using Siemens.Engineering.Umac;
 using System;
@@ -525,9 +526,12 @@ namespace Basic_Project_Generator.Interfaces
 
                     DoCreateIOSystem(Device.DeviceItems[1],"IO_System_DBM");
 
-                    //securty policy come specifiche interne DBM
+                    //securty policy come specifiche interne DBM (anche legacy)
                     SetPlcSecurityPolicy(config.StartupSecurutyPolicy);
 
+                    //set umac come specifiche interne DBM
+                    //SetUmacUsers(config.StartupUmac);
+                    //TiaPortal.Projects[0].GetService<UmacConfigurator>().ProjectUsers.Create().ProjectUser
 
 
 
@@ -690,7 +694,8 @@ namespace Basic_Project_Generator.Interfaces
             {
 
                 var passwordPolicy = CurrentProject.GetService<PasswordPolicyConfigurator>();
-
+                var legacyPasswordPolicy = CurrentProject.GetService<LegacyPlcPasswordPolicyService>();
+                
 
                 if (CurrentProject != null)
                 {
@@ -699,7 +704,8 @@ namespace Basic_Project_Generator.Interfaces
                         try
                         {
                             passwordPolicy.SetAttribute(kvp.Key, kvp.Value);
-                            _traceWriter.Write("Settato Attributo Policy" + kvp.Key + "al valore" + kvp.Value);
+                            legacyPasswordPolicy.SetAttribute(kvp.Key, kvp.Value);
+                            _traceWriter.Write("Settato Attributo Policy" + kvp.Key + " al valore: " + kvp.Value);
                         }
                         catch (Exception exception)
                         {

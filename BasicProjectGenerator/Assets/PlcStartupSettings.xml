@@ -94,7 +94,37 @@
 			<Name>PasswordValidityPrewarningTime</Name>
 			<Value>7</Value>
 		</SecurityPolicy>
+
 		
+		<SecurityPolicy>
+			<Name>PasswordPolicyEnabled</Name>
+			<Value>True</Value>
+		</SecurityPolicy>
+		
+
+
 	</SecurityPolicys>
-	
-</StartupSettings>
+
+	<!-- UMAC -->
+
+	<Users>
+
+		<User>
+			<Name>DBM</Name> <!-- Project Protection -->
+			<Type>False</Type>
+			<Password>Admin1224</Password> <!-- Project Protection -->
+			<Timeout>30</Timeout>
+			<Roles>
+				<Role>
+					<Name>SystemRole (Engineering standard)</Name>
+					<Number>0</Number>
+					<Enable>True</Enable>
+				</Role>
+			</Roles>
+		</User>
+		
+		
+		
+	</Users>
+
+	</StartupSettings>
