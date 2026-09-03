@@ -13,16 +13,16 @@ namespace Basic_Project_Generator.Services
 {
     public class SymbolicTableImportService
     {
-        private const int ColumnSiglaScheda = 3;  // colonna D
-        private const int ColumnCodiceUnita = 6;  // colonna G
-        private const int ColumnTipologia = 7;    // colonna H
-        private const int ColumnIndirizzo = 8;    // colonna I
-        private const int ColumnPotentialGroup = 9;  // colonna J
-        private const int ColumnDescrizione1 = 11; // colonna L
-        private const int ColumnDescrizione2 = 12; // colonna M
-        private const int ColumnNote = 13; // colonna N
-        private const int ColumnPin1 = 15;         // colonna P
-        private const int ColumnPin2 = 16;         // colonna Q
+        private const int ColumnSiglaScheda = 3;    // colonna D
+        private const int ColumnCodiceUnita = 6;    // colonna G
+        private const int ColumnTipologia = 7;      // colonna H
+        private const int ColumnIndirizzo = 8;      // colonna I
+        private const int ColumnPotentialGroup = 9; // colonna J
+        private const int ColumnDescrizione1 = 11;  // colonna L
+        private const int ColumnDescrizione2 = 12;  // colonna M
+        private const int ColumnNote = 13;          // colonna N
+        private const int ColumnPin1 = 15;          // colonna P
+        private const int ColumnPin2 = 16;          // colonna Q
         private const int ColumnConnettore = ColumnPotentialGroup; // colonna J, riletta con significato diverso sulle righe C/Q
         private const string ExpansionDescriptionMarker = "SLAVE DI IO-LINK 8P";
 

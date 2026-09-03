@@ -572,6 +572,29 @@ namespace Basic_Project_Generator.Services
 
         #endregion
 
+        #region ImExpansion
+
+        /// <summary>
+        /// Load the template catalog for new ImExpansion from xml.
+        /// If th catalog is changed, the current project should be close and reopened
+        /// to reload the catalog changes.
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <returns></returns>
+        public bool LoadImExpansionCatalog([CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            ImExpansionCatalogLoaded = false;
+            ImExpansionCatalogXml = XDocument.Load("Assets\\ImExpansion.xml");
+            ImExpansionModel.LoadImExpansionCatalog(ImExpansionCatalogXml);
+            ImExpansionCatalogLoaded = true;
+            return ImExpansionCatalogLoaded;
+        }
+
+        #endregion
+
         #region Device
 
         /// <summary>
