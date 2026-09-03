@@ -179,7 +179,7 @@
 		</ExpModule>
 		
 		
-		<!--IM155-->
+		<!--IM155
 		<ExpModule>
 			<TemplateName>IM 155-6 PN ST (6AU00)</TemplateName>
 			<OrderNumber>6ES7 155-6AU00-0BN0</OrderNumber>
@@ -199,7 +199,7 @@
 			<OrderNumber>6ES7 155-6AU02-0BN0</OrderNumber>
 			<IsSafety>false</IsSafety>
 			<FirmwareVersion>V6.4</FirmwareVersion>
-		</ExpModule>
+		</ExpModule>-->
 
 
 	</ModuleItemComposition>

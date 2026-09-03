@@ -110,21 +110,226 @@
 	<Users>
 
 		<User>
-			<Name>DBM</Name> <!-- Project Protection -->
-			<Type>False</Type>
-			<Password>Admin1224</Password> <!-- Project Protection -->
+			<Name>DBM</Name>  
+			<Type>True</Type> <!-- Project Protection -->
+			<Password>Admin1224</Password>  
 			<Timeout>30</Timeout>
 			<Roles>
 				<Role>
-					<Name>SystemRole (Engineering standard)</Name>
+					<Name>EngineeringAdministrator</Name>
 					<Number>0</Number>
 					<Enable>True</Enable>
 				</Role>
+				<Role>
+					<Name>Standard</Name>
+					<Number>1</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>DriveAdministratorSystemRoleOp</Name>
+					<Number>2</Number>
+					<Enable>True</Enable>
+				</Role>
+				<Role>
+					<Name>DriveSafetyEngineerSystemRoleOp</Name>
+					<Number>3</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>DriveEngineerAndServiceSystemRoleOp</Name>
+					<Number>4</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>DriveOperatorSystemRoleOp</Name>
+					<Number>5</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>DriveGuestSystemRoleOp</Name>
+					<Number>6</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>ExtensionSystemRoleForFieldbusOp</Name>
+					<Number>7</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>ExtensionSystemRoleForPanelOp</Name>
+					<Number>8</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>HMIAdministrator</Name>
+					<Number>9</Number>
+					<Enable>True</Enable>
+				</Role>
+				<Role>
+					<Name>HMIOperator</Name>
+					<Number>10</Number>
+					<Enable>True</Enable>
+				</Role>
+				<Role>
+					<Name>HMIMonitor</Name>
+					<Number>11</Number>
+					<Enable>True</Enable>
+				</Role>
+				<Role>
+					<Name>HMIMonitorClient</Name>
+					<Number>12</Number>
+					<Enable>True</Enable>
+				</Role>
+				<Role>
+					<Name>HMIOnlineConfigEngineer</Name>
+					<Number>13</Number>
+					<Enable>True</Enable>
+				</Role>
+				<Role>
+					<Name>PLCAdministrator</Name>
+					<Number>14</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>PLCFAdministrator</Name>
+					<Number>15</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>PLCOperator</Name>
+					<Number>16</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>NETAdministrator</Name>
+					<Number>17</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>NETStandard</Name>
+					<Number>18</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>NETDiagnose</Name>
+					<Number>19</Number>
+					<Enable>False</Enable>
+				</Role>
 			</Roles>
+
 		</User>
 		
+		<User>
+			<Name>CLIENT</Name>
+			<Type>False</Type>
+			<Password>Client#1224</Password> <!-- ex Client#260021, da cambiare a seconda della commessa... -->
+			<Timeout>30</Timeout>
+			<Roles>
+				<Role>
+					<Name>EngineeringAdministrator</Name>
+					<Number>0</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>Standard</Name>
+					<Number>1</Number>
+					<Enable>True</Enable>
+				</Role>
+				<Role>
+					<Name>DriveAdministratorSystemRoleOp</Name>
+					<Number>2</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>DriveSafetyEngineerSystemRoleOp</Name>
+					<Number>3</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>DriveEngineerAndServiceSystemRoleOp</Name>
+					<Number>4</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>DriveOperatorSystemRoleOp</Name>
+					<Number>5</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>DriveGuestSystemRoleOp</Name>
+					<Number>6</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>ExtensionSystemRoleForFieldbusOp</Name>
+					<Number>7</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>ExtensionSystemRoleForPanelOp</Name>
+					<Number>8</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>HMIAdministrator</Name>
+					<Number>9</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>HMIOperator</Name>
+					<Number>10</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>HMIMonitor</Name>
+					<Number>11</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>HMIMonitorClient</Name>
+					<Number>12</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>HMIOnlineConfigEngineer</Name>
+					<Number>13</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>PLCAdministrator</Name>
+					<Number>14</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>PLCFAdministrator</Name>
+					<Number>15</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>PLCOperator</Name>
+					<Number>16</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>NETAdministrator</Name>
+					<Number>17</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>NETStandard</Name>
+					<Number>18</Number>
+					<Enable>False</Enable>
+				</Role>
+				<Role>
+					<Name>NETDiagnose</Name>
+					<Number>19</Number>
+					<Enable>False</Enable>
+				</Role>
+			</Roles>
+			
+		</User>
 		
-		
+			
 	</Users>
 
 	</StartupSettings>

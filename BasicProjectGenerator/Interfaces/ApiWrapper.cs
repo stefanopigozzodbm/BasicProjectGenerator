@@ -1,5 +1,6 @@
 ﻿//using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Models.Configuration;
+using Microsoft.VisualBasic.ApplicationServices;
 using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.Streaming.Values;
 using Siemens.Collaboration.Net.Logging;
@@ -419,6 +420,175 @@ namespace Basic_Project_Generator.Interfaces
             CurrentProject = null;
         }
 
+        /// <summary>
+        /// Set Project Protection Password
+        /// </summary>
+        /// <param name="caller"></param>
+        public bool DoProtectProject(String admUsr, String admPsw, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null)
+                _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            if(CurrentProject == null)
+            {
+                _traceWriter.Write("No project is currently open.");
+                return false;
+            }
+
+            if(string.IsNullOrEmpty(admUsr) || string.IsNullOrEmpty(admPsw))
+            {
+                _traceWriter.Write("Admin username or password is null or empty.");
+                return false;
+            } if(string.IsNullOrEmpty(admPsw))
+            {
+                _traceWriter.Write("Admin password is null or empty.");
+                return false;
+            }
+
+            SecureString securePassword = new SecureString();
+            foreach (char c in admPsw)
+            {
+                securePassword.AppendChar(c);
+            }
+
+            try
+            {
+                CurrentProject.ProtectProject(admUsr, securePassword);
+            }
+            catch (Exception ex)
+            {
+                _traceWriter.Write($"Error protecting project: {ex.Message}");
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Set Project UMAC
+        /// Inseriesce tutti gli utenti da XML con relative configurazioni di ruoli , timeout,password, nome
+        /// </summary>
+        /// <param name="caller"></param>
+        private bool SetUmacUsers(Dictionary<string, UmacUserSettings> startupUmacSettings, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null)
+                _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            if (CurrentProject == null)
+            {
+                _traceWriter.Write("No project is currently open.");
+                return false;
+            }
+
+            try
+            {
+                var umacConfigurator = CurrentProject.GetService<UmacConfigurator>();
+                if (umacConfigurator == null)
+                {
+                    _traceWriter.Write("UmacConfigurator service is not available.");
+                    return false;
+                }
+
+                // Preso una sola volta: è lo stesso elenco di ruoli di sistema per tutti gli utenti
+                var systemRoles = umacConfigurator.SystemRoles;
+
+                foreach (var kvp in startupUmacSettings)
+                {
+                    var userUmacSettings = kvp.Value;
+
+                    try
+                    {
+                        if (string.IsNullOrEmpty(userUmacSettings.Password))
+                        {
+                            _traceWriter.Write("Password mancante per l'utente '" + userUmacSettings.Name + "', utente saltato.");
+                            continue;
+                        }
+
+                        var securePassword = new SecureString();
+                        foreach (var c in userUmacSettings.Password)
+                        {
+                            securePassword.AppendChar(c);
+                        }
+                        securePassword.MakeReadOnly();
+
+                        //se l'user c'è già non lo ricreo, alrimenti l'eccezione mi fà saltare l'assegnazione dei ruoli
+                        var userExist = umacConfigurator.ProjectUsers.Find(userUmacSettings.Name);
+                        ProjectUser newUser;
+
+                        if (userExist == null) {
+                            newUser = umacConfigurator.ProjectUsers.Create(userUmacSettings.Name, securePassword);
+                            newUser.SessionTimeOut = userUmacSettings.Timeout;
+                        }
+                        else // esiste già
+                        {
+                            newUser = userExist;
+                        }
+                        
+
+                        var roles = newUser.GetAttribute("Roles") as RoleAssociation;
+                        if (roles == null)
+                        {
+                            _traceWriter.Write("Impossibile leggere la RoleAssociation per l'utente '" + userUmacSettings.Name + "'.");
+                            continue;
+                        }
+
+                        foreach (var roleAssignment in userUmacSettings.Roles)
+                        {
+                            if (roleAssignment == null || !roleAssignment.Enable)
+                            {
+                                continue;
+                            }
+
+                            try
+                            {
+                                var role = systemRoles.FirstOrDefault(r => r.Identifier == roleAssignment.Name);
+                                if (role == null)
+                                {
+                                    _traceWriter.Write("Ruolo '" + roleAssignment.Name + "' non trovato tra i SystemRoles per l'utente '" + userUmacSettings.Name + "' (nome errato nell'XML?).");
+                                    continue;
+                                }
+
+                                roles.Add(role);
+                                _traceWriter.Write("Ruolo '" + roleAssignment.Name + "' assegnato a '" + userUmacSettings.Name + "'.");
+                            }
+                            catch (Exception roleException)
+                            {
+                                _traceWriter.Write("Errore assegnando il ruolo '" + roleAssignment.Name + "' a '" + userUmacSettings.Name + "': " + roleException.Message);
+                            }
+                        }
+
+                        _traceWriter.Write("Utente UMAC '" + userUmacSettings.Name + "' creato con successo.");
+                    }
+                    catch (Exception userException)
+                    {
+                        _traceWriter.Write("Errore creando l'utente UMAC '" + userUmacSettings.Name + "': " + userException.Message);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _traceWriter.Write("Error setting UMAC users: " + ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool DoSetUmacUsers(Basic_Project_Generator.Models.DeviceConfiguration config)
+        {
+            try
+            {
+                SetUmacUsers(config.StartupUmacSettings);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore impostando la politica di sicurezza del PLC: " + exception.Message);
+                return false;
+            }
+        }
+
         #endregion // TIA Portal Project
 
         #region Device
@@ -530,8 +700,7 @@ namespace Basic_Project_Generator.Interfaces
                     SetPlcSecurityPolicy(config.StartupSecurutyPolicy);
 
                     //set umac come specifiche interne DBM
-                    //SetUmacUsers(config.StartupUmac);
-                    //TiaPortal.Projects[0].GetService<UmacConfigurator>().ProjectUsers.Create().ProjectUser
+                    SetUmacUsers(config.StartupUmacSettings);
 
 
 
@@ -1178,6 +1347,27 @@ namespace Basic_Project_Generator.Interfaces
 
 
         }
+
+
+        /// <summary>
+        /// DoSetPlcSecurityPolicy
+        /// Metodo chiamabile esternamente (ex. da ProjectGeneratorService)
+        /// per collegare la Subnet appena creata al PLC dato come oggetto Models.DeviceItem.
+        /// </summary>
+        public bool DoSetPlcSecurityPolicy(Basic_Project_Generator.Models.DeviceConfiguration config)
+        {
+            try
+            {
+                SetPlcSecurityPolicy(config.StartupSecurutyPolicy);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore impostando la politica di sicurezza del PLC: " + exception.Message);
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Imposta la Subnet sull'interfaccia di rete del DeviceItem passato puo essere l'iolinkMaster  

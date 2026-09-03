@@ -2,6 +2,7 @@
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Services;
 using Org.BouncyCastle.Tls;
+using Siemens.Collaboration.Net.Extensions.ExplicitExtensions;
 using Siemens.Engineering;
 using Siemens.Engineering.Library;
 using System;
@@ -207,7 +208,7 @@ namespace Basic_Project_Generator.UserInterfaces
             btn_LoadProject.Enabled = string.IsNullOrEmpty(txb_CurrentProjectName.Text) && !string.IsNullOrEmpty(txb_AvailableProjectName.Text);
             btn_SaveProject.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text) && _apiWrapper.CurrentProject.IsModified;
             btn_CloseProject.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
-
+            btn_ProtectProject.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
             if (!string.IsNullOrEmpty(txb_CurrentProjectName.Text))
             {
                 GetCurrentDeviceCount();
@@ -726,7 +727,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 var catalogDevice = _projectGeneratorService.NewDevice;
                 var intPeriphName = catalogDevice.GetOnboardIoByPosition();
-                var (startupAttributes,startupIpAddresses,startupSecurutyPolicy) = _projectGeneratorService.LoadPlcStartupSettings();
+                var (startupAttributes,startupIpAddresses,startupSecurutyPolicy,startupUmacSettings) = _projectGeneratorService.LoadPlcStartupSettings();
 
                 //ovveride dell'indirizzo i de dafult su PlcStartupSettings.xml
                 //se diversamente specificato sul campo di input tb_PlcIpAddress
@@ -749,7 +750,8 @@ namespace Basic_Project_Generator.UserInterfaces
                     IntPeriphName = intPeriphName,
                     StartupAttributes = startupAttributes,
                     StartupIpAddresses = startupIpAddresses,
-                    StartupSecurutyPolicy = startupSecurutyPolicy
+                    StartupSecurutyPolicy = startupSecurutyPolicy,
+                    StartupUmacSettings = startupUmacSettings
 
                 };
                 
@@ -1183,6 +1185,47 @@ namespace Basic_Project_Generator.UserInterfaces
             Cursor.Current = Cursors.Default;
         }
 
+        private void btn_ProtectProject_Click(object sender, EventArgs e)
+        {
+            
+            var methodBase = MethodBase.GetCurrentMethod();
+
+            _traceWriter.Write(methodBase.Name);
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            var (startupAttributes, startupIpAddresses, startupSecurutyPolicy, startupUmacSettings) = _projectGeneratorService.LoadPlcStartupSettings();
+
+            var config = new DeviceConfiguration
+            {
+                StartupSecurutyPolicy = startupSecurutyPolicy, // non serve popolare gli altri cammpi in quanto a  _projectGeneratorService.SetSecurityPolicy serve solo config.StartupSecurutyPolicy
+                StartupUmacSettings = startupUmacSettings
+            };
+
+
+            _projectGeneratorService.SetSecurityPolicy(config); // bisogna farlo prima per forza perchè se il non encora stato eseguito non si trova con le lunghezze password
+
+
+            foreach (var kvp in startupUmacSettings)
+            {
+                UmacUserSettings userUmacSettings = kvp.Value;
+                
+
+                if (userUmacSettings.IsProjectProtectionUser && kvp.Key == "DBM" && userUmacSettings.Roles[0].Enable) // la roles zeresiam (0) SystemRole (Engineering administrator) è la  teoricamente solo utente DBM deve essere lo stesso del Project protection
+                {
+                    _projectGeneratorService.ProtectProject(kvp.Key, userUmacSettings.Password); // derivanti da xml
+                 
+                }
+
+            }
+
+            _projectGeneratorService.SetUmacUsers(config);
+
+
+
+            Cursor.Current = Cursors.Default;
+
+        }
 
 
 
@@ -1195,6 +1238,6 @@ namespace Basic_Project_Generator.UserInterfaces
 
         #endregion // methods
 
-       
+
     }
 }

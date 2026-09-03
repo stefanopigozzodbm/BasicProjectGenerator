@@ -2,6 +2,7 @@
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Models.Configuration;
 using Basic_Project_Generator.UserInterfaces;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 
 //using Siemens.Engineering.HW;
@@ -12,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Web.Security;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -404,6 +406,44 @@ namespace Basic_Project_Generator.Services
         }
 
         /// <summary>
+        /// Protect project
+        /// </summary>
+        /// <param name="caller"></param>
+        public void ProtectProject(string admUsr, string admPsw, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            _apiWrapper.DoProtectProject(admUsr,admPsw);
+        }
+
+        /// <summary>
+        /// Set security policy
+        /// </summary>
+        /// <param name="caller"></param>
+        public void SetSecurityPolicy(DeviceConfiguration config, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            _apiWrapper.DoSetPlcSecurityPolicy(config);
+        }
+
+        /// <summary>
+        /// Set Umac Users
+        /// </summary>
+        /// <param name="caller"></param>
+        public void SetUmacUsers(DeviceConfiguration config, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            _apiWrapper.DoSetUmacUsers(config);
+        }
+
+        
+
+        /// <summary>
         /// Retrieve the device list from current project
         /// </summary>
         /// <param name="caller"></param>
@@ -721,7 +761,11 @@ namespace Basic_Project_Generator.Services
             return _apiWrapper.DoAddNewModule(config);
         }
 
-        public (Dictionary<string, object> dictAttribute, Dictionary<string, object> dictIpAddress, Dictionary<string, object> startupSecurutyPolicys) LoadPlcStartupSettings([CallerMemberName] string caller = "")
+        public (Dictionary<string, object> dictAttribute, 
+            Dictionary<string, object> dictIpAddress, 
+            Dictionary<string, object> startupSecurutyPolicys, 
+            Dictionary<string, UmacUserSettings> startupUmacSettings) 
+            LoadPlcStartupSettings([CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -729,6 +773,7 @@ namespace Basic_Project_Generator.Services
             var attributeDict = new Dictionary<string, object>();
             var ipAddressDict = new Dictionary<string, object>();
             var startupSecurutyPolicys = new Dictionary<string, object>();
+            var startupUmacSettings = new Dictionary<string, UmacUserSettings>();
 
             var doc = XDocument.Load("Assets\\PlcStartupSettings.xml");
 
@@ -784,7 +829,7 @@ namespace Basic_Project_Generator.Services
             }
 
 
-            // Parsing degli SecurityPolicy
+            // Parsing dei SecurityPolicy
             // Si accede al nodo <SecurityPolicys> e poi a tutti gli elementi <Attribute> contenuti
             var securityPolicys = doc.Root.Element("SecurityPolicys")?.Elements("SecurityPolicy");
 
@@ -813,8 +858,105 @@ namespace Basic_Project_Generator.Services
                 }
             }
 
+            // Parsing del'UMAC Settings
+            // il Type rappresenta il fatto che quel'utente è lo stesso del Project protection (quindi anche la PSW associata)
+            //var startupUmacSettings = new Dictionary<string, UmacUserSettings>();
 
-            return (attributeDict,ipAddressDict,startupSecurutyPolicys);
+            var userElements = doc.Root.Element("Users")?.Elements("User");
+
+            if (userElements != null)
+            {
+                foreach (var userElement in userElements)
+                {
+                    try
+                    {
+                        var userName = userElement.Element("Name")?.Value;
+                        if (string.IsNullOrWhiteSpace(userName))
+                        {
+                            _traceWriter.Write("Utente UMAC senza Name: elemento saltato.");
+                            continue;
+                        }
+
+                        var userType = userElement.Element("Type")?.Value;
+                        var userPassword = userElement.Element("Password")?.Value;
+                        var userTimeoutRaw = userElement.Element("Timeout")?.Value;
+
+                        var userSettings = new UmacUserSettings
+                        {
+                            Name = userName,
+                            IsProjectProtectionUser = bool.TryParse(userType, out var isProtection) && isProtection, //per migliorare sarebbe da aggiungere qui il controllo della role[0] deve essere enable assieme al type (doppio controllo di errore battitura su xml)
+                            Password = userPassword,
+                            Timeout = int.TryParse(userTimeoutRaw, out var timeout) ? timeout : 0
+                        };
+
+                        var roleElements = userElement.Element("Roles")?.Elements("Role");
+                        if (roleElements != null)
+                        {
+                            foreach (var roleElement in roleElements)
+                            {
+                                try
+                                {
+                                    var roleName = roleElement.Element("Name")?.Value;
+                                    var roleNumberRaw = roleElement.Element("Number")?.Value;
+                                    var roleEnableRaw = roleElement.Element("Enable")?.Value;
+
+                                    if (string.IsNullOrWhiteSpace(roleName) || !int.TryParse(roleNumberRaw, out var roleNumber))
+                                    {
+                                        _traceWriter.Write("Role non valido per utente '" + userName + "': Name/Number mancanti o non numerici.");
+                                        continue;
+                                    }
+
+                                    var roleEnable = bool.TryParse(roleEnableRaw, out var enableValue) && enableValue;
+
+                                    while (userSettings.Roles.Count <= roleNumber)
+                                    {
+                                        userSettings.Roles.Add(null); // placeholder per eventuali indici mancanti
+                                    }
+
+                                    if (userSettings.Roles[roleNumber] != null)
+                                    {
+                                        _traceWriter.Write("ATTENZIONE: Number " + roleNumber + " duplicato per utente '" + userName + "', il Role precedente viene sovrascritto.");
+                                    }
+
+                                    userSettings.Roles[roleNumber] = new UmacRoleAssignment { Name = roleName, Enable = roleEnable };
+                                }
+                                catch (Exception roleException)
+                                {
+                                    _traceWriter.Write("Errore leggendo un Role per l'utente '" + userName + "': " + roleException.Message);
+                                }
+                            }
+                        }
+
+                        // Controllo di coerenza (solo warning, non blocca l'import): se Type=True (Project Protection),
+                        // ci si aspetta che anche il ruolo "Engineering administrator" sia Enable=True, e viceversa.
+                        // Aiuta a scovare errori di battitura nell'XML dove i due flag sono stati scritti in modo incoerente.
+                        var engineeringAdminRole = userSettings.Roles.FirstOrDefault(r => r != null && r.Name == "SystemRole (Engineering administrator)");
+                        var engineeringAdminEnabled = engineeringAdminRole?.Enable ?? false;
+
+                        if (userSettings.IsProjectProtectionUser != engineeringAdminEnabled)
+                        {
+                            _traceWriter.Write("ATTENZIONE: utente '" + userName + "' ha Type=" + userSettings.IsProjectProtectionUser +
+                                " ma il ruolo 'Engineering administrator' ha Enable=" + engineeringAdminEnabled +
+                                ". Verificare l'XML: i due valori dovrebbero coincidere.");
+                        }
+
+                        if (startupUmacSettings.ContainsKey(userName))
+                        {
+                            _traceWriter.Write("ATTENZIONE: utente UMAC '" + userName + "' duplicato nell'XML, la voce precedente viene sovrascritta.");
+                        }
+
+                        startupUmacSettings[userName] = userSettings;
+                    }
+                    catch (Exception userException)
+                    {
+                        _traceWriter.Write("Errore leggendo un utente UMAC: " + userException.Message);
+                    }
+                }
+            }
+
+
+
+            return (attributeDict,ipAddressDict,startupSecurutyPolicys,startupUmacSettings);
         }
 
         #endregion // Device

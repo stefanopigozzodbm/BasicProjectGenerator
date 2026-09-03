@@ -210,6 +210,7 @@
     <Compile Include="Models\ModuleModel.cs" />
     <Compile Include="Models\PlcAccessLevel.cs" />
     <Compile Include="Models\Configuration\SafetyChannelConfiguration.cs" />
+    <Compile Include="Models\UmacUserSettings.cs" />
     <Compile Include="Services\ExcelImport\SymbolicTableImportService.cs" />
     <Compile Include="UserInterfaces\BasicProjectGenerator.cs">
       <SubType>Form</SubType>
@@ -280,22 +281,27 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+	  
     <Content Include="Assets\DeviceCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+	      
+	<Content Include="Assets\ImExpansion.xml"  >
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
 	  
-
-	  <Content Include="Assets\IOLink_StartupSettings.xml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  
+    <Content Include="Assets\IOLink_StartupSettings.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
 	  
     <Content Include="Assets\ModuleCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+	  
     <Content Include="Assets\PlcStartupSettings.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+	  
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.dll" />
