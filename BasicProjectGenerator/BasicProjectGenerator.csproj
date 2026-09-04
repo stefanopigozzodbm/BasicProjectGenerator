@@ -194,6 +194,7 @@
     <Compile Include="Models\AutoLogoff.cs" />
     <Compile Include="Models\Catalog.cs" />
     <Compile Include="Models\Configuration\DeviceConfiguration.cs" />
+    <Compile Include="Models\Configuration\ImExpansion.cs" />
     <Compile Include="Models\Configuration\IOLinkAddressCursor.cs" />
     <Compile Include="Models\Configuration\IOLinkMasterModule.cs" />
     <Compile Include="Models\Configuration\IOLinkSlaveModule.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="Models\DeviceItem.cs" />
     <Compile Include="Models\DisplayAutoLogoff.cs" />
     <Compile Include="Models\ExpModule.cs" />
+    <Compile Include="Models\ImExpansionCatalog.cs" />
     <Compile Include="Models\ImportedSymbolItem.cs" />
     <Compile Include="Models\IOLinkPortAssignment.cs" />
     <Compile Include="Models\IpSubnet.cs" />
@@ -281,27 +283,21 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-	  
     <Content Include="Assets\DeviceCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-	      
-	<Content Include="Assets\ImExpansion.xml"  >
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="Assets\ImExpansion.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-	  
     <Content Include="Assets\IOLink_StartupSettings.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-	  
     <Content Include="Assets\ModuleCatalog.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-	  
     <Content Include="Assets\PlcStartupSettings.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-	  
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.dll" />

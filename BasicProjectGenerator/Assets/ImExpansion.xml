@@ -9,6 +9,9 @@
 			<OrderNumber>6ES7 155-6AU00-0BN0</OrderNumber>
 			<IsSafety>false</IsSafety>
 			<FirmwareVersion>V3.3</FirmwareVersion>
+			<BaseIpLastOctet>20</BaseIpLastOctet>
+			<BaseDeviceNumber>20</BaseDeviceNumber>
+			<IpDeviceStep>1</IpDeviceStep>
 		</ImExpansion>
 
 		<ImExpansion>
@@ -16,6 +19,9 @@
 			<OrderNumber>6ES7 155-6AU01-0BN0</OrderNumber>
 			<IsSafety>false</IsSafety>
 			<FirmwareVersion>V4.2</FirmwareVersion>
+			<BaseIpLastOctet>20</BaseIpLastOctet>
+			<BaseDeviceNumber>20</BaseDeviceNumber>
+			<IpDeviceStep>1</IpDeviceStep>
 		</ImExpansion>
 
 		<ImExpansion>
@@ -23,6 +29,9 @@
 			<OrderNumber>6ES7 155-6AU02-0BN0</OrderNumber>
 			<IsSafety>false</IsSafety>
 			<FirmwareVersion>V6.4</FirmwareVersion>
+			<BaseIpLastOctet>20</BaseIpLastOctet>
+			<BaseDeviceNumber>20</BaseDeviceNumber>
+			<IpDeviceStep>1</IpDeviceStep>
 		</ImExpansion>
 
 

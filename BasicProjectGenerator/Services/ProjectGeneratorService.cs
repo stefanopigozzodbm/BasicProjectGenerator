@@ -16,6 +16,7 @@ using System.Runtime.CompilerServices;
 using System.Web.Security;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace Basic_Project_Generator.Services
 {
@@ -581,16 +582,17 @@ namespace Basic_Project_Generator.Services
         /// </summary>
         /// <param name="caller"></param>
         /// <returns></returns>
-        public bool LoadImExpansionCatalog([CallerMemberName] string caller = "")
+        public List<ImExpansion> LoadImExpansionCatalog([CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
-            ImExpansionCatalogLoaded = false;
-            ImExpansionCatalogXml = XDocument.Load("Assets\\ImExpansion.xml");
-            ImExpansionModel.LoadImExpansionCatalog(ImExpansionCatalogXml);
-            ImExpansionCatalogLoaded = true;
-            return ImExpansionCatalogLoaded;
+            var serializer = new XmlSerializer(typeof(ImExpansionCatalog));
+            using (var reader = new StreamReader("Assets\\ImExpansion.xml"))
+            {
+                var catalog = (ImExpansionCatalog)serializer.Deserialize(reader);
+                return catalog.ImExpansionItemComposition ?? new List<ImExpansion>();
+            }
         }
 
         #endregion

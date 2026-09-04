@@ -69,11 +69,11 @@ namespace Basic_Project_Generator.Models.Configuration
         }
 
         // ==========================================
-        // METODI EXTRA PROPOSTI E CORREZIONI
+        // METODI EXTRA 
         // ==========================================
 
         /// <summary>
-        /// CORREZIONE: Cerca lo slave tramite il numero di porta in modo sicuro.
+        /// Cerca lo slave tramite il numero di porta in modo sicuro.
         /// NOTA: Presuppone che la classe IOLinkSlaveModule abbia una proprietà chiamata 'PortNumber'.
         /// </summary>
         public IOLinkSlaveModule GetIOLinkSlaveModuleByPortNumber(int portNumber)
@@ -82,7 +82,7 @@ namespace Basic_Project_Generator.Models.Configuration
         }
 
         /// <summary>
-        /// PROPOSTA: Rimuove uno slave conoscendo solo il suo numero di porta.
+        /// Rimuove uno slave conoscendo solo il suo numero di porta.
         /// Spesso in fase di configurazione non hai l'oggetto in memoria, ma sai quale porta vuoi liberare.
         /// </summary>
         public bool RemoveSlaveByPort(int portNumber)
@@ -96,7 +96,7 @@ namespace Basic_Project_Generator.Models.Configuration
         }
 
         /// <summary>
-        /// PROPOSTA: Verifica se una determinata porta è già occupata da uno slave.
+        /// Verifica se una determinata porta è già occupata da uno slave.
         /// Utile prima di fare un AddSlave per evitare conflitti o sovrascritture.
         /// </summary>
         public bool IsPortOccupied(int portNumber)

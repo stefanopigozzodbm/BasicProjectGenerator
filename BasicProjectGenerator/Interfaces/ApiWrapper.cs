@@ -1,5 +1,6 @@
 ﻿//using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Models.Configuration;
+using Basic_Project_Generator.UserInterfaces;
 using Microsoft.VisualBasic.ApplicationServices;
 using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.Streaming.Values;
@@ -1009,6 +1010,62 @@ namespace Basic_Project_Generator.Interfaces
         }
 
 
+        /// <summary>
+        /// Cerca ricorsivamente, tra il DeviceItem del PLC e i suoi figli, il primo che espone
+        /// il servizio NetworkInterface e lo restituisce, senza modificarne l'indirizzo IP.
+        /// </summary>
+        public Siemens.Engineering.HW.Features.NetworkInterface FindNetworkInterface(DeviceItem deviceItem)
+        {
+            if (deviceItem == null)
+            {
+                return null;
+            }
+
+            var networkInterface = FindNetworkInterfaceRecursive(deviceItem);
+
+            if (networkInterface != null)
+            {
+                _traceWriter.Write("NetworkInterface trovata a partire da " + deviceItem.Name);
+            }
+            else
+            {
+                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + deviceItem.Name);
+            }
+
+            return networkInterface;
+        }
+
+        private Siemens.Engineering.HW.Features.NetworkInterface FindNetworkInterfaceRecursive(DeviceItem deviceItem, string path = "")
+        {
+            var currentPath = string.IsNullOrEmpty(path) ? deviceItem.Name : path + " / " + deviceItem.Name;
+
+            try
+            {
+                var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                {
+                    _traceWriter.Write("NetworkInterface trovata al percorso: " + currentPath);
+                    Debug.WriteLine("NetworkInterface trovata al percorso: " + currentPath);
+                    return networkInterface;
+                }
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore cercando la NetworkInterface su " + currentPath + ": " + exception.Message);
+            }
+
+            foreach (var childItem in deviceItem.DeviceItems)
+            {
+                var foundInterface = FindNetworkInterfaceRecursive(childItem, currentPath);
+                if (foundInterface != null)
+                {
+                    return foundInterface;
+                }
+            }
+
+            return null;
+        }
+
 
         /// <summary>
         /// Imposta Il Device Number sull'interfaccia PROFINET 
@@ -1435,7 +1492,7 @@ namespace Basic_Project_Generator.Interfaces
          *int? inputStartAddress = null, int? outputStartAddress = null, 
          *bool newPotentialGroup = false,[CallerMemberName] string caller = "")*/
 
-        public bool DoAddNewModule(Basic_Project_Generator.Models.ModuleConfiguration config, [CallerMemberName] string caller = "")
+        public bool DoAddNewModule(Basic_Project_Generator.Models.ModuleConfiguration config,DeviceItem targetRack, [CallerMemberName] string caller = "")
 
         {
             var methodBase = MethodBase.GetCurrentMethod();
@@ -1443,7 +1500,9 @@ namespace Basic_Project_Generator.Interfaces
 
             var result = false;
 
-            var rack = Device?.DeviceItems.FirstOrDefault();
+            //var rack = Device?.DeviceItems.FirstOrDefault();
+            var rack = targetRack ?? Device?.DeviceItems.FirstOrDefault();
+
             if (rack != null)
             {
                 var occupiedSlots = rack.DeviceItems.Select(di => di.PositionNumber).ToList();
@@ -1490,6 +1549,12 @@ namespace Basic_Project_Generator.Interfaces
             }
             return result;
             }
+
+        // L'overload esistente (senza targetRack) resta invariato, richiama semplicemente questo passando null:
+        public bool DoAddNewModule(Basic_Project_Generator.Models.ModuleConfiguration config, [CallerMemberName] string caller = "")
+        {
+            return DoAddNewModule(config, null, caller);
+        }
 
         /// <summary>
         /// Imposta Failsafe_SensorEvaluation e Failsafe_SensorSupply sui canali indicati di un modulo Safety appena innestato.
@@ -1729,12 +1794,123 @@ namespace Basic_Project_Generator.Interfaces
             return Convert.ChangeType(rawValue, targetType);
         }
 
+
+        public bool DoAddImExpansion(Basic_Project_Generator.Models.ImExpansion config, int occurrenceIndex, Models.DeviceItem plcDeviceItem, string instanceName, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            try
+            {
+                var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(config.TypeIdentifier, instanceName, instanceName);
+                if (newDevice == null)
+                {
+                    _traceWriter.Write("Creazione stazione ET200SP '" + instanceName + "' fallita.");
+                    return false;
+                }
+
+                IsModified = true;
+                _traceWriter.Write("Stazione ET200SP '" + instanceName + "' creata da catalogo (" + config.TemplateName + ").");
+
+                IoSystem ioSystem = null;
+                Subnet subnet = null;
+                string plcSubnetIp = null;
+
+                foreach (var device in CurrentProject.Devices)
+                {
+                    if (device.Name != plcDeviceItem.DeviceName) continue;
+
+                    foreach (var item in device.DeviceItems)
+                    {
+                        if (item.Name != plcDeviceItem.Name) continue;
+
+                        var plcNetworkInterface = FindNetworkInterface(item);
+                        if (plcNetworkInterface == null || plcNetworkInterface.IoControllers.Count == 0)
+                        {
+                            _traceWriter.Write("NetworkInterface/IoController del PLC non trovati.");
+                            return false;
+                        }
+
+                        ioSystem = plcNetworkInterface.IoControllers[0].IoSystem;
+                        plcSubnetIp = plcNetworkInterface.Nodes[0].GetAttribute("Address")?.ToString();
+                    }
+                }
+
+
+                subnet = CurrentProject.Subnets[0]; // stesso limite già presente in DoTestDebug: prima subnet del progetto
+
+
+
+                if (ioSystem == null || string.IsNullOrWhiteSpace(plcSubnetIp))
+                {
+                    _traceWriter.Write("Impossibile determinare IoSystem/IP del PLC per la stazione '" + instanceName + "'.");
+                    return false;
+                }
+
+                // modificato
+                var ioDeviceHead = newDevice.DeviceItems[1];
+
+           
+                var ipLastOctet = config.GetIpLastOctet(occurrenceIndex);
+                IpSubnet SelectedPlcIpAddress = new IpSubnet(config.SubnetIp);
+                var totalIpAddress = SelectedPlcIpAddress.GetSubnetPrefixWithDot() + ipLastOctet.ToString();
+                var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
+
+              
+
+                try {
+                    SetSubnet(newDevice.DeviceItems[1], subnet);
+
+                    SetIoSystem(newDevice.DeviceItems[1], ioSystem);
+
+                    SetDeviceIpAddress(ioDeviceHead, totalIpAddress);
+
+                    SetDeviceNumber(ioDeviceHead, deviceNumber);
+
+                    _traceWriter.Write("Stazione '" + instanceName + "' collegata all'IO-System del PLC con IP " + totalIpAddress);
+                    _traceWriter.Write("Stazione '" + instanceName + "' settato deviceNumber " + deviceNumber);
+
+                    return true;
+
+                }
+
+                catch (Exception e)
+                {
+
+                    if (methodBase.ReflectedType != null)
+                    {
+                        Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + "Exception: " + e.Message);
+                        _traceWriter.Write("Errore aggiungendo la stazione ET200SP '" + instanceName + "': " + e.Message);
+                    }
+
+                    return false;
+
+                }
+
+
+            }
+            catch (Exception e)
+            {
+
+                if (methodBase.ReflectedType != null)
+                {
+                    Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + "Exception: " + e.Message);
+                    _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + "Exception: " + e.Message);
+                   
+                }
+
+                return false;
+
+            }
+
+        }
+
         #region IOLink
 
         /// <summary>
         /// Piazza un Master Io-Link (da Master catalogo HW) sulla Subnet , IoSystem del PLC (in dbm genreicamente 1) con le config derivanti dal
         /// file excel e da IOLink_StartupSettings.xml
-               /// </summary>
+        /// </summary>
         public (bool MasterAdded, int SlaveAddedCount) DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex,Subnet subnet,IoSystem ioSystem, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
@@ -1942,7 +2118,7 @@ namespace Basic_Project_Generator.Interfaces
                 {
                     if (item.Name != plcDeviceItem.Name) continue;
 
-                    var networkInterface = item.DeviceItems[2].GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                    var networkInterface = FindNetworkInterface(item); // questo è migliore perchè cerca ricorsivamente tra i figli del DeviceItem, non solo tra i DeviceItems diretti
                     if (networkInterface == null || networkInterface.Nodes.Count == 0)
                     {
                         _traceWriter.Write("NetworkInterface del PLC non trovata o senza nodi.");
@@ -2128,7 +2304,7 @@ namespace Basic_Project_Generator.Interfaces
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
 
-
+            #region IoLikn Master + Slave
             var test_config = new IOLinkMasterModule();
             test_config.MasterCopyName="AL1102";
             test_config.Code = "AL1102_1";
@@ -2152,7 +2328,22 @@ namespace Basic_Project_Generator.Interfaces
             test_config_slave2.PortNumber = 2;
 
             test_config.AddSlave(test_config_slave2); // Aggiungiamo l'Oggetto 2 alla lista
+            #endregion
 
+            #region ImExpansion
+
+            var test_config_imexpansion = new Basic_Project_Generator.Models.ImExpansion();
+
+            test_config_imexpansion.TemplateName= "20A1";
+            test_config_imexpansion.OrderNumber = "6ES7 155-6AU02-0BN0";
+            //test_config_imexpansion.TypeIdentifier = //costruito automaticmanete "OrderNumber:6ES7 510-1SJ01-0AB0/V2.9"
+            test_config_imexpansion.IsSafety = false;
+            test_config_imexpansion.FirmwareVersion = "V6.4";
+            test_config_imexpansion.BaseIpLastOctet = 20;
+            test_config_imexpansion.BaseDeviceNumber = 20;
+            test_config_imexpansion.IpDeviceStep = 1;
+
+            #endregion
 
 
             #region Estrazione IP del PLC dal progetto per inserire correttamente DeviceNumber su IOlink Master e connetterlo alla rete PROFINET del PLC + Estrazione IOSystem per inserire correttamente DeviceNumber su IOlink Master e connetterlo alla rete PROFINET del PLC
@@ -2166,8 +2357,8 @@ namespace Basic_Project_Generator.Interfaces
                     {
                         if (item.Name == deviceItem.Name) //18a1
                         {
-
-                            var networkInterface = item.DeviceItems[2].GetService<Siemens.Engineering.HW.Features.NetworkInterface>(); //#2 perchè è l'interfaccia PROFINET interface_1 
+                            var networkInterface=FindNetworkInterface(item); //è un metodo ricorsivo che cerca tra i figli del deviceItem e trova l'interfaccia PROFINET  
+                            //var networkInterface = item.DeviceItems[2].GetService<Siemens.Engineering.HW.Features.NetworkInterface>(); //#2 perchè è l'interfaccia PROFINET interface_1 
                             ioSystem = networkInterface.IoControllers[0].IoSystem; 
 
 
@@ -2179,7 +2370,8 @@ namespace Basic_Project_Generator.Interfaces
                                 _traceWriter.Write("NetworkInterface trovata con actIpAddress " + actIpAddress);
 
                                 test_config.SubnetIp = actIpAddress.ToString();
-                               
+                                test_config_imexpansion.SubnetIp = actIpAddress.ToString();
+
                             }
 
 
@@ -2207,7 +2399,17 @@ namespace Basic_Project_Generator.Interfaces
 
             if (test_config != null)
             {
-                DoAddIOLinkMaster(test_config, 0,subnet, ioSystem,caller); ///!! passare questo parametro actIpAddress oppure popolare IpAddress..da vedere
+               // DoAddIOLinkMaster(test_config, 0,subnet, ioSystem,caller); ///!! passare questo parametro actIpAddress oppure popolare IpAddress..da vedere
+
+               // result = true;
+            }
+
+            if (test_config_imexpansion != null)
+            {
+
+                
+
+                DoAddImExpansion(test_config_imexpansion, 0, deviceItem, test_config_imexpansion.TemplateName, caller);
 
                 result = true;
             }
@@ -2220,7 +2422,7 @@ namespace Basic_Project_Generator.Interfaces
       
         #endregion
 
-            #region Compile
+        #region Compile
 
             /// <summary>
             /// Compile a device
@@ -2228,116 +2430,116 @@ namespace Basic_Project_Generator.Interfaces
             /// <param name="deviceItem"></param>
             /// <param name="caller"></param>
         public void DoCompileDevice(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")
-{
-var methodBase = MethodBase.GetCurrentMethod();
-if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
-
-var deviceNotFound = true;
-foreach (var device in CurrentProject.Devices)
-{
-if (device.Name == deviceItem.DeviceName)
-{
-    var deviceItemComposition = device.DeviceItems;
-    foreach (var item in deviceItemComposition)
-    {
-        if (item.Name == deviceItem.Name)
-        {
-            var softwareContainer = item.GetService<SoftwareContainer>();
-            if (softwareContainer != null)
             {
-                if (softwareContainer.Software is PlcSoftware)
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var deviceNotFound = true;
+            foreach (var device in CurrentProject.Devices)
+            {
+            if (device.Name == deviceItem.DeviceName)
+            {
+                var deviceItemComposition = device.DeviceItems;
+                foreach (var item in deviceItemComposition)
                 {
-                    var controllerTarget = softwareContainer.Software as PlcSoftware;
-                    if (controllerTarget != null)
+                    if (item.Name == deviceItem.Name)
                     {
-                        deviceNotFound = false;
-                        var plcCompiler = controllerTarget.GetService<ICompilable>();
-                        var plcCompilerResult = plcCompiler.Compile();
-                        var compilerMessage = "Compiling Software of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                        _traceWriter.Write(compilerMessage);
-                        if (plcCompilerResult.Messages.Count > 0)
+                        var softwareContainer = item.GetService<SoftwareContainer>();
+                        if (softwareContainer != null)
                         {
-                            if (plcCompilerResult.Messages != null && plcCompilerResult.Messages.Count > 0)
+                            if (softwareContainer.Software is PlcSoftware)
                             {
-                                GetCompilerMessages("", plcCompilerResult.Messages);
+                                var controllerTarget = softwareContainer.Software as PlcSoftware;
+                                if (controllerTarget != null)
+                                {
+                                    deviceNotFound = false;
+                                    var plcCompiler = controllerTarget.GetService<ICompilable>();
+                                    var plcCompilerResult = plcCompiler.Compile();
+                                    var compilerMessage = "Compiling Software of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                                    _traceWriter.Write(compilerMessage);
+                                    if (plcCompilerResult.Messages.Count > 0)
+                                    {
+                                        if (plcCompilerResult.Messages != null && plcCompilerResult.Messages.Count > 0)
+                                        {
+                                            GetCompilerMessages("", plcCompilerResult.Messages);
+                                        }
+                                    }
+                                }
+                            }
+                            if (softwareContainer.Software is HmiTarget)
+                            {
+                                var hmiTarget = softwareContainer.Software as HmiTarget;
+                                if (hmiTarget != null)
+                                {
+                                    deviceNotFound = false;
+                                    var hmiCompiler = hmiTarget.GetService<ICompilable>();
+                                    var hmiCompilerResult = hmiCompiler.Compile();
+                                    var compilerMessage = "Compiling HMI of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                                    _traceWriter.Write(compilerMessage);
+                                    if (hmiCompilerResult.Messages.Count > 0)
+                                    {
+                                        if (hmiCompilerResult.Messages != null && hmiCompilerResult.Messages.Count > 0)
+                                        {
+                                            GetCompilerMessages("", hmiCompilerResult.Messages);
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-                if (softwareContainer.Software is HmiTarget)
-                {
-                    var hmiTarget = softwareContainer.Software as HmiTarget;
-                    if (hmiTarget != null)
-                    {
-                        deviceNotFound = false;
-                        var hmiCompiler = hmiTarget.GetService<ICompilable>();
-                        var hmiCompilerResult = hmiCompiler.Compile();
-                        var compilerMessage = "Compiling HMI of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                        _traceWriter.Write(compilerMessage);
-                        if (hmiCompilerResult.Messages.Count > 0)
+                        var compileProvider = item.GetService<ICompilable>();
+                        if (compileProvider != null)
                         {
-                            if (hmiCompilerResult.Messages != null && hmiCompilerResult.Messages.Count > 0)
+                            deviceNotFound = false;
+                            var compileResult = compileProvider.Compile();
+                            var compilerMessage = "Compiling Hardware of " + deviceItem.DeviceName + " - " + deviceItem.Name;
+                            _traceWriter.Write(compilerMessage);
+                            if (compileResult.Messages.Count > 0)
                             {
-                                GetCompilerMessages("", hmiCompilerResult.Messages);
+                                if (compileResult.Messages != null && compileResult.Messages.Count > 0)
+                                {
+                                    GetCompilerMessages("", compileResult.Messages);
+                                }
                             }
                         }
                     }
                 }
             }
-            var compileProvider = item.GetService<ICompilable>();
-            if (compileProvider != null)
+            }
+
+            if (deviceNotFound)
             {
-                deviceNotFound = false;
-                var compileResult = compileProvider.Compile();
-                var compilerMessage = "Compiling Hardware of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                _traceWriter.Write(compilerMessage);
-                if (compileResult.Messages.Count > 0)
+            _traceWriter.Write("No device found to compile!");
+            }
+            }
+
+            /// <summary>
+            /// Retrieve recursive the compile messages
+            /// </summary>
+            /// <param name="path"></param>
+            /// <param name="messageComposition"></param>
+        private void GetCompilerMessages(string path, CompilerResultMessageComposition messageComposition)
+            {
+                foreach (var message in messageComposition)
                 {
-                    if (compileResult.Messages != null && compileResult.Messages.Count > 0)
+                    if (message.Messages != null && message.Messages.Count > 0)
                     {
-                        GetCompilerMessages("", compileResult.Messages);
+                        GetCompilerMessages(message.Path, message.Messages);
+                    }
+                    if (!string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
+                    {
+                        var compilerMessage = "Path: " + path + " / State: " + message.State + " / Description: " + message.Description;
+                        _traceWriter.Write(compilerMessage);
+                    }
+                    if (string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
+                    {
+                        var compilerMessage = "State: " + message.State + " / Description: " + message.Description;
+                        _traceWriter.Write(compilerMessage);
                     }
                 }
             }
-        }
-    }
-}
-}
 
-if (deviceNotFound)
-{
-_traceWriter.Write("No device found to compile!");
-}
-}
+        #endregion // Compile
 
-/// <summary>
-/// Retrieve recursive the compile messages
-/// </summary>
-/// <param name="path"></param>
-/// <param name="messageComposition"></param>
-private void GetCompilerMessages(string path, CompilerResultMessageComposition messageComposition)
-{
-    foreach (var message in messageComposition)
-    {
-        if (message.Messages != null && message.Messages.Count > 0)
-        {
-            GetCompilerMessages(message.Path, message.Messages);
-        }
-        if (!string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
-        {
-            var compilerMessage = "Path: " + path + " / State: " + message.State + " / Description: " + message.Description;
-            _traceWriter.Write(compilerMessage);
-        }
-        if (string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
-        {
-            var compilerMessage = "State: " + message.State + " / Description: " + message.Description;
-            _traceWriter.Write(compilerMessage);
-        }
-    }
-}
-
-#endregion // Compile
-
-#endregion // methods
-}
+        #endregion // methods
+            }
 }
