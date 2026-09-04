@@ -2,10 +2,10 @@
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Models.Configuration;
 using Basic_Project_Generator.UserInterfaces;
+
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 
-//using Siemens.Engineering.HW;
 using Siemens.Engineering.Library;
 using System;
 using System.Collections.Generic;
@@ -718,6 +718,38 @@ namespace Basic_Project_Generator.Services
             return result;
         }
 
+        public int AddImExpansionFromImport(List<ImportedSymbolItem> importedItems, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+            var addedCount = 0;
+            var ImCatalog = LoadImExpansionCatalog();
+            var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in importedItems.Where(i => i.IsImExpansion)) //questo filtra tutti moduli selezionati che non siano master io link
+            {
+
+                var template = ImCatalog.FirstOrDefault(m => string.Equals(m.OrderNumber, item.OrderNumber, StringComparison.OrdinalIgnoreCase));
+                if (template == null)
+                {
+                    _traceWriter.Write("Nessuna voce di catalogo trovata per master IM-Expansion '" + item.OrderNumber + "'.");
+                    continue;
+                }
+                var occurrenceIndex = occurrenceCounters.TryGetValue(template.TemplateName, out var count) ? count : 0;
+                occurrenceCounters[template.TemplateName] = occurrenceIndex + 1;
+
+                contiuare qui,si stava vedendo di confronteare m.OrderNumber, item.OrderNumber(ancora da provare) per creare il template
+
+                // _apiWrapper.DoAddImExpansion(test_config_imexpansion, 0, deviceItem, test_config_imexpansion.TemplateName, caller);
+
+            }
+
+
+
+            return 0;
+       
+        }
+
 
         public (int MasterAddedCount, int TotalSlaveAddedCount) AddIOLinkMastersFromImport(List<ImportedSymbolItem> importedItems, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
         {
@@ -1014,7 +1046,9 @@ namespace Basic_Project_Generator.Services
             LoadModuleCatalog();
 
             var ioLinkMasterCatalog = LoadIOLinkMasterCatalog();
-            return _symbolicTableImportService.Import(filePath, DeviceModel.DeviceCatalog, ModuleModel.ModuleCatalog, ioLinkMasterCatalog);
+            var imExpansionCatalog = LoadImExpansionCatalog();
+
+            return _symbolicTableImportService.Import(filePath, DeviceModel.DeviceCatalog, ModuleModel.ModuleCatalog, ioLinkMasterCatalog, imExpansionCatalog);
         }
         #endregion
 

@@ -10,7 +10,8 @@ namespace Basic_Project_Generator.Models
         Unknown,
         Device,
         Module,
-        IOLinkMaster
+        IOLinkMaster,
+        ImExpansion
 
     }
 
@@ -34,6 +35,9 @@ namespace Basic_Project_Generator.Models
         public int? OutputStartAddress => DigitalOutputStartAddress ?? AnalogOutputStartAddress;
         public bool IsIOLinkMaster { get; set; }
         public string IOLinkMasterCode { get; set; } // es. "AL1102", per il lookup nel catalogo statico
+        public bool IsImExpansion { get; set; }
+        public ImExpansion MatchedImExpansion { get; set; }
+        public string ImExpansionParentName { get; set; } // null = appartiene al rack della CPU; altrimenti sigla della stazione ET200SP (es. "20A1")
         public List<IOLinkPortAssignment> IOLinkPorts { get; set; } = new List<IOLinkPortAssignment>();
 
 

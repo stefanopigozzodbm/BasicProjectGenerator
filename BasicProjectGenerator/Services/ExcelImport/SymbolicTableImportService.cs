@@ -14,6 +14,7 @@ namespace Basic_Project_Generator.Services
     public class SymbolicTableImportService
     {
         private const int ColumnSiglaScheda = 3;    // colonna D
+        private const int ColumnRack = 1; // colonna B
         private const int ColumnCodiceUnita = 6;    // colonna G
         private const int ColumnTipologia = 7;      // colonna H
         private const int ColumnIndirizzo = 8;      // colonna I
@@ -41,7 +42,7 @@ namespace Basic_Project_Generator.Services
 
 
         public List<ImportedSymbolItem> Import(string filePath, Catalog deviceCatalog, ModuleCatalog moduleCatalog,
-            List<IOLinkMasterModule> ioLinkMasterCatalog)
+            List<IOLinkMasterModule> ioLinkMasterCatalog, List<ImExpansion> imExpansionCatalog)
         {
             var result = new List<ImportedSymbolItem>();
 
@@ -78,8 +79,13 @@ namespace Basic_Project_Generator.Services
                     }
                 }
 
+
+
                 ImportedSymbolItem currentItem = null;
                 var currentSafetyRows = new List<(string Description, string Pin1Raw, string Pin2Raw, string Indirizzo)>();
+
+                string currentImExpansionInstanceName = null; // sigla della stazione ET200SP attualmente "attiva"
+                string currentImExpansionRackValue = null;    // valore di colonna B (Rack) della stazione attiva
 
                 for (var r = 1; r <= sheet.LastRowNum; r++)
                 {
@@ -106,7 +112,9 @@ namespace Basic_Project_Generator.Services
                         var deviceMatch = deviceCatalog?.DeviceItemComposition?.FirstOrDefault(d => Normalize(d.OrderNumber) == normalized);
                         var moduleMatch = deviceMatch == null ? moduleCatalog?.ModuleItemComposition?.FirstOrDefault(m => Normalize(m.OrderNumber) == normalized) : null;
                         var masterMatch = (deviceMatch == null && moduleMatch == null) ? ioLinkMasterCatalog?.FirstOrDefault(mm => Normalize(mm.MasterCopyName) == normalized) : null;
+                        var imExpansionMatch = (deviceMatch == null && moduleMatch == null && masterMatch == null) ? imExpansionCatalog?.FirstOrDefault(im => Normalize(im.OrderNumber) == normalized) : null;
 
+                        var rackValue = GetCellText(row, ColumnRack);
                         if (deviceMatch != null)
                         {
                             currentItem.ItemType = SymbolItemType.Device;
@@ -125,7 +133,29 @@ namespace Basic_Project_Generator.Services
                             currentItem.IsIOLinkMaster = true;
                             currentItem.IOLinkMasterCode = masterMatch.MasterCopyName;
                         }
+                        else if (imExpansionMatch != null)
+                        {
+                            currentItem.ItemType = SymbolItemType.ImExpansion;
+                            currentItem.IsImExpansion = true;
+                            currentItem.MatchedImExpansion = imExpansionMatch;
+
+                            currentImExpansionInstanceName = currentItem.Name; // sigla, es. "20A1"
+                            currentImExpansionRackValue = rackValue;
+
+                            _traceWriter.Write("Stazione ET200SP trovata: '" + currentItem.Name + "' (Rack=" + rackValue + ", " + imExpansionMatch.TemplateName + ")");
+                        }
                         // Se non è nessuno dei tre: probabile blocco dettaglio espansione, già gestito dalla pre-scansione, nessuna azione qui.
+
+                        // Assegna l'appartenenza a una stazione ET200SP (se Rack coincide con quella attualmente attiva), altrimenti resetta
+                        if (currentImExpansionInstanceName != null && !currentItem.IsImExpansion && rackValue == currentImExpansionRackValue)
+                        {
+                            currentItem.ImExpansionParentName = currentImExpansionInstanceName;
+                        }
+                        else if (!currentItem.IsImExpansion)
+                        {
+                            currentImExpansionInstanceName = null;
+                            currentImExpansionRackValue = null;
+                        }
 
                         result.Add(currentItem);
                         continue;

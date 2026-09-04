@@ -1036,7 +1036,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
 
 
-                // 2) Aggiungo i moduli spuntati
+                // 2) Aggiungo i moduli spuntati  (non Device=PLC)
                 var addedCount = 0;
                 var errorCount = 0;
                 var masterErrorCount = 0;
@@ -1049,7 +1049,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
                     if (item.ItemType == SymbolItemType.Device)
                     {
-                        continue; // già gestita sopra
+                        continue; // già gestita sopra su 1)
                     }
 
                     if (item.ItemType != SymbolItemType.Module)
@@ -1057,6 +1057,13 @@ namespace Basic_Project_Generator.UserInterfaces
                         _traceWriter.Write("Saltato (non riconosciuto): " + item.Name);
                         continue;
                     }
+
+                    if (item.ImExpansionParentName != null) // se valorizzato il modulo appartiene alla ImExpansion specificata
+                    {
+                        _traceWriter.Write("Modulo appartenente a rack con IM: " + item.Name);
+                        continue;
+                    }
+                                        
 
                     Cursor.Current = Cursors.WaitCursor;
 
@@ -1081,30 +1088,46 @@ namespace Basic_Project_Generator.UserInterfaces
 
 
                 // 3) Creare la Subnet e la Io-System (equivalente click destro sopra PLC AddSubnet e AddIOSystem)
+                // necessario crearla prima per inserire i dispositivi remotati (ex. IM o Master IO-Link)
 
 
-                var deviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem; // PLC
+                var plcDeviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem; // PLC - selezionato su menù a DX
 
 
                
 
-                _projectGeneratorService.AddNewSubnetAndConnectToPlc(deviceItem,"System:Subnet.Ethernet", "PN/IE_1");
+                _projectGeneratorService.AddNewSubnetAndConnectToPlc(plcDeviceItem,"System:Subnet.Ethernet", "PN/IE_1");
 
                 //per aggiungere l'IO system mi serve almeno il IO controler quindi il PLC.
                 //se aggiungo moduli senza PLC non posso assegnare alcun IP
                 //se il PLC cè già devo trovare il modo di recuperare  il DeviceItem relativo
 
-                _projectGeneratorService.AddNewIoSystem("IO_System_DBM", deviceItem);
+                _projectGeneratorService.AddNewIoSystem("IO_System_DBM", plcDeviceItem);
+
+
+                // 4) aggiunta delle ImExpansion
+
+                _projectGeneratorService.AddImExpansionFromImport(checkedItems, plcDeviceItem);
+
+
+                //5) Aggiunta Io-Link Master e relativi Slave 
 
 
 
-                var (masterAdded, totalSlavesAdded) = _projectGeneratorService.AddIOLinkMastersFromImport(checkedItems, deviceItem);
+
+                var (masterAdded, totalSlavesAdded) = _projectGeneratorService.AddIOLinkMastersFromImport(checkedItems, plcDeviceItem);
                 masterErrorCount = checkedItems.Count - masterAdded;
 
 
 
+
+
                 MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+               
+                //MessageBox.Show(xxxImExpansionAdded + " moduli ImExpansion aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                 MessageBox.Show(masterAdded + " moduli Master aggiunti, " + masterErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+               
                 MessageBox.Show(totalSlavesAdded + " moduli Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             }
