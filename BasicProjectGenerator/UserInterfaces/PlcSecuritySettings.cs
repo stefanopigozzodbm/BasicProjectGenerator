@@ -372,7 +372,10 @@ namespace Basic_Project_Generator.UserInterfaces
         {
             Match match;
 
-            var plcRegex = new Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{9,}$");
+            //var plcRegex = new Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+
+            var plcRegex = new Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d@$!%*?&]{8,}$");
+
             var cpuRegex = new Regex("^(?=.*[A-Z])(?=.*\\d)[A-Z\\d]{3,8}$");
 
             if (cpuDisplay)
@@ -393,7 +396,7 @@ namespace Basic_Project_Generator.UserInterfaces
                 }
                 else
                 {
-                    MessageBox.Show("The password must be at least 9 characters long and contain a capital letter, a number and a special character (@$!%*?&)!", "Exception", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("The password must be at least 8 characters long and contain a capital letter, a number!", "Exception", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
 

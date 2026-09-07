@@ -8,6 +8,7 @@ using Siemens.Engineering.Library;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -993,172 +994,153 @@ namespace Basic_Project_Generator.UserInterfaces
         private void btn_AddImportedModules_Click(object sender, EventArgs e)
         {
 
-            _projectGeneratorService.OpenLibrary();
-            try
+            var libraryOpened = _projectGeneratorService.OpenLibrary();
+            if (libraryOpened)
             {
-                // 1) Se è spuntata una CPU, creala per prima (apre la finestra di sicurezza PLC)
-
-                // Costruisco la lista dei soli item spuntati, stesso criterio già usato per moduli/device sopra
-                //questa serve solo per i moduli IOlink, potrebbe essere fusa con quella sotto ma
-                //per il momento la tengo separata
-
-                var checkedIoLinkMasterItems = new List<ImportedSymbolItem>();           
-                var checkedDeviceItems = new List<ImportedSymbolItem>();
-                var checkedImExpansionItems = new List<ImportedSymbolItem>();
-
-                for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
+                try
                 {
-                    if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.Device)
+                    // 1) Se è spuntata una CPU, creala per prima (apre la finestra di sicurezza PLC)
+
+                    // Costruisco la lista dei soli item spuntati, stesso criterio già usato per moduli/device sopra
+                    //questa serve solo per i moduli IOlink, potrebbe essere fusa con quella sotto ma
+                    //per il momento la tengo separata
+
+                    var checkedIoLinkMasterItems = new List<ImportedSymbolItem>();
+                    var checkedDeviceItems = new List<ImportedSymbolItem>();
+                    var checkedImExpansionItems = new List<ImportedSymbolItem>();
+
+                    for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
                     {
-                        checkedDeviceItems.Add(_importedItems[i]);
+                        if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.Device)
+                        {
+                            checkedDeviceItems.Add(_importedItems[i]);
+                        }
+
+                        if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.IOLinkMaster)
+                        {
+                            checkedIoLinkMasterItems.Add(_importedItems[i]);
+                        }
+
+                        if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.ImExpansion)
+                        {
+                            checkedImExpansionItems.Add(_importedItems[i]);
+                        }
                     }
 
-                    if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.IOLinkMaster)
+                    if (checkedDeviceItems.Count > 1)
                     {
-                        checkedIoLinkMasterItems.Add(_importedItems[i]);
+                        MessageBox.Show("Puoi selezionare una sola CPU per volta.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
                     }
 
-                    if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.ImExpansion)
+                    if (checkedDeviceItems.Count == 1)
                     {
-                        checkedImExpansionItems.Add(_importedItems[i]);
-                    }
-                }
-
-                if (checkedDeviceItems.Count > 1)
-                {
-                    MessageBox.Show("Puoi selezionare una sola CPU per volta.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                if (checkedDeviceItems.Count == 1)
-                {
-                    if (!AddNewDeviceFromFields(checkedDeviceItems[0]))
-                    {
-                        return; // validazione fallita: non proseguo con i moduli
-                    }
-                }
-
-
-
-                // 2) Aggiungo i moduli spuntati  (non Device=PLC)
-                var addedCount = 0;
-                var errorCount = 0;
-                var masterErrorCount = 0;
-
-                for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
-                {
-                    if (!clb_ImportedItems.GetItemChecked(i)) continue;
-
-                    var item = _importedItems[i];
-
-                    if (item.ItemType == SymbolItemType.Device)
-                    {
-                        continue; // già gestita sopra su 1)
-                    }
-
-                    if (item.ItemType != SymbolItemType.Module)
-                    {
-                        _traceWriter.Write("Saltato (non riconosciuto): " + item.Name);
-                        continue;
-                    }
-
-                    if (item.ImExpansionParentName != null) // se valorizzato il modulo appartiene alla ImExpansion specificata
-                    {
-                        _traceWriter.Write("Modulo appartenente a rack con IM: " + item.Name);
-                        continue;
-                    }
-                                        
-
-                    Cursor.Current = Cursors.WaitCursor;
-
-                    var config = new ModuleConfiguration
-                    {
-                        TypeIdentifier = item.TypeIdentifier,
-                        Name = item.Name,
-                        InputStartAddress = item.InputStartAddress,
-                        OutputStartAddress = item.OutputStartAddress,
-                        NewPotentialGroup = item.NewPotentialGroup,
-                        SafetyChannels = item.SafetyChannels
-                    };
-
-                    var added = _projectGeneratorService.AddNewModule(config);
-                    Cursor.Current = Cursors.Default;
-
-                    if (added) addedCount++;
-                    else { errorCount++; _traceWriter.Write("Fallito: " + item.Name); }
-                }
-
-
-                // 2b) Aggiungo i moduli Im Expansion spuntati
-                /*var addedimCount = 0;
-                var errorImCount = 0;
-
-
-                for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
-                {
-                    if (!clb_ImportedItems.GetItemChecked(i)) continue;
-
-                    var item = _importedItems[i]
-
-                    if (item.ImExpansionParentName != null) // se valorizzato il modulo appartiene alla ImExpansion specificata
-                    {
-                        _traceWriter.Write("Modulo appartenente a rack con IM: " + item.Name);
-                        continue;
+                        if (!AddNewDeviceFromFields(checkedDeviceItems[0]))
+                        {
+                            return; // validazione fallita: non proseguo con i moduli
+                        }
                     }
 
 
 
-                }*/
 
 
-
-                    // 3) Creare la Subnet e la Io-System (equivalente click destro sopra PLC AddSubnet e AddIOSystem)
+                    // 2) Creare la Subnet e la Io-System (equivalente click destro sopra PLC AddSubnet e AddIOSystem)aggiunta qui del'ImExpansion, dopo aggiunge i moduli
                     // necessario crearla prima per inserire i dispositivi remotati (ex. IM o Master IO-Link)
 
 
-                    var plcDeviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem; // PLC - selezionato su menù a DX
-
-
-               
-
-                _projectGeneratorService.AddNewSubnetAndConnectToPlc(plcDeviceItem,"System:Subnet.Ethernet", "PN/IE_1");
-
-                //per aggiungere l'IO system mi serve almeno il IO controler quindi il PLC.
-                //se aggiungo moduli senza PLC non posso assegnare alcun IP
-                //se il PLC cè già devo trovare il modo di recuperare  il DeviceItem relativo
-
-                _projectGeneratorService.AddNewIoSystem("IO_System_DBM", plcDeviceItem);
-
-                
-                // 4) aggiunta delle ImExpansion
-
-                var imExpansionAdded = _projectGeneratorService.AddImExpansionFromImport(checkedImExpansionItems, plcDeviceItem);
-                var imepxansionErrorCount = checkedImExpansionItems.Count - imExpansionAdded;
-
-                //5) Aggiunta Io-Link Master e relativi Slave 
+                    var plcDeviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem; // PLC - selezionato su menù a DX, si autoselezioa all'inserzione, spesso viene usato solo un PLC quindi al momento lascio così
 
 
 
 
-                var (masterAdded, totalSlavesAdded) = _projectGeneratorService.AddIOLinkMastersFromImport(checkedIoLinkMasterItems, plcDeviceItem);
-                masterErrorCount = checkedIoLinkMasterItems.Count - masterAdded;
+                    _projectGeneratorService.AddNewSubnetAndConnectToPlc(plcDeviceItem, "System:Subnet.Ethernet", "PN/IE_1");
+
+                    //per aggiungere l'IO system mi serve almeno il IO controler quindi il PLC.
+                    //se aggiungo moduli senza PLC non posso assegnare alcun IP
+                    //se il PLC cè già devo trovare il modo di recuperare  il DeviceItem relativo
+
+                    _projectGeneratorService.AddNewIoSystem("IO_System_DBM", plcDeviceItem);
+
+
+                    // 3) aggiunta delle ImExpansion
+                    //
+                    var imExpansionAdded = _projectGeneratorService.AddImExpansionFromImport(checkedImExpansionItems, plcDeviceItem);
+                    var imepxansionErrorCount = checkedImExpansionItems.Count - imExpansionAdded;
+
+
+
+                    // 4) Aggiungo i moduli spuntati  (non Device=PLC)
+                    //
+                    var addedCount = 0;
+                    var errorCount = 0;
+                    var masterErrorCount = 0;
+
+                    for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
+                    {
+                        if (!clb_ImportedItems.GetItemChecked(i)) continue;
+
+                        var item = _importedItems[i];
+
+                        if (item.ItemType == SymbolItemType.Device)
+                        {
+                            continue; // già gestita sopra su 1)
+                        }
+
+                        if (item.ItemType != SymbolItemType.Module)
+                        {
+                            //_traceWriter.Write("Saltato (non riconosciuto): " + item.Name);
+                            continue;
+                        }
+
+                        Cursor.Current = Cursors.WaitCursor;
+
+                        var config = new ModuleConfiguration
+                        {
+                            TypeIdentifier = item.TypeIdentifier,
+                            Name = item.Name,
+                            InputStartAddress = item.InputStartAddress,
+                            OutputStartAddress = item.OutputStartAddress,
+                            NewPotentialGroup = item.NewPotentialGroup,
+                            SafetyChannels = item.SafetyChannels
+                        };
+
+                        var added = item.ImExpansionParentName != null
+                            ? _projectGeneratorService.AddNewModuleToImExpansion(config, item.ImExpansionParentName)
+                            : _projectGeneratorService.AddNewModule(config);
+
+                        Cursor.Current = Cursors.Default;
+
+                        if (added) addedCount++;
+                        else { errorCount++; _traceWriter.Write("Fallito: " + item.Name); }
+                    }
 
 
 
 
 
-                MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
-               
-                MessageBox.Show(imExpansionAdded + " moduli ImExpansion aggiunti, " + imepxansionErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    //5) Aggiunta Io-Link Master e relativi Slave 
+                    //
+                    var (masterAdded, totalSlavesAdded) = _projectGeneratorService.AddIOLinkMastersFromImport(checkedIoLinkMasterItems, plcDeviceItem);
+                    masterErrorCount = checkedIoLinkMasterItems.Count - masterAdded;
 
-                MessageBox.Show(masterAdded + " moduli Master aggiunti, " + masterErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
-               
-                MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            }
-            catch (Exception exception)
-            {
-                _traceWriter.Write(exception.Message);
+
+                    // diagnostica risultati inserimento come PopUp
+
+                    MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti/non selezionati.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    MessageBox.Show(imExpansionAdded + " moduli ImExpansion aggiunti, " + imepxansionErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    MessageBox.Show(masterAdded + " moduli Master aggiunti, " + masterErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                }
+                catch (Exception exception)
+                {
+                    _traceWriter.Write(exception.Message);
+                }
             }
         }
 
@@ -1206,14 +1188,21 @@ namespace Basic_Project_Generator.UserInterfaces
         }
 
         #region Library
-        private void button1_Click(object sender, EventArgs e)
+        private void btnOpenLibrary(object sender, EventArgs e)
         {
 
             var methodBase = MethodBase.GetCurrentMethod();
             _traceWriter.Write(methodBase.Name);
 
-           
-            _projectGeneratorService.OpenLibrary();
+
+            if (_projectGeneratorService.OpenLibrary())
+            {
+                _traceWriter.Write("Library Imported");
+            }
+            else
+            {
+                _traceWriter.Write("Library Not Imported / Operation Cancelled");
+            }
 
            
         }

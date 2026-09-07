@@ -95,7 +95,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Siemens = new System.Windows.Forms.TabPage();
             this.HW_Other = new System.Windows.Forms.TabPage();
             this.button2 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnOpenLib = new System.Windows.Forms.Button();
             this.Tag = new System.Windows.Forms.TabPage();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
@@ -734,7 +734,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // HW_Other
             // 
             this.HW_Other.Controls.Add(this.button2);
-            this.HW_Other.Controls.Add(this.button1);
+            this.HW_Other.Controls.Add(this.btnOpenLib);
             this.HW_Other.Location = new System.Drawing.Point(4, 22);
             this.HW_Other.Name = "HW_Other";
             this.HW_Other.Padding = new System.Windows.Forms.Padding(3);
@@ -753,15 +753,15 @@ namespace Basic_Project_Generator.UserInterfaces
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
-            // button1
+            // btnOpenLib
             // 
-            this.button1.Location = new System.Drawing.Point(24, 32);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnOpenLib.Location = new System.Drawing.Point(24, 32);
+            this.btnOpenLib.Name = "btnOpenLib";
+            this.btnOpenLib.Size = new System.Drawing.Size(90, 23);
+            this.btnOpenLib.TabIndex = 0;
+            this.btnOpenLib.Text = "Open Library ...";
+            this.btnOpenLib.UseVisualStyleBackColor = true;
+            this.btnOpenLib.Click += new System.EventHandler(this.btnOpenLibrary);
             // 
             // Tag
             // 
@@ -870,7 +870,7 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.TabPage HW_Siemens;
         private System.Windows.Forms.TabPage HW_Other;
         private System.Windows.Forms.TabPage Tag;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnOpenLib;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button btn_ProtectProject;
     }

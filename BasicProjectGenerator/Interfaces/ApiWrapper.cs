@@ -1523,7 +1523,7 @@ namespace Basic_Project_Generator.Interfaces
                                         SetModuleAddresses(newModule, config.InputStartAddress, config.OutputStartAddress);
 
                                         var deviceItemIndex = slot + 1;
-                                        SetModulePotentialGroup(config.NewPotentialGroup ? (ulong)1 : 0, deviceItemIndex);
+                                        SetModulePotentialGroup(config.NewPotentialGroup ? (ulong)1 : 0, deviceItemIndex, newModule);
 
                                         SetModuleSafetyChannels(newModule, config.SafetyChannels);
 
@@ -1536,7 +1536,7 @@ namespace Basic_Project_Generator.Interfaces
                             if (methodBase.ReflectedType != null)
                             {
                                 Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " Exception: " + exception+ "Slot: "+ slot);
-                                _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " \n\rException: " + exception.Message + "Slot: " + slot + " \n\rGià Occupato" );
+                                //_traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + " \n\rException: " + exception.Message + " Slot: " + slot + " \n\rGià Occupato" );
                             }
                             // Slot non valido per questo modulo -> provo il successivo
                         }
@@ -1554,6 +1554,33 @@ namespace Basic_Project_Generator.Interfaces
         public bool DoAddNewModule(Basic_Project_Generator.Models.ModuleConfiguration config, [CallerMemberName] string caller = "")
         {
             return DoAddNewModule(config, null, caller);
+        }
+
+
+        /// <summary>
+        /// Aggiunge un modulo dentro il rack di una stazione ET200SP (ImExpansion) già creata,
+        /// cercandola per nome invece di richiedere al chiamante il DeviceItem Siemens reale.
+        /// </summary>
+        public bool DoAddNewModuleToImExpansion(Basic_Project_Generator.Models.ModuleConfiguration config, string imExpansionInstanceName, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var stationDevice = CurrentProject.UngroupedDevicesGroup.Devices.FirstOrDefault(d => d.Name == imExpansionInstanceName);
+            if (stationDevice == null)
+            {
+                _traceWriter.Write("Stazione ImExpansion '" + imExpansionInstanceName + "' non trovata: impossibile aggiungere il modulo '" + config.Name + "'.");
+                return false;
+            }
+
+            var targetRack = stationDevice.DeviceItems.FirstOrDefault(); // Rack_0 della stazione, stesso pattern già usato per il rack della CPU
+            if (targetRack == null)
+            {
+                _traceWriter.Write("Rack non trovato sulla stazione '" + imExpansionInstanceName + "'.");
+                return false;
+            }
+
+            return DoAddNewModule(config, targetRack, caller);
         }
 
         /// <summary>
@@ -1684,12 +1711,12 @@ namespace Basic_Project_Generator.Interfaces
         /// Imposta il Potential Group relativamente al modulo appena aggiunto
         /// il dato viene prelevato da schema su colonna J (per il momento compilata a mano)
         /// </summary>
-        private void SetModulePotentialGroup(System.UInt64 potential,int index)
+        private void SetModulePotentialGroup(System.UInt64 potential,int index,DeviceItem newModule)
         {
 
             try
             {
-                Device.DeviceItems[index].SetAttribute("PotentialGroup", potential);
+                newModule.SetAttribute("PotentialGroup", potential);//Device.DeviceItems[index].SetAttribute("PotentialGroup", potential);
             }
             catch (Exception e)
             {

@@ -1036,6 +1036,13 @@ namespace Basic_Project_Generator.Services
             return (attributeDict,ipAddressDict,startupSecurutyPolicys,startupUmacSettings);
         }
 
+        public bool AddNewModuleToImExpansion(ModuleConfiguration config, string imExpansionInstanceName, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            return _apiWrapper.DoAddNewModuleToImExpansion(config, imExpansionInstanceName);
+        }
         #endregion // Device
 
         #region Compile
