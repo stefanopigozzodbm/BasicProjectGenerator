@@ -440,9 +440,11 @@ namespace Basic_Project_Generator.UserInterfaces
                 {
                     CloseProject();
 
+                    var (startupAttributes, startupIpAddresses, startupSecurutyPolicy, startupUmacSettings) = _projectGeneratorService.LoadPlcStartupSettings();
+
                     Cursor.Current = Cursors.WaitCursor;
 
-                    _projectGeneratorService.OpenProject();
+                    _projectGeneratorService.OpenProject(startupUmacSettings);
 
                     ManageUiState();
 

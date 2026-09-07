@@ -387,7 +387,7 @@ namespace Basic_Project_Generator.Interfaces
         /// <param name="path"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        public bool DoOpenProject(string path, [CallerMemberName] string caller = "")
+        public bool DoOpenProject(string path, Dictionary<string, UmacUserSettings> umacSettings, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -418,23 +418,42 @@ namespace Basic_Project_Generator.Interfaces
             }
             if (!loadOpenProject)
             {
-                //var newProject = TiaPortal.Projects.Open(new FileInfo(path));
+               
 
+                UmacCredentialsParameters umacParameters;
+                var admName = ""; //da xml
+                var admPsw = ""; //da xml
 
-                var admPsw = "Admin1224";
+                try
+                {
+                    foreach (string key in umacSettings.Keys)
+                    {
+                        UmacUserSettings admin;
+                        umacSettings.TryGetValue(key, out admin);
+                        if (admin.IsProjectProtectionUser)
+                        {
+                            admName = admin.Name; //da xml
+                            admPsw = admin.Password;
+
+                        }
+                    }
+                }
+                catch(Exception e)
+                {
+                    _traceWriter.Write("DoOpenProject - Failed to retrive ProjectProtectionUser");
+                }
+
 
                 SecureString securePassword = new SecureString();
                 foreach (char c in admPsw)
                 {
                     securePassword.AppendChar(c);
                 }
-
-                UmacCredentialsParameters umacParameters;
-                umacParameters.Name = "DBM";
+                umacParameters.Name = admName;
                 umacParameters.Password = securePassword;
                 umacParameters.Type = UmacUserType.Project;
 
-                var newProject=UMACProtectedProjectOpen(path, umacParameters);
+                var newProject=UMACProtectedProjectOpen(path, umacParameters);//originale var newProject = TiaPortal.Projects.Open(new FileInfo(path));
 
 
                 _traceWriter.Write($"TiaPortal.Projects.Open({path}");

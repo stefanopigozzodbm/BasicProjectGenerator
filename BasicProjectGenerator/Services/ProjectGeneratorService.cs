@@ -304,7 +304,7 @@ namespace Basic_Project_Generator.Services
         /// </summary>
         /// <param name="caller"></param>
         /// <returns></returns>
-        public bool OpenProject([CallerMemberName] string caller = "")
+        public bool OpenProject(Dictionary<string,UmacUserSettings> umacSettings,[CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
@@ -312,7 +312,9 @@ namespace Basic_Project_Generator.Services
             var result = false;
             if (SelectProject())
             {
-                if (_apiWrapper.DoOpenProject(SelectedProject))
+               
+
+                if (_apiWrapper.DoOpenProject(SelectedProject, umacSettings))
                 {
                     result = true;
                 }
