@@ -45,8 +45,16 @@ namespace Basic_Project_Generator.Interfaces
         private TiaPortalMode _tiaPortalMode;
         public event PropertyChangedEventHandler PropertyChanged;
 
-       
-        
+        public struct UmacCredentialsParameters //per progetti con ProjectProtection
+
+        {
+            public UmacUserType Type;
+            public string Name;
+            public SecureString Password;
+        }
+
+
+
         #endregion // Fields
 
         #region ctor
@@ -324,6 +332,55 @@ namespace Basic_Project_Generator.Interfaces
             return result;
         }
 
+        private Project UMACProtectedProjectOpen(string projectFilePath,UmacCredentialsParameters umacParameters)
+
+        {
+            
+
+            try
+
+            {
+
+                void MyUmacDelegate(UmacCredentials umacCredentials)
+
+                {
+
+                    umacCredentials.Type = umacParameters.Type;
+
+                    umacCredentials.Name = umacParameters.Name;
+
+                    umacCredentials.SetPassword(umacParameters.Password);
+
+                }
+
+                // Refer Connecting to the TIA Portal section
+
+                
+
+                Project project = TiaPortal.Projects.Open(new FileInfo(projectFilePath), MyUmacDelegate);
+
+                if (project != null)
+
+                {
+
+                    return project;
+
+                }
+
+            }
+
+            catch (Exception ex)
+
+            {
+                _traceWriter.Write("UMACProtectedProjectOpen - Exception: "+ ex.Message);
+                return null;
+               
+            }
+
+            return null;
+
+        }
+
         /// <summary>
         /// Open a project
         /// </summary>
@@ -361,7 +418,25 @@ namespace Basic_Project_Generator.Interfaces
             }
             if (!loadOpenProject)
             {
-                var newProject = TiaPortal.Projects.Open(new FileInfo(path));
+                //var newProject = TiaPortal.Projects.Open(new FileInfo(path));
+
+
+                var admPsw = "Admin1224";
+
+                SecureString securePassword = new SecureString();
+                foreach (char c in admPsw)
+                {
+                    securePassword.AppendChar(c);
+                }
+
+                UmacCredentialsParameters umacParameters;
+                umacParameters.Name = "DBM";
+                umacParameters.Password = securePassword;
+                umacParameters.Type = UmacUserType.Project;
+
+                var newProject=UMACProtectedProjectOpen(path, umacParameters);
+
+
                 _traceWriter.Write($"TiaPortal.Projects.Open({path}");
                 if (newProject != null)
                 {
