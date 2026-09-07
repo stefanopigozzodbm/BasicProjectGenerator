@@ -136,6 +136,7 @@ namespace Basic_Project_Generator.Services
                         else if (imExpansionMatch != null)
                         {
                             currentItem.ItemType = SymbolItemType.ImExpansion;
+                            currentItem.TypeIdentifier = imExpansionMatch.TypeIdentifier;
                             currentItem.IsImExpansion = true;
                             currentItem.MatchedImExpansion = imExpansionMatch;
 

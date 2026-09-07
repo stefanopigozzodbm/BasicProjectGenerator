@@ -1795,10 +1795,12 @@ namespace Basic_Project_Generator.Interfaces
         }
 
 
-        public bool DoAddImExpansion(Basic_Project_Generator.Models.ImExpansion config, int occurrenceIndex, Models.DeviceItem plcDeviceItem, string instanceName, [CallerMemberName] string caller = "")
+        public bool DoAddImExpansion(Basic_Project_Generator.Models.ImExpansion config, int occurrenceIndex, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var instanceName = config.TemplateName;
 
             try
             {
@@ -1814,7 +1816,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 IoSystem ioSystem = null;
                 Subnet subnet = null;
-                string plcSubnetIp = null;
+                //string plcSubnetIp = null;
 
                 foreach (var device in CurrentProject.Devices)
                 {
@@ -1832,7 +1834,9 @@ namespace Basic_Project_Generator.Interfaces
                         }
 
                         ioSystem = plcNetworkInterface.IoControllers[0].IoSystem;
-                        plcSubnetIp = plcNetworkInterface.Nodes[0].GetAttribute("Address")?.ToString();
+                        //plcSubnetIp = plcNetworkInterface.Nodes[0].GetAttribute("Address")?.ToString();
+                        config.SubnetIp = plcNetworkInterface.Nodes[0].GetAttribute("Address")?.ToString();
+
                     }
                 }
 
@@ -1841,7 +1845,7 @@ namespace Basic_Project_Generator.Interfaces
 
 
 
-                if (ioSystem == null || string.IsNullOrWhiteSpace(plcSubnetIp))
+                if (ioSystem == null || string.IsNullOrWhiteSpace(config.SubnetIp))
                 {
                     _traceWriter.Write("Impossibile determinare IoSystem/IP del PLC per la stazione '" + instanceName + "'.");
                     return false;
@@ -1852,7 +1856,9 @@ namespace Basic_Project_Generator.Interfaces
 
            
                 var ipLastOctet = config.GetIpLastOctet(occurrenceIndex);
+
                 IpSubnet SelectedPlcIpAddress = new IpSubnet(config.SubnetIp);
+
                 var totalIpAddress = SelectedPlcIpAddress.GetSubnetPrefixWithDot() + ipLastOctet.ToString();
                 var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
 
@@ -2410,7 +2416,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 
 
-                DoAddImExpansion(test_config_imexpansion, 0, deviceItem, test_config_imexpansion.TemplateName, caller);
+                DoAddImExpansion(test_config_imexpansion, 0, deviceItem, caller);
 
                 result = true;
             }

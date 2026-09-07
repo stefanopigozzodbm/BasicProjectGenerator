@@ -1002,21 +1002,25 @@ namespace Basic_Project_Generator.UserInterfaces
                 //questa serve solo per i moduli IOlink, potrebbe essere fusa con quella sotto ma
                 //per il momento la tengo separata
 
-                var checkedItems = new List<ImportedSymbolItem>();
-                for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
-                {
-                    if (clb_ImportedItems.GetItemChecked(i))
-                    {
-                        checkedItems.Add(_importedItems[i]);
-                    }
-                }
-                
+                var checkedIoLinkMasterItems = new List<ImportedSymbolItem>();           
                 var checkedDeviceItems = new List<ImportedSymbolItem>();
+                var checkedImExpansionItems = new List<ImportedSymbolItem>();
+
                 for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
                 {
                     if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.Device)
                     {
                         checkedDeviceItems.Add(_importedItems[i]);
+                    }
+
+                    if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.IOLinkMaster)
+                    {
+                        checkedIoLinkMasterItems.Add(_importedItems[i]);
+                    }
+
+                    if (clb_ImportedItems.GetItemChecked(i) && _importedItems[i].ItemType == SymbolItemType.ImExpansion)
+                    {
+                        checkedImExpansionItems.Add(_importedItems[i]);
                     }
                 }
 
@@ -1085,13 +1089,34 @@ namespace Basic_Project_Generator.UserInterfaces
                 }
 
 
+                // 2b) Aggiungo i moduli Im Expansion spuntati
+                /*var addedimCount = 0;
+                var errorImCount = 0;
 
 
-                // 3) Creare la Subnet e la Io-System (equivalente click destro sopra PLC AddSubnet e AddIOSystem)
-                // necessario crearla prima per inserire i dispositivi remotati (ex. IM o Master IO-Link)
+                for (var i = 0; i < clb_ImportedItems.Items.Count; i++)
+                {
+                    if (!clb_ImportedItems.GetItemChecked(i)) continue;
+
+                    var item = _importedItems[i]
+
+                    if (item.ImExpansionParentName != null) // se valorizzato il modulo appartiene alla ImExpansion specificata
+                    {
+                        _traceWriter.Write("Modulo appartenente a rack con IM: " + item.Name);
+                        continue;
+                    }
 
 
-                var plcDeviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem; // PLC - selezionato su menù a DX
+
+                }*/
+
+
+
+                    // 3) Creare la Subnet e la Io-System (equivalente click destro sopra PLC AddSubnet e AddIOSystem)
+                    // necessario crearla prima per inserire i dispositivi remotati (ex. IM o Master IO-Link)
+
+
+                    var plcDeviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem; // PLC - selezionato su menù a DX
 
 
                
@@ -1104,19 +1129,19 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 _projectGeneratorService.AddNewIoSystem("IO_System_DBM", plcDeviceItem);
 
-
+                
                 // 4) aggiunta delle ImExpansion
 
-                _projectGeneratorService.AddImExpansionFromImport(checkedItems, plcDeviceItem);
-
+                var imExpansionAdded = _projectGeneratorService.AddImExpansionFromImport(checkedImExpansionItems, plcDeviceItem);
+                var imepxansionErrorCount = checkedImExpansionItems.Count - imExpansionAdded;
 
                 //5) Aggiunta Io-Link Master e relativi Slave 
 
 
 
 
-                var (masterAdded, totalSlavesAdded) = _projectGeneratorService.AddIOLinkMastersFromImport(checkedItems, plcDeviceItem);
-                masterErrorCount = checkedItems.Count - masterAdded;
+                var (masterAdded, totalSlavesAdded) = _projectGeneratorService.AddIOLinkMastersFromImport(checkedIoLinkMasterItems, plcDeviceItem);
+                masterErrorCount = checkedIoLinkMasterItems.Count - masterAdded;
 
 
 
@@ -1124,11 +1149,11 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
                
-                //MessageBox.Show(xxxImExpansionAdded + " moduli ImExpansion aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(imExpansionAdded + " moduli ImExpansion aggiunti, " + imepxansionErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 MessageBox.Show(masterAdded + " moduli Master aggiunti, " + masterErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
                
-                MessageBox.Show(totalSlavesAdded + " moduli Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             }
             catch (Exception exception)

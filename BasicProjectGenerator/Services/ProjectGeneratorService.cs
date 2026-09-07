@@ -722,31 +722,51 @@ namespace Basic_Project_Generator.Services
         {
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
-            var addedCount = 0;
+            var imExpansionAddedCount = 0;
             var ImCatalog = LoadImExpansionCatalog();
             var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var item in importedItems.Where(i => i.IsImExpansion)) //questo filtra tutti moduli selezionati che non siano master io link
+            foreach (var item in importedItems.Where(i => i.IsImExpansion)) //questo filtra tutti moduli selezionati che non siano im expension
             {
 
-                var template = ImCatalog.FirstOrDefault(m => string.Equals(m.OrderNumber, item.OrderNumber, StringComparison.OrdinalIgnoreCase));
+                var template = ImCatalog.FirstOrDefault(m => string.Equals(m.TypeIdentifier, item.TypeIdentifier, StringComparison.OrdinalIgnoreCase));
                 if (template == null)
                 {
-                    _traceWriter.Write("Nessuna voce di catalogo trovata per master IM-Expansion '" + item.OrderNumber + "'.");
+                    _traceWriter.Write("Nessuna voce di catalogo trovata per IM-Expansion '" + item.OrderNumber + "'.");
                     continue;
                 }
                 var occurrenceIndex = occurrenceCounters.TryGetValue(template.TemplateName, out var count) ? count : 0;
                 occurrenceCounters[template.TemplateName] = occurrenceIndex + 1;
 
-                contiuare qui,si stava vedendo di confronteare m.OrderNumber, item.OrderNumber(ancora da provare) per creare il template
-
+                // continuare qui, si stava vedendo di confrontare m.OrderNumber, item.OrderNumber (ancora da provare) per creare il template
+                
+                var runtimeConfig = new ImExpansion
+                {
+                    TemplateName = item.Name,
+                    OrderNumber = template.OrderNumber,
+                    IsSafety = template.IsSafety,
+                    FirmwareVersion = template.FirmwareVersion,
+                    BaseIpLastOctet = template.BaseIpLastOctet,
+                    BaseDeviceNumber = template.BaseDeviceNumber,
+                    IpDeviceStep = template.IpDeviceStep,
+                    SubnetIp = template.SubnetIp
+                };
+              
                 // _apiWrapper.DoAddImExpansion(test_config_imexpansion, 0, deviceItem, test_config_imexpansion.TemplateName, caller);
+                var isAdded = _apiWrapper.DoAddImExpansion(runtimeConfig, occurrenceIndex, plcDeviceItem, caller);
 
+                if (isAdded)
+                {
+                    imExpansionAddedCount++;
+               
+                }
+
+                
             }
 
 
 
-            return 0;
+            return imExpansionAddedCount;
        
         }
 
