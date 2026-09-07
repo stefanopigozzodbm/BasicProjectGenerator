@@ -1601,7 +1601,7 @@ namespace Basic_Project_Generator.Interfaces
             {
                 var occupiedSlots = rack.DeviceItems.Select(di => di.PositionNumber).ToList();
 
-                for (var slot = 1; slot <= 20; slot++)
+                for (var slot = 1; slot <= 30; slot++) // se ho più di 30 moduli sono nel gatto...aumentare questo limite, no bello scritto qui
                 {
                     if (occupiedSlots.Contains(slot)) continue;
 
@@ -1616,8 +1616,7 @@ namespace Basic_Project_Generator.Interfaces
 
                                         SetModuleAddresses(newModule, config.InputStartAddress, config.OutputStartAddress);
 
-                                        var deviceItemIndex = slot + 1;
-                                        SetModulePotentialGroup(config.NewPotentialGroup ? (ulong)1 : 0, deviceItemIndex, newModule);
+                                        SetModulePotentialGroup(config.NewPotentialGroup ? (ulong)1 : 0, newModule);
 
                                         SetModuleSafetyChannels(newModule, config.SafetyChannels);
 
@@ -1805,7 +1804,7 @@ namespace Basic_Project_Generator.Interfaces
         /// Imposta il Potential Group relativamente al modulo appena aggiunto
         /// il dato viene prelevato da schema su colonna J (per il momento compilata a mano)
         /// </summary>
-        private void SetModulePotentialGroup(System.UInt64 potential,int index,DeviceItem newModule)
+        private void SetModulePotentialGroup(System.UInt64 potential,DeviceItem newModule)
         {
 
             try
@@ -2038,14 +2037,24 @@ namespace Basic_Project_Generator.Interfaces
         /// Piazza un Master Io-Link (da Master catalogo HW) sulla Subnet , IoSystem del PLC (in dbm genreicamente 1) con le config derivanti dal
         /// file excel e da IOLink_StartupSettings.xml
         /// </summary>
-        public (bool MasterAdded, int SlaveAddedCount) DoAddIOLinkMaster(IOLinkMasterModule config, int occurrenceIndex,Subnet subnet,IoSystem ioSystem, [CallerMemberName] string caller = "")
+        public (bool MasterAdded, int SlaveAddedCount) DoAddIOLinkMaster(
+    IOLinkMasterModule config,
+    int occurrenceIndex,
+    Subnet subnet,
+    IoSystem ioSystem,
+    [CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
             var slaveAddedCount = 0;
-            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            if (methodBase?.ReflectedType != null)
+            {
+                _traceWriter.Write($"{methodBase.ReflectedType.Name}.{methodBase.Name} chiamato da {caller}");
+            }
 
             try
             {
+                // 1. Ricerca nel catalogo HW
                 var itemList = TiaPortal.HardwareCatalog.Find(config.MasterCopyName);
                 var masterEntry = itemList
                     .OfType<Siemens.Engineering.HW.HardwareCatalog.CatalogEntry>()
@@ -2053,79 +2062,64 @@ namespace Basic_Project_Generator.Interfaces
 
                 if (masterEntry == null)
                 {
-                    _traceWriter.Write("Master IO-Link '" + config.MasterCopyName + "' non trovato nel catalogo HW (DAP).");
-                    return (false,slaveAddedCount);
+                    _traceWriter.Write($"Master IO-Link '{config.MasterCopyName}' non trovato nel catalogo HW (DAP).");
+                    return (false, slaveAddedCount);
                 }
 
-                var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, config.MasterCopyName, config.Code); 
-
+                // 2. Creazione dispositivo
+                var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, config.MasterCopyName, config.Code);
                 if (newDevice == null)
                 {
-                    _traceWriter.Write("Creazione master IO-Link '" + config.MasterCopyName + "' fallita.");
-                    return (false,slaveAddedCount);
+                    _traceWriter.Write($"Creazione master IO-Link '{config.MasterCopyName}' fallita.");
+                    return (false, slaveAddedCount);
                 }
 
                 IsModified = true;
-                _traceWriter.Write("Master IO-Link '" + config.MasterCopyName + "' creato da catalogo HW.");
+                _traceWriter.Write($"Master IO-Link '{config.MasterCopyName}' creato da catalogo HW.");
 
+                // 3. Validazione struttura dispositivo
+                if (newDevice.DeviceItems.Count <= 1)
+                {
+                    throw new InvalidOperationException($"Il dispositivo '{config.MasterCopyName}' non possiede il SubDeviceItem atteso all'indice 1.");
+                }
+
+                var masterItem = newDevice.DeviceItems[1];
+
+                // 4. Configurazione parametri di rete
                 var ipLastOctet = config.GetIpLastOctet(occurrenceIndex);
-                //  xx non è mai stato popolato perchè potrebbe non venire mai creato un plc        
-                IpSubnet SelectedPlcIpAddress = new IpSubnet(config.SubnetIp);
-                var totalIpAddress = SelectedPlcIpAddress.GetSubnetPrefixWithDot() + ipLastOctet.ToString();
+                var selectedPlcIpAddress = new IpSubnet(config.SubnetIp);
+                var totalIpAddress = selectedPlcIpAddress.GetSubnetPrefixWithDot() + ipLastOctet;
                 var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
 
-                try
-                {
-                    newDevice.DeviceItems[1].SetAttribute("Name", config.Code);
+                masterItem.SetAttribute("Name", config.Code);
+                SetSubnet(masterItem, subnet);
+                SetIoSystem(masterItem, ioSystem);
+                SetDeviceIpAddress(masterItem, totalIpAddress);
+                SetDeviceNumber(masterItem, deviceNumber);
 
-                    SetSubnet(newDevice.DeviceItems[1], subnet);
-
-                    SetIoSystem(newDevice.DeviceItems[1], ioSystem);
-
-                    SetDeviceIpAddress(newDevice.DeviceItems[1], totalIpAddress);
-
-                    SetDeviceNumber(newDevice.DeviceItems[1], deviceNumber);
-
-
-                }
-                
-                catch (Exception e)
-                {
-
-                    if (methodBase.ReflectedType != null)
-                    {
-                        Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + "Exception: " + e.Message);
-                        _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + "Exception: " + e.Message);
-                    }
-                    // Slot non valido per questo modulo -> provo il successivo
-                }
-
-            
-
-                #region aggiunta Slave IO-Link
-
-                //inizializzo cursore
-
+                // 5. Aggiunta Slave IO-Link
                 var cursor = new IOLinkAddressCursor
                 {
                     NextInputAddress = config.GetInputStartAddress(occurrenceIndex),
                     NextOutputAddress = config.GetOutputStartAddress(occurrenceIndex)
                 };
 
-                var added = false;
                 foreach (var slave in config.SlaveModules)
                 {
-                    added = false;
-                    added = DoAddIOLinkSlave(newDevice.DeviceItems,newDevice.DeviceItems[1], slave,cursor, caller);
-                    if (added) slaveAddedCount++;
+                    if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, caller))
+                    {
+                        slaveAddedCount++;
+                    }
                 }
-                #endregion
-                return (true,slaveAddedCount); //primo ritorno aggiunta del master, secondo quanti slave aggiunti
+
+                return (true, slaveAddedCount);
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore aggiungendo master IO-Link '" + config.MasterCopyName + "': " + exception.Message);
-                return (false,slaveAddedCount);
+                _traceWriter.Write($"Errore durante la configurazione del master IO-Link '{config.MasterCopyName}': {exception.ToString()}");
+
+           
+                return (false, slaveAddedCount);
             }
         }
 
