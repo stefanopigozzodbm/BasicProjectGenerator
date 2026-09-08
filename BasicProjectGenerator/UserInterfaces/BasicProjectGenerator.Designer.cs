@@ -102,6 +102,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.txb_SubnetName = new System.Windows.Forms.TextBox();
             this.txb_IoSystemName = new System.Windows.Forms.TextBox();
             this.txb_SubnetDesc = new System.Windows.Forms.TextBox();
+            this.btn_DeselectAll = new System.Windows.Forms.Button();
+            this.btn_SelectAll = new System.Windows.Forms.Button();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -670,12 +672,14 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.btn_SelectAll);
+            this.groupBox1.Controls.Add(this.btn_DeselectAll);
             this.groupBox1.Controls.Add(this.btn_ImportSymbolicTable);
             this.groupBox1.Controls.Add(this.clb_ImportedItems);
             this.groupBox1.Controls.Add(this.btn_AddImportedModules);
             this.groupBox1.Location = new System.Drawing.Point(736, 180);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(452, 221);
+            this.groupBox1.Size = new System.Drawing.Size(452, 322);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Add HW Conf from Excel";
@@ -696,13 +700,13 @@ namespace Basic_Project_Generator.UserInterfaces
             this.clb_ImportedItems.HorizontalScrollbar = true;
             this.clb_ImportedItems.Location = new System.Drawing.Point(6, 69);
             this.clb_ImportedItems.Name = "clb_ImportedItems";
-            this.clb_ImportedItems.Size = new System.Drawing.Size(440, 94);
+            this.clb_ImportedItems.Size = new System.Drawing.Size(440, 199);
             this.clb_ImportedItems.TabIndex = 1;
             this.clb_ImportedItems.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clb_ImportedItems_ItemCheck);
             // 
             // btn_AddImportedModules
             // 
-            this.btn_AddImportedModules.Location = new System.Drawing.Point(151, 176);
+            this.btn_AddImportedModules.Location = new System.Drawing.Point(138, 274);
             this.btn_AddImportedModules.Name = "btn_AddImportedModules";
             this.btn_AddImportedModules.Size = new System.Drawing.Size(177, 33);
             this.btn_AddImportedModules.TabIndex = 0;
@@ -826,6 +830,26 @@ namespace Basic_Project_Generator.UserInterfaces
             this.txb_SubnetDesc.TabIndex = 20;
             this.txb_SubnetDesc.Text = "PN/IE_1";
             // 
+            // btn_DeselectAll
+            // 
+            this.btn_DeselectAll.Location = new System.Drawing.Point(371, 32);
+            this.btn_DeselectAll.Name = "btn_DeselectAll";
+            this.btn_DeselectAll.Size = new System.Drawing.Size(75, 23);
+            this.btn_DeselectAll.TabIndex = 4;
+            this.btn_DeselectAll.Text = "Deselect All";
+            this.btn_DeselectAll.UseVisualStyleBackColor = true;
+            this.btn_DeselectAll.Click += new System.EventHandler(this.btn_DeselectAll_Click);
+            // 
+            // btn_SelectAll
+            // 
+            this.btn_SelectAll.Location = new System.Drawing.Point(290, 32);
+            this.btn_SelectAll.Name = "btn_SelectAll";
+            this.btn_SelectAll.Size = new System.Drawing.Size(75, 23);
+            this.btn_SelectAll.TabIndex = 5;
+            this.btn_SelectAll.Text = "Select All";
+            this.btn_SelectAll.UseVisualStyleBackColor = true;
+            this.btn_SelectAll.Click += new System.EventHandler(this.btn_SelectAll_Click);
+            // 
             // BasicProjectGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -931,6 +955,8 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.TextBox txb_SubnetName;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox txb_SubnetDesc;
+        private System.Windows.Forms.Button btn_DeselectAll;
+        private System.Windows.Forms.Button btn_SelectAll;
     }
 }
 

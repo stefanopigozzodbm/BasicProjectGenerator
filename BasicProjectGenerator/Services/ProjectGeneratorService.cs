@@ -1009,7 +1009,7 @@ namespace Basic_Project_Generator.Services
                         // Controllo di coerenza (solo warning, non blocca l'import): se Type=True (Project Protection),
                         // ci si aspetta che anche il ruolo "Engineering administrator" sia Enable=True, e viceversa.
                         // Aiuta a scovare errori di battitura nell'XML dove i due flag sono stati scritti in modo incoerente.
-                        var engineeringAdminRole = userSettings.Roles.FirstOrDefault(r => r != null && r.Name == "SystemRole (Engineering administrator)");
+                        var engineeringAdminRole = userSettings.Roles.FirstOrDefault(r => r != null && r.Name == "EngineeringAdministrator"); // EngineeringAdministrator hard coded non molto bello ma dovrebbe andare bene sempre
                         var engineeringAdminEnabled = engineeringAdminRole?.Enable ?? false;
 
                         if (userSettings.IsProjectProtectionUser != engineeringAdminEnabled)

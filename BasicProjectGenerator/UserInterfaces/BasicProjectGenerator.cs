@@ -1191,6 +1191,29 @@ namespace Basic_Project_Generator.UserInterfaces
             txb_Version.Text = string.Empty;
         }
 
+
+        private void btn_DeselectAll_Click(object sender, EventArgs e)
+        {
+            for (var i = 0; i < _importedItems.Count; i++)
+            {
+
+                clb_ImportedItems.SetItemChecked(i, false);
+
+
+            }
+        }
+
+        private void btn_SelectAll_Click(object sender, EventArgs e)
+        {
+
+            for (var i = 0; i < _importedItems.Count; i++)
+            {
+                if(_importedItems[i].ItemType == SymbolItemType.Unknown) { continue;}
+                clb_ImportedItems.SetItemChecked(i, true);
+
+            }
+        }
+
         #region Library
         private void btnOpenLibrary(object sender, EventArgs e)
         {
@@ -1271,6 +1294,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
 
 
+
         #endregion
 
         #endregion
@@ -1279,6 +1303,9 @@ namespace Basic_Project_Generator.UserInterfaces
 
         #endregion // methods
 
+ 
+   
 
+       
     }
 }
