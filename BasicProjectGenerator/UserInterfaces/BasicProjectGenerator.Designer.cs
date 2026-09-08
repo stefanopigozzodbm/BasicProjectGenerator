@@ -97,6 +97,11 @@ namespace Basic_Project_Generator.UserInterfaces
             this.button2 = new System.Windows.Forms.Button();
             this.btnOpenLib = new System.Windows.Forms.Button();
             this.Tag = new System.Windows.Forms.TabPage();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.txb_SubnetName = new System.Windows.Forms.TextBox();
+            this.txb_IoSystemName = new System.Windows.Forms.TextBox();
+            this.txb_SubnetDesc = new System.Windows.Forms.TextBox();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -361,6 +366,11 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // grb_AddNewDevice
             // 
+            this.grb_AddNewDevice.Controls.Add(this.txb_SubnetDesc);
+            this.grb_AddNewDevice.Controls.Add(this.txb_IoSystemName);
+            this.grb_AddNewDevice.Controls.Add(this.txb_SubnetName);
+            this.grb_AddNewDevice.Controls.Add(this.label6);
+            this.grb_AddNewDevice.Controls.Add(this.label5);
             this.grb_AddNewDevice.Controls.Add(this.label4);
             this.grb_AddNewDevice.Controls.Add(this.tb_PlcIpAddress);
             this.grb_AddNewDevice.Controls.Add(this.txb_Station);
@@ -379,7 +389,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddNewDevice.Controls.Add(this.lbl_DeviceTemplates);
             this.grb_AddNewDevice.Location = new System.Drawing.Point(438, 6);
             this.grb_AddNewDevice.Name = "grb_AddNewDevice";
-            this.grb_AddNewDevice.Size = new System.Drawing.Size(211, 496);
+            this.grb_AddNewDevice.Size = new System.Drawing.Size(292, 496);
             this.grb_AddNewDevice.TabIndex = 2;
             this.grb_AddNewDevice.TabStop = false;
             this.grb_AddNewDevice.Text = "Add new device";
@@ -395,6 +405,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // tb_PlcIpAddress
             // 
+            this.tb_PlcIpAddress.HideSelection = false;
             this.tb_PlcIpAddress.Location = new System.Drawing.Point(18, 316);
             this.tb_PlcIpAddress.Name = "tb_PlcIpAddress";
             this.tb_PlcIpAddress.Size = new System.Drawing.Size(173, 20);
@@ -466,7 +477,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // btn_AddNewDevice
             // 
             this.btn_AddNewDevice.BackColor = System.Drawing.Color.LightBlue;
-            this.btn_AddNewDevice.Location = new System.Drawing.Point(18, 457);
+            this.btn_AddNewDevice.Location = new System.Drawing.Point(64, 450);
             this.btn_AddNewDevice.Name = "btn_AddNewDevice";
             this.btn_AddNewDevice.Size = new System.Drawing.Size(173, 33);
             this.btn_AddNewDevice.TabIndex = 13;
@@ -607,7 +618,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddModule.Controls.Add(this.btn_AddModule);
             this.grb_AddModule.Controls.Add(this.label2);
             this.grb_AddModule.Controls.Add(this.cob_ModuleTemplates);
-            this.grb_AddModule.Location = new System.Drawing.Point(655, 6);
+            this.grb_AddModule.Location = new System.Drawing.Point(736, 6);
             this.grb_AddModule.Name = "grb_AddModule";
             this.grb_AddModule.Size = new System.Drawing.Size(193, 168);
             this.grb_AddModule.TabIndex = 5;
@@ -662,9 +673,9 @@ namespace Basic_Project_Generator.UserInterfaces
             this.groupBox1.Controls.Add(this.btn_ImportSymbolicTable);
             this.groupBox1.Controls.Add(this.clb_ImportedItems);
             this.groupBox1.Controls.Add(this.btn_AddImportedModules);
-            this.groupBox1.Location = new System.Drawing.Point(655, 180);
+            this.groupBox1.Location = new System.Drawing.Point(736, 180);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(399, 221);
+            this.groupBox1.Size = new System.Drawing.Size(452, 221);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Add HW Conf from Excel";
@@ -685,13 +696,13 @@ namespace Basic_Project_Generator.UserInterfaces
             this.clb_ImportedItems.HorizontalScrollbar = true;
             this.clb_ImportedItems.Location = new System.Drawing.Point(6, 69);
             this.clb_ImportedItems.Name = "clb_ImportedItems";
-            this.clb_ImportedItems.Size = new System.Drawing.Size(387, 94);
+            this.clb_ImportedItems.Size = new System.Drawing.Size(440, 94);
             this.clb_ImportedItems.TabIndex = 1;
             this.clb_ImportedItems.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clb_ImportedItems_ItemCheck);
             // 
             // btn_AddImportedModules
             // 
-            this.btn_AddImportedModules.Location = new System.Drawing.Point(6, 176);
+            this.btn_AddImportedModules.Location = new System.Drawing.Point(151, 176);
             this.btn_AddImportedModules.Name = "btn_AddImportedModules";
             this.btn_AddImportedModules.Size = new System.Drawing.Size(177, 33);
             this.btn_AddImportedModules.TabIndex = 0;
@@ -738,7 +749,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Other.Location = new System.Drawing.Point(4, 22);
             this.HW_Other.Name = "HW_Other";
             this.HW_Other.Padding = new System.Windows.Forms.Padding(3);
-            this.HW_Other.Size = new System.Drawing.Size(1411, 410);
+            this.HW_Other.Size = new System.Drawing.Size(1411, 508);
             this.HW_Other.TabIndex = 1;
             this.HW_Other.Text = "HW_Other";
             this.HW_Other.UseVisualStyleBackColor = true;
@@ -768,10 +779,52 @@ namespace Basic_Project_Generator.UserInterfaces
             this.Tag.Location = new System.Drawing.Point(4, 22);
             this.Tag.Name = "Tag";
             this.Tag.Padding = new System.Windows.Forms.Padding(3);
-            this.Tag.Size = new System.Drawing.Size(1411, 410);
+            this.Tag.Size = new System.Drawing.Size(1411, 508);
             this.Tag.TabIndex = 2;
             this.Tag.Text = "Tag";
             this.Tag.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(19, 352);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(72, 13);
+            this.label5.TabIndex = 16;
+            this.label5.Text = "Subnet Name";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(18, 399);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(86, 13);
+            this.label6.TabIndex = 17;
+            this.label6.Text = "IO-System Name";
+            // 
+            // txb_SubnetName
+            // 
+            this.txb_SubnetName.Location = new System.Drawing.Point(18, 369);
+            this.txb_SubnetName.Name = "txb_SubnetName";
+            this.txb_SubnetName.Size = new System.Drawing.Size(188, 20);
+            this.txb_SubnetName.TabIndex = 18;
+            this.txb_SubnetName.Text = "System:Subnet.Ethernet";
+            // 
+            // txb_IoSystemName
+            // 
+            this.txb_IoSystemName.Location = new System.Drawing.Point(18, 415);
+            this.txb_IoSystemName.Name = "txb_IoSystemName";
+            this.txb_IoSystemName.Size = new System.Drawing.Size(268, 20);
+            this.txb_IoSystemName.TabIndex = 19;
+            this.txb_IoSystemName.Text = "IO_System_DBM";
+            // 
+            // txb_SubnetDesc
+            // 
+            this.txb_SubnetDesc.Location = new System.Drawing.Point(212, 369);
+            this.txb_SubnetDesc.Name = "txb_SubnetDesc";
+            this.txb_SubnetDesc.Size = new System.Drawing.Size(74, 20);
+            this.txb_SubnetDesc.TabIndex = 20;
+            this.txb_SubnetDesc.Text = "PN/IE_1";
             // 
             // BasicProjectGenerator
             // 
@@ -873,6 +926,11 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.Button btnOpenLib;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button btn_ProtectProject;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox txb_IoSystemName;
+        private System.Windows.Forms.TextBox txb_SubnetName;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox txb_SubnetDesc;
     }
 }
 

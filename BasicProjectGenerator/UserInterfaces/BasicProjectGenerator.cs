@@ -1054,15 +1054,17 @@ namespace Basic_Project_Generator.UserInterfaces
                     var plcDeviceItem = (Models.DeviceItem)cob_DeviceList.SelectedItem; // PLC - selezionato su menù a DX, si autoselezioa all'inserzione, spesso viene usato solo un PLC quindi al momento lascio così
 
 
+                    var subnetName = (txb_SubnetName.Text.Trim());
+                    var subnetDescription = (txb_SubnetDesc.Text.Trim());
+                    var ioSystemName = (txb_IoSystemName.Text.Trim());
 
-
-                    _projectGeneratorService.AddNewSubnetAndConnectToPlc(plcDeviceItem, "System:Subnet.Ethernet", "PN/IE_1");
+                    _projectGeneratorService.AddNewSubnetAndConnectToPlc(plcDeviceItem, subnetName, subnetDescription);
 
                     //per aggiungere l'IO system mi serve almeno il IO controler quindi il PLC.
                     //se aggiungo moduli senza PLC non posso assegnare alcun IP
                     //se il PLC cè già devo trovare il modo di recuperare  il DeviceItem relativo
 
-                    _projectGeneratorService.AddNewIoSystem("IO_System_DBM", plcDeviceItem);
+                    _projectGeneratorService.AddNewIoSystem(ioSystemName, plcDeviceItem);
 
 
                     // 3) aggiunta delle ImExpansion
