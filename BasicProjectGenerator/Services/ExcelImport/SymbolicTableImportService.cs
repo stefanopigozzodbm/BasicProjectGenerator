@@ -25,8 +25,12 @@ namespace Basic_Project_Generator.Services
         private const int ColumnPin1 = 15;          // colonna P
         private const int ColumnPin2 = 16;          // colonna Q
         private const int ColumnConnettore = ColumnPotentialGroup; // colonna J, riletta con significato diverso sulle righe C/Q
-        private const string ExpansionDescriptionMarker = "SLAVE DI IO-LINK 8P";
-
+        private const string ExpansionDescriptionMarkerPrefix = "SLAVE DI IO-LINK"; // sostituisce ExpansionDescriptionMarker: ora riconosce 8P, 10P, ecc.
+        private static bool IsExpansionDescription(string description)
+        {
+            return !string.IsNullOrWhiteSpace(description) &&
+                   description.Trim().StartsWith(ExpansionDescriptionMarkerPrefix, StringComparison.OrdinalIgnoreCase);
+        }
         private static readonly string[] ReserveKeywords = { "RISERVA", "RESERVE" };// valori di Stringa sulla colonna Descrizione1 che indicano che la riga non deve essere considerata per i canali Safety
 
         private enum Direction { Input, Output }
@@ -51,9 +55,11 @@ namespace Basic_Project_Generator.Services
                 var workbook = WorkbookFactory.Create(stream);
                 var sheet = workbook.GetSheetAt(0);
 
-                // Pre-scansione: per ogni codice di espansione (es. "AL2401") incontrato come marcatore su una porta,
-                // raccolgo in ordine le sigle di TUTTE le righe header nel file il cui Codice Unità coincide con quel codice.
-                var pendingExpansionSiglas = new Dictionary<string, Queue<string>>(StringComparer.OrdinalIgnoreCase);
+                // Pre-scansione: raccolgo le sigle di TUTTE le righe header nel file che non sono Device/Module/Master
+                // (candidate ad essere blocchi dettaglio di un'espansione IO-Link, es. AL2401). Serve solo per un
+                // controllo di coerenza/warning, non più per un abbinamento in ordine (la sigla arriva direttamente
+                // dalla colonna M della riga porta, non serve più dedurla per posizione).
+                var knownDetailSiglas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 for (var r = 1; r <= sheet.LastRowNum; r++)
                 {
@@ -67,16 +73,20 @@ namespace Basic_Project_Generator.Services
                     var isDevice = deviceCatalog?.DeviceItemComposition?.Any(d => Normalize(d.OrderNumber) == normalized) == true;
                     var isModule = moduleCatalog?.ModuleItemComposition?.Any(m => Normalize(m.OrderNumber) == normalized) == true;
                     var isMaster = ioLinkMasterCatalog?.Any(mm => Normalize(mm.MasterCopyName) == normalized) == true;
+                    var isImExpansion = imExpansionCatalog?.Any(im => Normalize(im.OrderNumber) == normalized) == true;
 
-                    if (!isDevice && !isModule && !isMaster)
+                    if (isDevice || isModule || isMaster || isImExpansion)
                     {
-                        // Potenziale blocco dettaglio di un'espansione IO-Link (es. AL2401): registro la sigla sotto il suo codice
-                        if (!pendingExpansionSiglas.ContainsKey(orderNumber))
-                        {
-                            pendingExpansionSiglas[orderNumber] = new Queue<string>();
-                        }
-                        pendingExpansionSiglas[orderNumber].Enqueue(GetCellText(row, ColumnSiglaScheda));
+                        continue; // non è candidato a blocco dettaglio, è già uno dei tipi noti
                     }
+
+                    // Secondo segnale, indipendente dal primo: la riga deve dichiararsi esplicitamente come slave IO-Link
+                    var headerDescription = GetCellText(row, ColumnDescrizione1);
+                    if (IsExpansionDescription(headerDescription))
+                    {
+                        knownDetailSiglas.Add(GetCellText(row, ColumnSiglaScheda));
+                    }
+                    // Altrimenti: probabile riga di tutt'altro tipo (es. manifold pneumatico), correttamente ignorata qui.
                 }
 
 
@@ -187,24 +197,31 @@ namespace Basic_Project_Generator.Services
                             var isReserve = ReserveKeywords.Any(k => string.Equals(descrizione?.Trim(), k, StringComparison.OrdinalIgnoreCase));
 
                             //filtro per descizione su colonna L Descizione1 = ExpansionDescriptionMarker = SLAVE IO LONK DI 8P
-                            var isExpansionMarker = string.Equals(descrizioneColumnDescizione1?.Trim(), ExpansionDescriptionMarker, StringComparison.OrdinalIgnoreCase);
+                            var isExpansionMarker = IsExpansionDescription(descrizioneColumnDescizione1);
 
                             if (isExpansionMarker && !string.IsNullOrWhiteSpace(connettore))
                             {
-                                if (pendingExpansionSiglas.TryGetValue(connettore, out var queue) && queue.Count > 0)
+                                var expansionSigla = descrizioneColumnDescizione2; // colonna M: sigla dello slave collegato (es. "403A1")
+
+                                if (string.IsNullOrWhiteSpace(expansionSigla))
                                 {
-                                    var expansionSigla = queue.Dequeue();
+                                    _traceWriter.Write("ATTENZIONE: porta " + portNumber + " su '" + currentItem.Name + "' segnala espansione '" + connettore + "' ma la colonna M (sigla slave) è vuota.");
+                                }
+                                else
+                                {
+                                    if (!knownDetailSiglas.Contains(expansionSigla))
+                                    {
+                                        _traceWriter.Write("ATTENZIONE: porta " + portNumber + " su '" + currentItem.Name + "' referenzia sigla '" + expansionSigla +
+                                            "' ma non trovo nessun blocco dettaglio con quella sigla nel file (possibile errore di battitura sul Codice Unità dello slave).");
+                                    }
+
                                     currentItem.IOLinkPorts.Add(new IOLinkPortAssignment
                                     {
                                         PortNumber = portNumber,
                                         Kind = IOLinkPortKind.Expansion,
-                                        Code = connettore,          // chiave di ricerca in libreria (es. "AL2401")
-                                        InstanceName = expansionSigla // nome istanza (sigla del blocco dettaglio, es. "303A1")
+                                        Code = connettore,        // chiave di ricerca in libreria (es. "AL2401")
+                                        InstanceName = expansionSigla // sigla dello slave, letta direttamente dalla colonna M
                                     });
-                                }
-                                else
-                                {
-                                    _traceWriter.Write("ATTENZIONE: porta " + portNumber + " su '" + currentItem.Name + "' segnala espansione '" + connettore + "' ma non trovo un blocco dettaglio corrispondente non ancora usato.");
                                 }
                             }
                             else if (!isReserve && !string.IsNullOrWhiteSpace(connettore))
