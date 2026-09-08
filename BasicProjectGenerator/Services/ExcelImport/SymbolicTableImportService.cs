@@ -220,7 +220,7 @@ namespace Basic_Project_Generator.Services
                                         PortNumber = portNumber,
                                         Kind = IOLinkPortKind.Expansion,
                                         Code = connettore,        // chiave di ricerca in libreria (es. "AL2401")
-                                        InstanceName = expansionSigla // sigla dello slave, letta direttamente dalla colonna M
+                                        InstanceName = expansionSigla + "_" + connettore // es. "403A1_AL2401" -> sigla (colonna D del blocco dettaglio) + codice ALxxxx
                                     });
                                 }
                             }
