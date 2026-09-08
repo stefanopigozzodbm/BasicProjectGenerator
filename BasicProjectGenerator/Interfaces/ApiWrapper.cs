@@ -2033,6 +2033,62 @@ namespace Basic_Project_Generator.Interfaces
 
         #region IOLink
 
+        private const string FreePortSubmoduleDescription = "IO-Link In/Out 32/32 Byte + PQI";
+
+        /// <summary>
+        /// Piazza il sottomodulo generico più grande (32I/32O) su una porta senza slave, così il cursore
+        /// indirizzi avanza correttamente anche per le porte vuote, riservando lo spazio massimo possibile.
+        /// </summary>
+        private DeviceItem PlaceFreePortPlaceholder(string masterArticleNumber, DeviceItem portsContainer, int portNumber, IOLinkAddressCursor cursor)
+        {
+            try
+            {
+                var itemList = TiaPortal.HardwareCatalog.Find(masterArticleNumber);
+                var freeEntry = itemList
+                    .OfType<Siemens.Engineering.HW.HardwareCatalog.CatalogEntry>()
+                    .FirstOrDefault(e => e.Description == FreePortSubmoduleDescription);
+
+                if (freeEntry == null)
+                {
+                    _traceWriter.Write("Sottomodulo FREE (32I/32O) non trovato nel catalogo HW per '" + masterArticleNumber + "'.");
+                    return null;
+                }
+
+                var freeItem = portsContainer.PlugNew(freeEntry.TypeIdentifier, "FREE_" + portNumber, portNumber);
+                if (freeItem == null)
+                {
+                    _traceWriter.Write("Impossibile piazzare il placeholder FREE sulla porta " + portNumber + ".");
+                    return null;
+                }
+
+                foreach (var (owner, address) in GetAllAddressesWithOwner(freeItem))
+                {
+                    var ioType = address.GetAttribute("IoType")?.ToString();
+                    var lengthBits = Convert.ToInt32(address.GetAttribute("Length"));
+                    var lengthBytes = lengthBits / 8;
+
+                    if (ioType == "Input")
+                    {
+                        address.SetAttribute("StartAddress", cursor.NextInputAddress);
+                        cursor.NextInputAddress += lengthBytes;
+                    }
+                    else if (ioType == "Output")
+                    {
+                        address.SetAttribute("StartAddress", cursor.NextOutputAddress);
+                        cursor.NextOutputAddress += lengthBytes;
+                    }
+                }
+
+                _traceWriter.Write("Porta " + portNumber + ": placeholder FREE 32I/32O piazzato (spazio riservato).");
+                return freeItem;
+            }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore piazzando il placeholder FREE sulla porta " + portNumber + ": " + exception.Message);
+                return null;
+            }
+        }
+
         /// <summary>
         /// Piazza un Master Io-Link (da Master catalogo HW) sulla Subnet , IoSystem del PLC (in dbm genreicamente 1) con le config derivanti dal
         /// file excel e da IOLink_StartupSettings.xml
@@ -2104,11 +2160,59 @@ namespace Basic_Project_Generator.Interfaces
                     NextOutputAddress = config.GetOutputStartAddress(occurrenceIndex)
                 };
 
-                foreach (var slave in config.SlaveModules)
+                /*foreach (var slave in config.SlaveModules)
                 {
                     if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, caller))
                     {
                         slaveAddedCount++;
+                    }
+                }
+
+
+                return (true, slaveAddedCount);*/
+
+                var portsContainer = FindPortsContainer(masterItem);
+                if (portsContainer == null)
+                {
+                    _traceWriter.Write("Contenitore porte non trovato su " + config.Code + ": impossibile piazzare gli slave IO-Link.");
+                }
+                else
+                {
+                    var freeItemsToRemove = new List<DeviceItem>();
+
+                    for (var port = 1; port <= 8; port++)
+                    {
+                        var slave = config.SlaveModules.FirstOrDefault(s => s.PortNumber == port);
+
+                        if (slave != null)
+                        {
+                            if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, caller))
+                            {
+                                slaveAddedCount++;
+                            }
+                        }
+                        else
+                        {
+                            var freeItem = PlaceFreePortPlaceholder(config.MasterCopyName, portsContainer, port, cursor);
+                            if (freeItem != null)
+                            {
+                                freeItemsToRemove.Add(freeItem);
+                            }
+                        }
+                    }
+
+                    // Rimuovo i placeholder ora che gli indirizzi delle porte successive sono già stati calcolati e scritti
+                    foreach (var freeItem in freeItemsToRemove)
+                    {
+                        try
+                        {
+                            freeItem.Delete();
+                            _traceWriter.Write("Placeholder FREE rimosso.");
+                        }
+                        catch (Exception exception)
+                        {
+                            _traceWriter.Write("Impossibile rimuovere il placeholder FREE: " + exception.Message);
+                        }
                     }
                 }
 
@@ -2136,16 +2240,28 @@ namespace Basic_Project_Generator.Interfaces
 
             try
             {
-                
+
+                //prima di cercare sulla libreria globale cerco in quella di progetto
+                var sourceMasterCopyProjectLibrary = FindMasterCopyRecursive(CurrentProject.ProjectLibrary.MasterCopyFolder, config.MasterCopyName);
 
                 var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGlobalLibrary.MasterCopyFolder, config.MasterCopyName);
+
                 if (sourceMasterCopy == null)
                 {
                     _traceWriter.Write("Master Copy '" + config.MasterCopyName + "' non trovata in libreria.");
                     return false;
                 }
 
-                var projectMasterCopy = CurrentProject.ProjectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy); // funziona ma se c'è gia lo dupplica
+               
+                MasterCopy projectMasterCopy;
+                if (sourceMasterCopyProjectLibrary == null)
+                {
+                    projectMasterCopy = CurrentProject.ProjectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy); // funziona ma se c'è gia lo dupplica
+                }
+                else
+                {
+                    projectMasterCopy = sourceMasterCopyProjectLibrary;
+                }
 
                 var newSlaveModuleDeviceItem = DeviceItems.CreateFrom(projectMasterCopy); // piazza il master copy appena creato nella cartella DeviceItems del master
 
