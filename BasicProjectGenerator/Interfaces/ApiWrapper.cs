@@ -1372,7 +1372,7 @@ namespace Basic_Project_Generator.Interfaces
             try
             {
                 _traceWriter.Write("Subnet " + subnetName + " creata con successo.");
-                return CurrentProject.Subnets.Create(subnetName, subnetDescription);//("System:Subnet.Ethernet", "PN/IE_1");
+                return CurrentProject.Subnets.Create(subnetName, subnetDescription);
                 
 
             }
@@ -2252,7 +2252,7 @@ namespace Basic_Project_Generator.Interfaces
             }
 
 
-            //CurrentProject.Subnets.Create("System:Subnet.Ethernet", "PN/IE_1");
+           
             subnet = CurrentProject.Subnets[0]; // stesso limite già presente in DoTestDebug: prima subnet del progetto
 
             if (ioSystem == null || string.IsNullOrWhiteSpace(config.SubnetIp))

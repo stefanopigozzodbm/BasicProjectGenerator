@@ -379,7 +379,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddNewDevice.Controls.Add(this.lbl_DeviceTemplates);
             this.grb_AddNewDevice.Location = new System.Drawing.Point(438, 6);
             this.grb_AddNewDevice.Name = "grb_AddNewDevice";
-            this.grb_AddNewDevice.Size = new System.Drawing.Size(211, 395);
+            this.grb_AddNewDevice.Size = new System.Drawing.Size(211, 496);
             this.grb_AddNewDevice.TabIndex = 2;
             this.grb_AddNewDevice.TabStop = false;
             this.grb_AddNewDevice.Text = "Add new device";
@@ -466,7 +466,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // btn_AddNewDevice
             // 
             this.btn_AddNewDevice.BackColor = System.Drawing.Color.LightBlue;
-            this.btn_AddNewDevice.Location = new System.Drawing.Point(21, 350);
+            this.btn_AddNewDevice.Location = new System.Drawing.Point(18, 457);
             this.btn_AddNewDevice.Name = "btn_AddNewDevice";
             this.btn_AddNewDevice.Size = new System.Drawing.Size(173, 33);
             this.btn_AddNewDevice.TabIndex = 13;
@@ -536,7 +536,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_Compile.Controls.Add(this.cob_DeviceList);
             this.grb_Compile.Controls.Add(this.lib_DeviceList);
             this.grb_Compile.Controls.Add(this.lab_DeviceList);
-            this.grb_Compile.Location = new System.Drawing.Point(1060, 6);
+            this.grb_Compile.Location = new System.Drawing.Point(1194, 6);
             this.grb_Compile.Name = "grb_Compile";
             this.grb_Compile.Size = new System.Drawing.Size(211, 395);
             this.grb_Compile.TabIndex = 3;
@@ -595,9 +595,9 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             this.lib_TraceWriterOutput.FormattingEnabled = true;
             this.lib_TraceWriterOutput.HorizontalScrollbar = true;
-            this.lib_TraceWriterOutput.Location = new System.Drawing.Point(12, 454);
+            this.lib_TraceWriterOutput.Location = new System.Drawing.Point(8, 552);
             this.lib_TraceWriterOutput.Name = "lib_TraceWriterOutput";
-            this.lib_TraceWriterOutput.Size = new System.Drawing.Size(1284, 251);
+            this.lib_TraceWriterOutput.Size = new System.Drawing.Size(1418, 251);
             this.lib_TraceWriterOutput.TabIndex = 4;
             // 
             // grb_AddModule
@@ -712,7 +712,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.tabControl1.Location = new System.Drawing.Point(11, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1285, 436);
+            this.tabControl1.Size = new System.Drawing.Size(1419, 534);
             this.tabControl1.TabIndex = 8;
             // 
             // HW_Siemens
@@ -726,7 +726,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Siemens.Location = new System.Drawing.Point(4, 22);
             this.HW_Siemens.Name = "HW_Siemens";
             this.HW_Siemens.Padding = new System.Windows.Forms.Padding(3);
-            this.HW_Siemens.Size = new System.Drawing.Size(1277, 410);
+            this.HW_Siemens.Size = new System.Drawing.Size(1411, 508);
             this.HW_Siemens.TabIndex = 0;
             this.HW_Siemens.Text = "HW_Siemens";
             this.HW_Siemens.UseVisualStyleBackColor = true;
@@ -738,7 +738,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Other.Location = new System.Drawing.Point(4, 22);
             this.HW_Other.Name = "HW_Other";
             this.HW_Other.Padding = new System.Windows.Forms.Padding(3);
-            this.HW_Other.Size = new System.Drawing.Size(1277, 410);
+            this.HW_Other.Size = new System.Drawing.Size(1411, 410);
             this.HW_Other.TabIndex = 1;
             this.HW_Other.Text = "HW_Other";
             this.HW_Other.UseVisualStyleBackColor = true;
@@ -768,7 +768,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.Tag.Location = new System.Drawing.Point(4, 22);
             this.Tag.Name = "Tag";
             this.Tag.Padding = new System.Windows.Forms.Padding(3);
-            this.Tag.Size = new System.Drawing.Size(1277, 410);
+            this.Tag.Size = new System.Drawing.Size(1411, 410);
             this.Tag.TabIndex = 2;
             this.Tag.Text = "Tag";
             this.Tag.UseVisualStyleBackColor = true;
@@ -778,7 +778,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(1308, 716);
+            this.ClientSize = new System.Drawing.Size(1442, 815);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.lib_TraceWriterOutput);
             this.MinimumSize = new System.Drawing.Size(250, 300);
