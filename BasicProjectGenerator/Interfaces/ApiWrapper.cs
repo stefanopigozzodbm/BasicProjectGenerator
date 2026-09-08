@@ -4,6 +4,7 @@ using Basic_Project_Generator.UserInterfaces;
 using Microsoft.VisualBasic.ApplicationServices;
 using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.Streaming.Values;
+using Org.BouncyCastle.Utilities;
 using Siemens.Collaboration.Net.Logging;
 using Siemens.Engineering;
 using Siemens.Engineering.Compiler;
@@ -187,6 +188,130 @@ namespace Basic_Project_Generator.Interfaces
                 }
             }
             return enumValue;
+        }
+
+
+        /// <summary>
+        /// Restituisce tutti gli indirizzi IP già assegnati a NetworkInterface nel progetto (PLC, master IO-Link,
+        /// stazioni ImExpansion), scansionando ricorsivamente tutti i Device. Usato per evitare di riassegnare
+        /// un IP già occupato.
+        /// </summary>
+        private HashSet<string> GetUsedIpAddresses()
+        {
+            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            void ScanDeviceItem(DeviceItem deviceItem)
+            {
+                try
+                {
+                    var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                    if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                    {
+                    
+                        var ip = networkInterface.Nodes[0].GetAttribute("Address")?.ToString();
+                        if (!string.IsNullOrWhiteSpace(ip))
+                        {
+                            result.Add(ip);
+                        }
+                    }
+                }
+                catch
+                {
+                    // DeviceItem senza NetworkInterface: normale, si ignora
+                }
+
+                foreach (var child in deviceItem.DeviceItems)
+                {
+                    ScanDeviceItem(child);
+                }
+            }
+
+            foreach (var device in CurrentProject.Devices)
+            {
+                foreach (var item in device.DeviceItems) ScanDeviceItem(item);
+            }
+
+            foreach (var device in CurrentProject.UngroupedDevicesGroup.Devices)
+            {
+                foreach (var item in device.DeviceItems) ScanDeviceItem(item);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Restituisce tutti gli indirizzi IP già assegnati a NetworkInterface nel progetto (PLC, master IO-Link,
+        /// stazioni ImExpansion), scansionando ricorsivamente tutti i Device. Usato per evitare di riassegnare
+        /// un IP già occupato.
+        /// </summary>
+        private HashSet<int> GetUsedDeviceNumber()
+        {
+            var result = new HashSet<int>();
+
+            void ScanDeviceItem(DeviceItem deviceItem)
+            {
+                try
+                {
+                    var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
+                    if (networkInterface != null && networkInterface.Nodes.Count > 0)
+                    {
+                        var add = networkInterface.IoConnectors[0].GetAttribute("PnDeviceNumber");
+
+                        //bisogna fare il parsing verso int
+                        result.Add(add);
+                        
+                    }
+                }
+                catch
+                {
+                    // DeviceItem senza NetworkInterface: normale, si ignora
+                }
+
+                foreach (var child in deviceItem.DeviceItems)
+                {
+                    ScanDeviceItem(child);
+                }
+            }
+
+            foreach (var device in CurrentProject.Devices)
+            {
+                foreach (var item in device.DeviceItems) ScanDeviceItem(item);
+            }
+
+            foreach (var device in CurrentProject.UngroupedDevicesGroup.Devices)
+            {
+                foreach (var item in device.DeviceItems) ScanDeviceItem(item);
+            }
+
+            return result;
+        }
+
+
+        private HashSet<int> GetUsedAddresses(string ioType)
+        {
+            var result = new HashSet<int>();
+
+            void ScanDeviceItem(DeviceItem deviceItem)
+            {
+                foreach (var address in deviceItem.Addresses)
+                {
+                    if (address.GetAttribute("IoType")?.ToString() == ioType)
+                    {
+                        var start = Convert.ToInt32(address.GetAttribute("StartAddress"));
+                        var length = Convert.ToInt32(address.GetAttribute("Length")) / 8;
+                        for (var i = 0; i < length; i++) result.Add(start + i);
+                    }
+                }
+                foreach (var child in deviceItem.DeviceItems) ScanDeviceItem(child);
+            }
+
+            foreach (var device in CurrentProject.Devices)
+                foreach (var item in device.DeviceItems) ScanDeviceItem(item);
+
+            foreach (var device in CurrentProject.UngroupedDevicesGroup.Devices)
+                foreach (var item in device.DeviceItems) ScanDeviceItem(item);
+
+            return result;
         }
 
         #endregion // common
@@ -2141,11 +2266,38 @@ namespace Basic_Project_Generator.Interfaces
 
                 var masterItem = newDevice.DeviceItems[1];
 
-                // 4. Configurazione parametri di rete
-                var ipLastOctet = config.GetIpLastOctet(occurrenceIndex);
+                // 4. Configurazione parametri di rete, prima ricerca se l'ip è già usato, caso nel cui viene aggiunto un modulo da solo non in sequenza
+
+                var usedIps = GetUsedIpAddresses();
+                var candidateIpLastOctet = config.GetIpLastOctet(occurrenceIndex);
+                var subnetPrefix = new IpSubnet(config.SubnetIp).GetSubnetPrefixWithDot();
+
+                while (usedIps.Contains(subnetPrefix + candidateIpLastOctet)) // incrementa l'ultimo ip rilevato di IpDeviceStep fino a che non ne trova 1 libero
+                {
+                    _traceWriter.Write("IP " + subnetPrefix + candidateIpLastOctet + " già in uso, provo il successivo.");
+                    candidateIpLastOctet += config.IpDeviceStep;
+                }
+
+
+
+                var ipLastOctet = candidateIpLastOctet;
+
                 var selectedPlcIpAddress = new IpSubnet(config.SubnetIp);
+
                 var totalIpAddress = selectedPlcIpAddress.GetSubnetPrefixWithDot() + ipLastOctet;
-                var deviceNumber = config.GetDeviceNumber(occurrenceIndex);
+
+
+                var usedDevNumber = GetUsedDeviceNumber();
+                var candidateDeviceNumber = config.GetDeviceNumber(occurrenceIndex);
+
+                while (usedIps.Contains(candidateDeviceNumber))//incrementa l'ultimo ip rilevato di IpDeviceStep fino a che non ne trova 1 libero
+                {
+                    _traceWriter.Write("DeviceNumber " + candidateDeviceNumber + " già in uso, provo il successivo.");
+                    candidateDeviceNumber += config.IpDeviceStep; // vale anch per il devicenumber
+                }
+
+
+                var deviceNumber = candidateDeviceNumber;
 
                 masterItem.SetAttribute("Name", config.Code);
                 SetSubnet(masterItem, subnet);
@@ -2377,6 +2529,7 @@ namespace Basic_Project_Generator.Interfaces
                 return (false,0);
             }
 
+           
             return DoAddIOLinkMaster(config, occurrenceIndex, subnet, ioSystem, caller);
         }
 
