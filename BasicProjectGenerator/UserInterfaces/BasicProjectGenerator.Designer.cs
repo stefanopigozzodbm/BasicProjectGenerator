@@ -55,6 +55,11 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_SaveProject = new System.Windows.Forms.Button();
             this.btn_OpenProject = new System.Windows.Forms.Button();
             this.grb_AddNewDevice = new System.Windows.Forms.GroupBox();
+            this.txb_SubnetDesc = new System.Windows.Forms.TextBox();
+            this.txb_IoSystemName = new System.Windows.Forms.TextBox();
+            this.txb_SubnetName = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.tb_PlcIpAddress = new System.Windows.Forms.TextBox();
             this.txb_Station = new System.Windows.Forms.TextBox();
@@ -87,6 +92,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.cob_ModuleTemplates = new System.Windows.Forms.ComboBox();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btn_SelectAll = new System.Windows.Forms.Button();
+            this.btn_DeselectAll = new System.Windows.Forms.Button();
             this.btn_ImportSymbolicTable = new System.Windows.Forms.Button();
             this.clb_ImportedItems = new System.Windows.Forms.CheckedListBox();
             this.btn_AddImportedModules = new System.Windows.Forms.Button();
@@ -97,13 +104,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.button2 = new System.Windows.Forms.Button();
             this.btnOpenLib = new System.Windows.Forms.Button();
             this.Tag = new System.Windows.Forms.TabPage();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.txb_SubnetName = new System.Windows.Forms.TextBox();
-            this.txb_IoSystemName = new System.Windows.Forms.TextBox();
-            this.txb_SubnetDesc = new System.Windows.Forms.TextBox();
-            this.btn_DeselectAll = new System.Windows.Forms.Button();
-            this.btn_SelectAll = new System.Windows.Forms.Button();
+            this.txt_elapsedTime = new System.Windows.Forms.Label();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -396,6 +397,48 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddNewDevice.TabStop = false;
             this.grb_AddNewDevice.Text = "Add new device";
             // 
+            // txb_SubnetDesc
+            // 
+            this.txb_SubnetDesc.Location = new System.Drawing.Point(212, 369);
+            this.txb_SubnetDesc.Name = "txb_SubnetDesc";
+            this.txb_SubnetDesc.Size = new System.Drawing.Size(74, 20);
+            this.txb_SubnetDesc.TabIndex = 20;
+            this.txb_SubnetDesc.Text = "PN/IE_1";
+            // 
+            // txb_IoSystemName
+            // 
+            this.txb_IoSystemName.Location = new System.Drawing.Point(18, 415);
+            this.txb_IoSystemName.Name = "txb_IoSystemName";
+            this.txb_IoSystemName.Size = new System.Drawing.Size(268, 20);
+            this.txb_IoSystemName.TabIndex = 19;
+            this.txb_IoSystemName.Text = "IO_System_DBM";
+            // 
+            // txb_SubnetName
+            // 
+            this.txb_SubnetName.Location = new System.Drawing.Point(18, 369);
+            this.txb_SubnetName.Name = "txb_SubnetName";
+            this.txb_SubnetName.Size = new System.Drawing.Size(188, 20);
+            this.txb_SubnetName.TabIndex = 18;
+            this.txb_SubnetName.Text = "System:Subnet.Ethernet";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(18, 399);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(86, 13);
+            this.label6.TabIndex = 17;
+            this.label6.Text = "IO-System Name";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(19, 352);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(72, 13);
+            this.label5.TabIndex = 16;
+            this.label5.Text = "Subnet Name";
+            // 
             // label4
             // 
             this.label4.AutoSize = true;
@@ -672,6 +715,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.txt_elapsedTime);
             this.groupBox1.Controls.Add(this.btn_SelectAll);
             this.groupBox1.Controls.Add(this.btn_DeselectAll);
             this.groupBox1.Controls.Add(this.btn_ImportSymbolicTable);
@@ -683,6 +727,26 @@ namespace Basic_Project_Generator.UserInterfaces
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Add HW Conf from Excel";
+            // 
+            // btn_SelectAll
+            // 
+            this.btn_SelectAll.Location = new System.Drawing.Point(290, 32);
+            this.btn_SelectAll.Name = "btn_SelectAll";
+            this.btn_SelectAll.Size = new System.Drawing.Size(75, 23);
+            this.btn_SelectAll.TabIndex = 5;
+            this.btn_SelectAll.Text = "Select All";
+            this.btn_SelectAll.UseVisualStyleBackColor = true;
+            this.btn_SelectAll.Click += new System.EventHandler(this.btn_SelectAll_Click);
+            // 
+            // btn_DeselectAll
+            // 
+            this.btn_DeselectAll.Location = new System.Drawing.Point(371, 32);
+            this.btn_DeselectAll.Name = "btn_DeselectAll";
+            this.btn_DeselectAll.Size = new System.Drawing.Size(75, 23);
+            this.btn_DeselectAll.TabIndex = 4;
+            this.btn_DeselectAll.Text = "Deselect All";
+            this.btn_DeselectAll.UseVisualStyleBackColor = true;
+            this.btn_DeselectAll.Click += new System.EventHandler(this.btn_DeselectAll_Click);
             // 
             // btn_ImportSymbolicTable
             // 
@@ -788,67 +852,14 @@ namespace Basic_Project_Generator.UserInterfaces
             this.Tag.Text = "Tag";
             this.Tag.UseVisualStyleBackColor = true;
             // 
-            // label5
+            // txt_elapsedTime
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(19, 352);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(72, 13);
-            this.label5.TabIndex = 16;
-            this.label5.Text = "Subnet Name";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(18, 399);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(86, 13);
-            this.label6.TabIndex = 17;
-            this.label6.Text = "IO-System Name";
-            // 
-            // txb_SubnetName
-            // 
-            this.txb_SubnetName.Location = new System.Drawing.Point(18, 369);
-            this.txb_SubnetName.Name = "txb_SubnetName";
-            this.txb_SubnetName.Size = new System.Drawing.Size(188, 20);
-            this.txb_SubnetName.TabIndex = 18;
-            this.txb_SubnetName.Text = "System:Subnet.Ethernet";
-            // 
-            // txb_IoSystemName
-            // 
-            this.txb_IoSystemName.Location = new System.Drawing.Point(18, 415);
-            this.txb_IoSystemName.Name = "txb_IoSystemName";
-            this.txb_IoSystemName.Size = new System.Drawing.Size(268, 20);
-            this.txb_IoSystemName.TabIndex = 19;
-            this.txb_IoSystemName.Text = "IO_System_DBM";
-            // 
-            // txb_SubnetDesc
-            // 
-            this.txb_SubnetDesc.Location = new System.Drawing.Point(212, 369);
-            this.txb_SubnetDesc.Name = "txb_SubnetDesc";
-            this.txb_SubnetDesc.Size = new System.Drawing.Size(74, 20);
-            this.txb_SubnetDesc.TabIndex = 20;
-            this.txb_SubnetDesc.Text = "PN/IE_1";
-            // 
-            // btn_DeselectAll
-            // 
-            this.btn_DeselectAll.Location = new System.Drawing.Point(371, 32);
-            this.btn_DeselectAll.Name = "btn_DeselectAll";
-            this.btn_DeselectAll.Size = new System.Drawing.Size(75, 23);
-            this.btn_DeselectAll.TabIndex = 4;
-            this.btn_DeselectAll.Text = "Deselect All";
-            this.btn_DeselectAll.UseVisualStyleBackColor = true;
-            this.btn_DeselectAll.Click += new System.EventHandler(this.btn_DeselectAll_Click);
-            // 
-            // btn_SelectAll
-            // 
-            this.btn_SelectAll.Location = new System.Drawing.Point(290, 32);
-            this.btn_SelectAll.Name = "btn_SelectAll";
-            this.btn_SelectAll.Size = new System.Drawing.Size(75, 23);
-            this.btn_SelectAll.TabIndex = 5;
-            this.btn_SelectAll.Text = "Select All";
-            this.btn_SelectAll.UseVisualStyleBackColor = true;
-            this.btn_SelectAll.Click += new System.EventHandler(this.btn_SelectAll_Click);
+            this.txt_elapsedTime.AutoSize = true;
+            this.txt_elapsedTime.Location = new System.Drawing.Point(321, 284);
+            this.txt_elapsedTime.Name = "txt_elapsedTime";
+            this.txt_elapsedTime.Size = new System.Drawing.Size(71, 13);
+            this.txt_elapsedTime.TabIndex = 6;
+            this.txt_elapsedTime.Text = "Elapsed Time";
             // 
             // BasicProjectGenerator
             // 
@@ -874,6 +885,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_AddModule.ResumeLayout(false);
             this.grb_AddModule.PerformLayout();
             this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.tabControl1.ResumeLayout(false);
             this.HW_Siemens.ResumeLayout(false);
             this.HW_Other.ResumeLayout(false);
@@ -957,6 +969,7 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.TextBox txb_SubnetDesc;
         private System.Windows.Forms.Button btn_DeselectAll;
         private System.Windows.Forms.Button btn_SelectAll;
+        private System.Windows.Forms.Label txt_elapsedTime;
     }
 }
 
