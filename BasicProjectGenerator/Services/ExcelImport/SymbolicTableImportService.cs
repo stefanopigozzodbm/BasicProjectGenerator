@@ -25,11 +25,19 @@ namespace Basic_Project_Generator.Services
         private const int ColumnPin1 = 15;          // colonna P
         private const int ColumnPin2 = 16;          // colonna Q
         private const int ColumnConnettore = ColumnPotentialGroup; // colonna J, riletta con significato diverso sulle righe C/Q
-        private const string ExpansionDescriptionMarkerPrefix = "SLAVE DI IO-LINK"; // sostituisce ExpansionDescriptionMarker: ora riconosce 8P, 10P, ecc.
+        //private const string ExpansionDescriptionMarkerPrefix = "SLAVE DI IO-LINK"; // sostituisce ExpansionDescriptionMarker: ora riconosce 8P, 10P, ecc.
+        private const string ExpansionDescriptionPrefixDi = "SLAVE DI IO-LINK";
+        private const string ExpansionDescriptionPrefixDo = "SLAVE DO IO-LINK";
+
         private static bool IsExpansionDescription(string description)
         {
-            return !string.IsNullOrWhiteSpace(description) &&
-                   description.Trim().StartsWith(ExpansionDescriptionMarkerPrefix, StringComparison.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(description))
+                return false;
+
+            string trimmed = description.Trim();
+
+            return trimmed.StartsWith(ExpansionDescriptionPrefixDi, StringComparison.OrdinalIgnoreCase) ||
+                   trimmed.StartsWith(ExpansionDescriptionPrefixDo, StringComparison.OrdinalIgnoreCase);
         }
         private static readonly string[] ReserveKeywords = { "RISERVA", "RESERVE" };// valori di Stringa sulla colonna Descrizione1 che indicano che la riga non deve essere considerata per i canali Safety
 

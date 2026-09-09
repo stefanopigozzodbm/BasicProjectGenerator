@@ -258,7 +258,7 @@ namespace Basic_Project_Generator.Interfaces
                         var add = networkInterface.IoConnectors[0].GetAttribute("PnDeviceNumber");
 
                         //bisogna fare il parsing verso int
-                        result.Add(add);
+                        result.Add((int)add);
                         
                     }
                 }
@@ -2290,7 +2290,7 @@ namespace Basic_Project_Generator.Interfaces
                 var usedDevNumber = GetUsedDeviceNumber();
                 var candidateDeviceNumber = config.GetDeviceNumber(occurrenceIndex);
 
-                while (usedIps.Contains(candidateDeviceNumber))//incrementa l'ultimo ip rilevato di IpDeviceStep fino a che non ne trova 1 libero
+                while (usedDevNumber.Contains(candidateDeviceNumber))//incrementa l'ultimo ip rilevato di IpDeviceStep fino a che non ne trova 1 libero
                 {
                     _traceWriter.Write("DeviceNumber " + candidateDeviceNumber + " già in uso, provo il successivo.");
                     candidateDeviceNumber += config.IpDeviceStep; // vale anch per il devicenumber
@@ -2306,10 +2306,26 @@ namespace Basic_Project_Generator.Interfaces
                 SetDeviceNumber(masterItem, deviceNumber);
 
                 // 5. Aggiunta Slave IO-Link
+                var usedInputAddresses = GetUsedAddresses("Input");
+                var candidateInput = config.GetInputStartAddress(occurrenceIndex);
+                while (usedInputAddresses.Contains(candidateInput))
+                {
+                    _traceWriter.Write("Indirizzo Input " + candidateInput + " già occupato, avanzo di " + config.AddressStep);
+                    candidateInput += config.AddressStep;
+                }
+                // stesso per Output
+                var usedOutputAddresses = GetUsedAddresses("Output");
+                var candidateOutput = config.GetOutputStartAddress(occurrenceIndex);
+                while (usedOutputAddresses.Contains(candidateOutput))
+                {
+                    _traceWriter.Write("Indirizzo Output " + candidateOutput + " già occupato, avanzo di " + config.AddressStep);
+                    candidateOutput += config.AddressStep;
+                }
+
                 var cursor = new IOLinkAddressCursor
                 {
-                    NextInputAddress = config.GetInputStartAddress(occurrenceIndex),
-                    NextOutputAddress = config.GetOutputStartAddress(occurrenceIndex)
+                    NextInputAddress = candidateInput,//config.GetInputStartAddress(occurrenceIndex),
+                    NextOutputAddress = candidateOutput,//config.GetOutputStartAddress(occurrenceIndex)
                 };
 
                 /*foreach (var slave in config.SlaveModules)
