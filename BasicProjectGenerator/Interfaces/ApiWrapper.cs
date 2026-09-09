@@ -2388,17 +2388,26 @@ namespace Basic_Project_Generator.Interfaces
         }
 
         /// <summary>
-        /// Cerca una sottocartella per nome (solo primo livello) dentro una MasterCopyFolder.
-        /// Usato per restringere la ricerca di uno slave al solo ramo del master corretto (es. "AL1102" vs "AL1100"),
-        /// dato che in libreria esistono Master Copy con lo stesso nome (es. "AL2401") sotto entrambi i master,
-        /// e NON sono intercambiabili tra loro.
+        /// Cerca ricorsivamente una sottocartella per nome in tutti i livelli dentro una MasterCopyFolder.
         /// </summary>
         private MasterCopyFolder FindSubFolderByName(MasterCopyFolder folder, string name)
         {
+            // Controllo di sicurezza se la cartella o la collezione Folders è null
+            if (folder?.Folders == null) return null;
+
             foreach (var subFolder in folder.Folders)
             {
-                if (subFolder.Name == name) return subFolder;
+                // Se la cartella corrente ha il nome cercato, la restituisce
+                if (subFolder.Name == name)
+                    return subFolder;
+
+                // Altrimenti, cerca ricorsivamente all'interno delle sottocartelle della sottocartella corrente
+                var found = FindSubFolderByName(subFolder, name);
+                if (found != null)
+                    return found;
             }
+
+            // Restituisce null se la cartella non viene trovata in questo ramo
             return null;
         }
 
