@@ -355,15 +355,24 @@ namespace Basic_Project_Generator.Services
         private bool SelectLibrary([CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
-            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+            if (methodBase.ReflectedType != null)
+                _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
             var result = false;
             SelectedLibrary = string.Empty;
+
             var fileSearch = new OpenFileDialog
             {
                 Filter = "TIA Portal V21 Library|*.al21",
-                RestoreDirectory = true
+                RestoreDirectory = true,
+
+                // 1. Imposta la cartella di partenza iniziale
+                InitialDirectory = @"D:\Stefano\OpenessV21\PROJECT\DBM_Library_V21",
+
+                // 2. Opzionale: imposta un nome file predefinito (o il percorso completo file compreso)
+                FileName = "NomeLibreria.al21"
             };
+
             if (DialogResult.OK == fileSearch.ShowDialog())
             {
                 SelectedLibrary = fileSearch.FileName;
@@ -727,6 +736,7 @@ namespace Basic_Project_Generator.Services
             var imExpansionAddedCount = 0;
             var ImCatalog = LoadImExpansionCatalog();
             var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var occurrenceIndex = 0;
 
             foreach (var item in importedItems.Where(i => i.IsImExpansion)) //questo filtra tutti moduli selezionati che non siano im expension
             {
@@ -737,8 +747,9 @@ namespace Basic_Project_Generator.Services
                     _traceWriter.Write("Nessuna voce di catalogo trovata per IM-Expansion '" + item.OrderNumber + "'.");
                     continue;
                 }
-                var occurrenceIndex = occurrenceCounters.TryGetValue(template.TemplateName, out var count) ? count : 0;
-                occurrenceCounters[template.TemplateName] = occurrenceIndex + 1;
+                //var occurrenceIndex = occurrenceCounters.TryGetValue(template.TemplateName, out var count) ? count : 0;
+                occurrenceIndex = occurrenceIndex + 1;
+                occurrenceCounters[template.TemplateName] = occurrenceIndex + 1; // lasciato per diagnostia
 
                 // continuare qui, si stava vedendo di confrontare m.OrderNumber, item.OrderNumber (ancora da provare) per creare il template
                 
@@ -782,6 +793,7 @@ namespace Basic_Project_Generator.Services
             var totalSlaveAddedCount = 0;
             var masterCatalog = LoadIOLinkMasterCatalog();
             var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var occurrenceIndex = 0;
 
             foreach (var item in importedItems.Where(i => i.IsIOLinkMaster)) //questo filtra tutti moduli selezionati che non siano master io link
             {
@@ -792,8 +804,14 @@ namespace Basic_Project_Generator.Services
                     continue;
                 }
 
-                var occurrenceIndex = occurrenceCounters.TryGetValue(template.MasterCopyName, out var count) ? count : 0;
-                occurrenceCounters[template.MasterCopyName] = occurrenceIndex + 1;
+                //var occurrenceIndex = occurrenceCounters.TryGetValue(template.MasterCopyName, out var count) ? count : 0;
+                occurrenceIndex = occurrenceIndex + 1;
+                occurrenceCounters[template.MasterCopyName] = occurrenceIndex + 1; // lasciato per diagnostica ma non usato
+                
+                //modificato 09/09/26 l'occurenceIndex serve per gestire più master dello stesso tipo,
+                //per tipo si intendo IoLinkMaster non necessariamnete col lo stesso MastercopyName (
+                //potrebbe esse AL 1100 o AL 1102, la numerazione basata su occurenceIndex
+                //deve comunuqe essre la stessa.
 
                 var runtimeConfig = new IOLinkMasterModule
                 {
