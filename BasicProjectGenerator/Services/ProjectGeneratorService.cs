@@ -736,7 +736,7 @@ namespace Basic_Project_Generator.Services
             var imExpansionAddedCount = 0;
             var ImCatalog = LoadImExpansionCatalog();
             var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var occurrenceIndex = 0;
+            
 
             foreach (var item in importedItems.Where(i => i.IsImExpansion)) //questo filtra tutti moduli selezionati che non siano im expension
             {
@@ -747,9 +747,9 @@ namespace Basic_Project_Generator.Services
                     _traceWriter.Write("Nessuna voce di catalogo trovata per IM-Expansion '" + item.OrderNumber + "'.");
                     continue;
                 }
-                //var occurrenceIndex = occurrenceCounters.TryGetValue(template.TemplateName, out var count) ? count : 0;
-                occurrenceIndex = occurrenceIndex + 1;
-                occurrenceCounters[template.TemplateName] = occurrenceIndex + 1; // lasciato per diagnostia
+
+                var occurrenceIndex = occurrenceCounters.TryGetValue("ImExpansion", out var count) ? count : 0;
+                occurrenceCounters["ImExpansion"] = occurrenceIndex + 1; // lasciato per diagnostia
 
                 // continuare qui, si stava vedendo di confrontare m.OrderNumber, item.OrderNumber (ancora da provare) per creare il template
                 
@@ -793,7 +793,7 @@ namespace Basic_Project_Generator.Services
             var totalSlaveAddedCount = 0;
             var masterCatalog = LoadIOLinkMasterCatalog();
             var occurrenceCounters = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var occurrenceIndex = 0;
+           
 
             foreach (var item in importedItems.Where(i => i.IsIOLinkMaster)) //questo filtra tutti moduli selezionati che non siano master io link
             {
@@ -804,9 +804,8 @@ namespace Basic_Project_Generator.Services
                     continue;
                 }
 
-                //var occurrenceIndex = occurrenceCounters.TryGetValue(template.MasterCopyName, out var count) ? count : 0;
-                occurrenceIndex = occurrenceIndex + 1;
-                occurrenceCounters[template.MasterCopyName] = occurrenceIndex + 1; // lasciato per diagnostica ma non usato
+                var occurrenceIndex = occurrenceCounters.TryGetValue("IoLinkMasters", out var count) ? count : 0;
+                occurrenceCounters["IoLinkMasters"] = occurrenceIndex + 1; // lasciato per diagnostica ma non usato
                 
                 //modificato 09/09/26 l'occurenceIndex serve per gestire più master dello stesso tipo,
                 //per tipo si intendo IoLinkMaster non necessariamnete col lo stesso MastercopyName (
