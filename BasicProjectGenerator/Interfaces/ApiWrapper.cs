@@ -2419,13 +2419,15 @@ namespace Basic_Project_Generator.Interfaces
 
                 //prima di cercare sulla libreria globale cerco in quella di progetto
 
-                // Restringo la ricerca alla sottocartella del master corretto (es. "AL1102"), altrimenti "AL2401"
-                // trovato sotto "AL1100" verrebbe usato per sbaglio anche per un master AL1102 e viceversa.
+                // Restringo la ricerca alla sottocartella del master corretto (es. "AL1102" vs "AL1100").
+                // NESSUN fallback su tutta la libreria: se la sottocartella non esiste, o esiste ma non contiene
+                // lo slave richiesto, meglio fermarsi con un errore chiaro piuttosto che piazzare la variante
+                // di un master diverso (creata ma incompatibile: TIA la rifiuta con PlugMove, restando "staccata").
                 var globalLibraryScope = FindSubFolderByName(CurrentUserGlobalLibrary.MasterCopyFolder, masterArticleNumber);
                 if (globalLibraryScope == null)
                 {
-                    _traceWriter.Write("ATTENZIONE: nessuna sottocartella '" + masterArticleNumber + "' trovata in libreria globale, ricerca estesa a tutta la libreria (rischio di trovare la Master Copy del master sbagliato).");
-                    globalLibraryScope = CurrentUserGlobalLibrary.MasterCopyFolder;
+                    _traceWriter.Write("ERRORE: nessuna sottocartella '" + masterArticleNumber + "' trovata in libreria globale. Piazzamento di '" + config.MasterCopyName + "' annullato.");
+                    return false;
                 }
 
                 // Nella libreria di progetto uso un nome composito (es. "AL1102_AL2401") per evitare collisioni
