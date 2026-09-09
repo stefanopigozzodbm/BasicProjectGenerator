@@ -2328,16 +2328,7 @@ namespace Basic_Project_Generator.Interfaces
                     NextOutputAddress = candidateOutput,//config.GetOutputStartAddress(occurrenceIndex)
                 };
 
-                /*foreach (var slave in config.SlaveModules)
-                {
-                    if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, caller))
-                    {
-                        slaveAddedCount++;
-                    }
-                }
-
-
-                return (true, slaveAddedCount);*/
+           
 
                 var portsContainer = FindPortsContainer(masterItem);
                 if (portsContainer == null)
@@ -2354,10 +2345,11 @@ namespace Basic_Project_Generator.Interfaces
 
                         if (slave != null)
                         {
-                            if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, caller))
-                            {
+                          //  if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, caller))
+                           if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, config.MasterCopyName, caller))
+                           {
                                 slaveAddedCount++;
-                            }
+                           }
                         }
                         else
                         {
@@ -2396,13 +2388,29 @@ namespace Basic_Project_Generator.Interfaces
         }
 
         /// <summary>
+        /// Cerca una sottocartella per nome (solo primo livello) dentro una MasterCopyFolder.
+        /// Usato per restringere la ricerca di uno slave al solo ramo del master corretto (es. "AL1102" vs "AL1100"),
+        /// dato che in libreria esistono Master Copy con lo stesso nome (es. "AL2401") sotto entrambi i master,
+        /// e NON sono intercambiabili tra loro.
+        /// </summary>
+        private MasterCopyFolder FindSubFolderByName(MasterCopyFolder folder, string name)
+        {
+            foreach (var subFolder in folder.Folders)
+            {
+                if (subFolder.Name == name) return subFolder;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Piazza uno slave IO-Link (da Master Copy di libreria) sulla porta indicata del master,
         /// assegna gli indirizzi Input/Output dal cursore corrente, poi avanza il cursore in base
         /// alla Length (bit) effettivamente occupata dal nuovo slave.
         /// </summary>
-        public bool DoAddIOLinkSlave(DeviceItemComposition DeviceItems, DeviceItem masterDeviceItem, IOLinkSlaveModule config, IOLinkAddressCursor cursor, [CallerMemberName] string caller = "")
+        public bool DoAddIOLinkSlave(DeviceItemComposition DeviceItems, DeviceItem masterDeviceItem, IOLinkSlaveModule config, IOLinkAddressCursor cursor, string masterArticleNumber,[CallerMemberName] string caller = "")
         {
             var result = false;
+
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
@@ -2410,9 +2418,22 @@ namespace Basic_Project_Generator.Interfaces
             {
 
                 //prima di cercare sulla libreria globale cerco in quella di progetto
-                var sourceMasterCopyProjectLibrary = FindMasterCopyRecursive(CurrentProject.ProjectLibrary.MasterCopyFolder, config.MasterCopyName);
 
-                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGlobalLibrary.MasterCopyFolder, config.MasterCopyName);
+                // Restringo la ricerca alla sottocartella del master corretto (es. "AL1102"), altrimenti "AL2401"
+                // trovato sotto "AL1100" verrebbe usato per sbaglio anche per un master AL1102 e viceversa.
+                var globalLibraryScope = FindSubFolderByName(CurrentUserGlobalLibrary.MasterCopyFolder, masterArticleNumber);
+                if (globalLibraryScope == null)
+                {
+                    _traceWriter.Write("ATTENZIONE: nessuna sottocartella '" + masterArticleNumber + "' trovata in libreria globale, ricerca estesa a tutta la libreria (rischio di trovare la Master Copy del master sbagliato).");
+                    globalLibraryScope = CurrentUserGlobalLibrary.MasterCopyFolder;
+                }
+
+                // Nella libreria di progetto uso un nome composito (es. "AL1102_AL2401") per evitare collisioni
+                // tra la copia dello stesso slave usata da master diversi.
+                var projectLibraryLookupName = masterArticleNumber + "_" + config.MasterCopyName;
+                var sourceMasterCopyProjectLibrary = FindMasterCopyRecursive(CurrentProject.ProjectLibrary.MasterCopyFolder, projectLibraryLookupName);
+
+                var sourceMasterCopy = FindMasterCopyRecursive(globalLibraryScope, config.MasterCopyName);
 
                 if (sourceMasterCopy == null)
                 {
@@ -2420,11 +2441,12 @@ namespace Basic_Project_Generator.Interfaces
                     return false;
                 }
 
-               
+
                 MasterCopy projectMasterCopy;
                 if (sourceMasterCopyProjectLibrary == null)
                 {
-                    projectMasterCopy = CurrentProject.ProjectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy); // funziona ma se c'è gia lo dupplica
+                    projectMasterCopy = CurrentProject.ProjectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy);
+                    projectMasterCopy.SetAttribute("Name", projectLibraryLookupName); // rinomino per evitare collisione tra master diversi
                 }
                 else
                 {
@@ -2547,6 +2569,7 @@ namespace Basic_Project_Generator.Interfaces
 
            
             return DoAddIOLinkMaster(config, occurrenceIndex, subnet, ioSystem, caller);
+
         }
 
 
