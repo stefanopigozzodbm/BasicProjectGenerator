@@ -2428,67 +2428,121 @@ namespace Basic_Project_Generator.Interfaces
 
             try
             {
+                DeviceItem portsContainer = FindPortsContainer(masterDeviceItem); // <-- vedi nota sotto sul percorso "8 Ports_1"
+                DeviceItem newSlaveModuleDeviceItem = null;
+                var slaveModulePlugable = false;
+                if (config.Kind == Models.IOLinkPortKind.Expansion || config.Kind == Models.IOLinkPortKind.Sensor) { 
+                    //prima di cercare sulla libreria globale cerco in quella di progetto
 
-                //prima di cercare sulla libreria globale cerco in quella di progetto
+                    // Restringo la ricerca alla sottocartella del master corretto (es. "AL1102" vs "AL1100").
+                    // NESSUN fallback su tutta la libreria: se la sottocartella non esiste, o esiste ma non contiene
+                    // lo slave richiesto, meglio fermarsi con un errore chiaro piuttosto che piazzare la variante
+                    // di un master diverso (creata ma incompatibile: TIA la rifiuta con PlugMove, restando "staccata").
+                    var globalLibraryScope = FindSubFolderByName(CurrentUserGlobalLibrary.MasterCopyFolder, masterArticleNumber);
+                    if (globalLibraryScope == null)
+                    {
+                        _traceWriter.Write("ERRORE: nessuna sottocartella '" + masterArticleNumber + "' trovata in libreria globale. Piazzamento di '" + config.MasterCopyName + "' annullato.");
+                        return false;
+                    }
 
-                // Restringo la ricerca alla sottocartella del master corretto (es. "AL1102" vs "AL1100").
-                // NESSUN fallback su tutta la libreria: se la sottocartella non esiste, o esiste ma non contiene
-                // lo slave richiesto, meglio fermarsi con un errore chiaro piuttosto che piazzare la variante
-                // di un master diverso (creata ma incompatibile: TIA la rifiuta con PlugMove, restando "staccata").
-                var globalLibraryScope = FindSubFolderByName(CurrentUserGlobalLibrary.MasterCopyFolder, masterArticleNumber);
-                if (globalLibraryScope == null)
-                {
-                    _traceWriter.Write("ERRORE: nessuna sottocartella '" + masterArticleNumber + "' trovata in libreria globale. Piazzamento di '" + config.MasterCopyName + "' annullato.");
-                    return false;
-                }
+                    // Nella libreria di progetto uso un nome composito (es. "AL1102_AL2401") per evitare collisioni
+                    // tra la copia dello stesso slave usata da master diversi.
+                    var projectLibraryLookupName = masterArticleNumber + "_" + config.MasterCopyName;
+                    var sourceMasterCopyProjectLibrary = FindMasterCopyRecursive(CurrentProject.ProjectLibrary.MasterCopyFolder, projectLibraryLookupName);
 
-                // Nella libreria di progetto uso un nome composito (es. "AL1102_AL2401") per evitare collisioni
-                // tra la copia dello stesso slave usata da master diversi.
-                var projectLibraryLookupName = masterArticleNumber + "_" + config.MasterCopyName;
-                var sourceMasterCopyProjectLibrary = FindMasterCopyRecursive(CurrentProject.ProjectLibrary.MasterCopyFolder, projectLibraryLookupName);
+                    var sourceMasterCopy = FindMasterCopyRecursive(globalLibraryScope, config.MasterCopyName);
 
-                var sourceMasterCopy = FindMasterCopyRecursive(globalLibraryScope, config.MasterCopyName);
-
-                if (sourceMasterCopy == null)
-                {
-                    _traceWriter.Write("Master Copy '" + config.MasterCopyName + "' non trovata in libreria.");
-                    return false;
-                }
+                    if (sourceMasterCopy == null)
+                    {
+                        _traceWriter.Write("Master Copy '" + config.MasterCopyName + "' non trovata in libreria.");
+                        return false;
+                    }
 
 
-                MasterCopy projectMasterCopy;
-                if (sourceMasterCopyProjectLibrary == null)
-                {
-                    projectMasterCopy = CurrentProject.ProjectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy);
-                    projectMasterCopy.SetAttribute("Name", projectLibraryLookupName); // rinomino per evitare collisione tra master diversi
+                    MasterCopy projectMasterCopy;
+                    if (sourceMasterCopyProjectLibrary == null)
+                    {
+                        projectMasterCopy = CurrentProject.ProjectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy);
+                        projectMasterCopy.SetAttribute("Name", projectLibraryLookupName); // rinomino per evitare collisione tra master diversi
+                    }
+                    else
+                    {
+                        projectMasterCopy = sourceMasterCopyProjectLibrary;
+                    }
+
+                    newSlaveModuleDeviceItem = DeviceItems.CreateFrom(projectMasterCopy); // piazza il master copy appena creato nella cartella DeviceItems del master
+
+
+                    
+                    if (portsContainer == null)
+                    {
+                        _traceWriter.Write("Contenitore porte non trovato su " + masterDeviceItem.Name);
+                        return false;
+                    }
+
+                    slaveModulePlugable = CheckPortCanPlugMove(portsContainer, newSlaveModuleDeviceItem, config.PortNumber);
+                    if (!slaveModulePlugable)
+                    {
+                        _traceWriter.Write("Impossibile piazzare slave '" + config.MasterCopyName + "' sulla porta " + config.PortNumber);
+                        return false;
+                    }
                 }
                 else
                 {
-                    projectMasterCopy = sourceMasterCopyProjectLibrary;
-                }
 
-                var newSlaveModuleDeviceItem = DeviceItems.CreateFrom(projectMasterCopy); // piazza il master copy appena creato nella cartella DeviceItems del master
+                    
 
+                     slaveModulePlugable = true;
+                  
 
-                var portsContainer = FindPortsContainer(masterDeviceItem); // <-- vedi nota sotto sul percorso "8 Ports_1"
-                if (portsContainer == null)
-                {
-                    _traceWriter.Write("Contenitore porte non trovato su " + masterDeviceItem.Name);
-                    return false;
-                }
-
-                var slaveModulePlugable = CheckPortCanPlugMove(portsContainer, newSlaveModuleDeviceItem, config.PortNumber);
-                if (!slaveModulePlugable)
-                {
-                    _traceWriter.Write("Impossibile piazzare slave '" + config.MasterCopyName + "' sulla porta " + config.PortNumber);
-                    return false;
                 }
 
                 if (slaveModulePlugable)
                 {
                     try
                     {
-                        var newSlaveModule = portsContainer.PlugMove(newSlaveModuleDeviceItem, config.PortNumber); // ho gia il DeviceItem NON lo devo creare col plugnew altrinenti perdo le informazioni di libreria
+                        DeviceItem newSlaveModule = null;
+                        if (config.Kind == Models.IOLinkPortKind.Sensor || config.Kind == Models.IOLinkPortKind.Expansion)
+                        {
+                            newSlaveModule = portsContainer.PlugMove(newSlaveModuleDeviceItem, config.PortNumber); // ho gia il DeviceItem NON lo devo creare col plugnew altrinenti perdo le informazioni di libreria
+                        }
+                        else if (config.Kind == Models.IOLinkPortKind.Input)
+                        {
+
+                            var itemList = TiaPortal.HardwareCatalog.Find(masterArticleNumber);
+                            var SubmoduleEntry = itemList
+                                .OfType<Siemens.Engineering.HW.HardwareCatalog.CatalogEntry>()
+                                .FirstOrDefault(e => e.Description == DigitalInputPortSubmoduleDescription);
+
+                            if (SubmoduleEntry != null)
+                            {
+                                newSlaveModule = portsContainer.PlugNew(SubmoduleEntry.TypeIdentifier, config.Code, config.PortNumber);
+                            }
+                            else 
+                            { 
+                                _traceWriter.Write("Sottomodulo: "+ DigitalInputPortSubmoduleDescription + masterArticleNumber + "'.");
+                            }
+
+                        }
+                        else if (config.Kind == Models.IOLinkPortKind.Output)
+                        {
+
+                            var itemList = TiaPortal.HardwareCatalog.Find(masterArticleNumber);
+                            var SubmoduleEntry = itemList
+                                .OfType<Siemens.Engineering.HW.HardwareCatalog.CatalogEntry>()
+                                .FirstOrDefault(e => e.Description == DigitalOutputPortSubmoduleDescription);
+
+                            if (SubmoduleEntry != null)
+                            {
+                                newSlaveModule = portsContainer.PlugNew(SubmoduleEntry.TypeIdentifier, config.MasterCopyName, config.PortNumber);
+                            }
+                            else
+                            {
+                                _traceWriter.Write("Sottomodulo: " + DigitalOutputPortSubmoduleDescription + masterArticleNumber + "'.");
+                            }
+
+                        }
+
                         if (newSlaveModule != null)
                         {
                             IsModified = true;
