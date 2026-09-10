@@ -92,6 +92,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.cob_ModuleTemplates = new System.Windows.Forms.ComboBox();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.txt_elapsedTime = new System.Windows.Forms.Label();
             this.btn_SelectAll = new System.Windows.Forms.Button();
             this.btn_DeselectAll = new System.Windows.Forms.Button();
             this.btn_ImportSymbolicTable = new System.Windows.Forms.Button();
@@ -104,7 +105,6 @@ namespace Basic_Project_Generator.UserInterfaces
             this.button2 = new System.Windows.Forms.Button();
             this.btnOpenLib = new System.Windows.Forms.Button();
             this.Tag = new System.Windows.Forms.TabPage();
-            this.txt_elapsedTime = new System.Windows.Forms.Label();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -728,6 +728,15 @@ namespace Basic_Project_Generator.UserInterfaces
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Add HW Conf from Excel";
             // 
+            // txt_elapsedTime
+            // 
+            this.txt_elapsedTime.AutoSize = true;
+            this.txt_elapsedTime.Location = new System.Drawing.Point(321, 284);
+            this.txt_elapsedTime.Name = "txt_elapsedTime";
+            this.txt_elapsedTime.Size = new System.Drawing.Size(71, 13);
+            this.txt_elapsedTime.TabIndex = 6;
+            this.txt_elapsedTime.Text = "Elapsed Time";
+            // 
             // btn_SelectAll
             // 
             this.btn_SelectAll.Location = new System.Drawing.Point(290, 32);
@@ -851,15 +860,6 @@ namespace Basic_Project_Generator.UserInterfaces
             this.Tag.TabIndex = 2;
             this.Tag.Text = "Tag";
             this.Tag.UseVisualStyleBackColor = true;
-            // 
-            // txt_elapsedTime
-            // 
-            this.txt_elapsedTime.AutoSize = true;
-            this.txt_elapsedTime.Location = new System.Drawing.Point(321, 284);
-            this.txt_elapsedTime.Name = "txt_elapsedTime";
-            this.txt_elapsedTime.Size = new System.Drawing.Size(71, 13);
-            this.txt_elapsedTime.TabIndex = 6;
-            this.txt_elapsedTime.Text = "Elapsed Time";
             // 
             // BasicProjectGenerator
             // 

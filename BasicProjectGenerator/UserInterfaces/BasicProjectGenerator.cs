@@ -210,6 +210,15 @@ namespace Basic_Project_Generator.UserInterfaces
             btn_SaveProject.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text) && _apiWrapper.CurrentProject.IsModified;
             btn_CloseProject.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
             btn_ProtectProject.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
+
+            btn_SelectAll.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
+            btn_DeselectAll.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
+            txb_SubnetName.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
+            txb_SubnetDesc.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
+            txb_IoSystemName.Enabled = !string.IsNullOrEmpty(txb_CurrentProjectName.Text);
+
+
+
             if (!string.IsNullOrEmpty(txb_CurrentProjectName.Text))
             {
                 GetCurrentDeviceCount();
@@ -995,7 +1004,9 @@ namespace Basic_Project_Generator.UserInterfaces
 
         private void btn_AddImportedModules_Click(object sender, EventArgs e)
         {
+            var stopwatch = Stopwatch.StartNew();
 
+            try { 
             var libraryOpened = _projectGeneratorService.OpenLibrary();
             if (libraryOpened)
             {
@@ -1141,14 +1152,21 @@ namespace Basic_Project_Generator.UserInterfaces
                     MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 }
-                catch (Exception exception)
-                {
-                    _traceWriter.Write(exception.Message);
+                    catch (Exception exception)
+                    {
+                        _traceWriter.Write(exception.Message);
+                    }
                 }
+            }
+            finally
+            {
+                stopwatch.Stop();
+                var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+                txt_elapsedTime.Text = "Elapsed Time: " + elapsedSeconds.ToString("F2") + " s";
+                _traceWriter.Write("btn_AddImportedModules_Click completato in " + elapsedSeconds.ToString("F2") + " secondi.");
             }
         }
 
-     
 
         private void clb_ImportedItems_ItemCheck(object sender, ItemCheckEventArgs e)
         {
