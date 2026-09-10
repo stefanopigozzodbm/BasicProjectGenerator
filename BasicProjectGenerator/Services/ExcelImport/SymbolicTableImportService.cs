@@ -1,6 +1,7 @@
 ﻿using Basic_Project_Generator.Interfaces;
 using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Models.Configuration;
+using NPOI.HSSF.Record.Cont;
 using NPOI.SS.UserModel;
 using Siemens.Engineering.HW;
 using System;
@@ -183,7 +184,9 @@ namespace Basic_Project_Generator.Services
                     if (currentItem == null) continue;
 
                     var tipologia = GetCellText(row, ColumnTipologia);
+                    var pin1 = GetCellText(row, ColumnPin1);
                     var indirizzo = GetCellText(row, ColumnIndirizzo);
+                    var pin1Indirizzo = GetAddressFromPin1Description(pin1);
 
                     if (currentItem.IsIOLinkMaster && tipologia.Trim().Equals("C/Q", StringComparison.OrdinalIgnoreCase))
                     {
@@ -201,10 +204,10 @@ namespace Basic_Project_Generator.Services
 
                             var connettore = GetCellText(row, ColumnConnettore);
 
-                            //filtro per descizione su colonna L Descizione1 = RESERVE
+                            //filtro per descrizione su colonna L Descrizione1 = RESERVE
                             var isReserve = ReserveKeywords.Any(k => string.Equals(descrizione?.Trim(), k, StringComparison.OrdinalIgnoreCase));
 
-                            //filtro per descizione su colonna L Descizione1 = ExpansionDescriptionMarker = SLAVE IO LONK DI 8P
+                            //filtro per descrizione su colonna L Descrizione1 = ExpansionDescriptionMarker = SLAVE IO LONK DI 8P
                             var isExpansionMarker = IsExpansionDescription(descrizioneColumnDescizione1);
 
                             if (isExpansionMarker && !string.IsNullOrWhiteSpace(connettore))
@@ -243,6 +246,84 @@ namespace Basic_Project_Generator.Services
                                 });
                             }
                         }
+
+                        continue;
+                    }
+
+                    //10/09/26
+                    if (currentItem.IsIOLinkMaster && (tipologia.Trim().Equals("XI", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        
+                            var portNumber = (pin1Indirizzo % 8) + 1;
+                            var descrizioneColumnDescizione1 = GetCellText(row, ColumnDescrizione1);
+                            var descrizioneColumnDescizione2 = GetCellText(row, ColumnDescrizione2);
+                            var descrizioneColumnNote = GetCellText(row, ColumnNote).Trim();
+                            // var descrizione = GetCellText(row, ColumnDescrizione1);
+                            //modificato per adattarsi a quello che è il simbolico fatto a mano da reparto elettrico (concatenazione della colonna L-M-N)
+                            // Concatena solo i valori non vuoti inserendo uno spazio
+                            var descrizione = string.Join(" ", new[] { descrizioneColumnDescizione1, descrizioneColumnDescizione2, descrizioneColumnNote }
+                                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                            var connettore = GetCellText(row, ColumnConnettore);
+
+                            //filtro per descrizione su colonna L Descrizione1 = RESERVE
+                            var isReserve = ReserveKeywords.Any(k => string.Equals(descrizione?.Trim(), k, StringComparison.OrdinalIgnoreCase));
+                                                       
+
+                           
+
+                            if (!isReserve && string.IsNullOrWhiteSpace(connettore) && !currentItem.IOLinkPorts.Exists(p => p.PortNumber == portNumber)) //normalmente colonna J è vuota se XI o XO
+                            {
+                                var siglaScheda = GetCellText(row, ColumnSiglaScheda);
+                                currentItem.IOLinkPorts.Add(new IOLinkPortAssignment
+                                {
+                                    PortNumber = portNumber,
+                                    Kind = IOLinkPortKind.Input,
+                                    Code = siglaScheda, // in realtà sarebbe da mettere la sigla dei sensori interessati ma non c'è sull'excel, quindi metto la sigla della scheda iolinkmaster a cui fanno riferimento
+                                    InstanceName = siglaScheda + "_" + portNumber + "_" + "Digital Input"
+                                });
+                            }
+                            
+                        
+
+                        continue;
+                    }
+
+
+                    if (currentItem.IsIOLinkMaster && (tipologia.Trim().Equals("XQ", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        
+                            var portNumber = (pin1Indirizzo % 8) + 1;
+                            var descrizioneColumnDescizione1 = GetCellText(row, ColumnDescrizione1);
+                            var descrizioneColumnDescizione2 = GetCellText(row, ColumnDescrizione2);
+                            var descrizioneColumnNote = GetCellText(row, ColumnNote).Trim();
+                            // var descrizione = GetCellText(row, ColumnDescrizione1);
+                            //modificato per adattarsi a quello che è il simbolico fatto a mano da reparto elettrico (concatenazione della colonna L-M-N)
+                            // Concatena solo i valori non vuoti inserendo uno spazio
+                            var descrizione = string.Join(" ", new[] { descrizioneColumnDescizione1, descrizioneColumnDescizione2, descrizioneColumnNote }
+                                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                            var connettore = GetCellText(row, ColumnConnettore);
+
+                            //filtro per descrizione su colonna L Descrizione1 = RESERVE
+                            var isReserve = ReserveKeywords.Any(k => string.Equals(descrizione?.Trim(), k, StringComparison.OrdinalIgnoreCase));
+
+
+                            
+
+                            if (!isReserve && string.IsNullOrWhiteSpace(connettore) && !currentItem.IOLinkPorts.Exists(p => p.PortNumber == portNumber)) //normalmente colonna J è vuota se XI o XO
+                            {
+                                var siglaScheda = GetCellText(row, ColumnSiglaScheda);
+                                currentItem.IOLinkPorts.Add(new IOLinkPortAssignment
+                                {
+                                    PortNumber = portNumber,
+                                    Kind = IOLinkPortKind.Output,
+                                    Code = siglaScheda, // in realtà sarebbe da mettere la sigla dei sensori interessati ma non c'è sull'excel, quindi metto la sigla della scheda iolinkmaster a cui fanno riferimento
+                                    InstanceName = siglaScheda + "_" + portNumber + "_" + "Digital Output"
+                                });
+                            }
+
+                        
 
                         continue;
                     }
@@ -441,6 +522,22 @@ namespace Basic_Project_Generator.Services
             if (cell == null) return string.Empty;
             cell.SetCellType(CellType.String);
             return cell.StringCellValue?.Trim() ?? string.Empty;
+        }
+
+        private static int GetAddressFromPin1Description(string pin1)
+        {
+            int numero = 0;
+            try
+            {
+                if (string.IsNullOrEmpty(pin1) || pin1.Length < 3) return -1;
+                numero = ((int)char.GetNumericValue(pin1[2])) - 1;// devono partire da 0
+                if (numero < 0) return -1;
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("GetAddressFromPin1Description: '" + e.Message);
+            }
+            return numero;
         }
 
         private static string Normalize(string orderNumber)

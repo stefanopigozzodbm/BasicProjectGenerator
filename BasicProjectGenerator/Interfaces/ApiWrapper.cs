@@ -2159,6 +2159,9 @@ namespace Basic_Project_Generator.Interfaces
         #region IOLink
 
         private const string FreePortSubmoduleDescription = "IO-Link In/Out 32/32 Byte + PQI";
+        private const string DigitalInputPortSubmoduleDescription = "Digital Input + PQI";
+        private const string DigitalOutputPortSubmoduleDescription = "Digital Output + PQI";
+
 
         /// <summary>
         /// Piazza il sottomodulo generico più grande (32I/32O) su una porta senza slave, così il cursore
@@ -2345,7 +2348,7 @@ namespace Basic_Project_Generator.Interfaces
 
                         if (slave != null)
                         {
-                          //  if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, caller))
+                          
                            if (DoAddIOLinkSlave(newDevice.DeviceItems, masterItem, slave, cursor, config.MasterCopyName, caller))
                            {
                                 slaveAddedCount++;

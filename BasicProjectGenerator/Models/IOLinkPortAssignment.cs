@@ -1,6 +1,6 @@
 ﻿namespace Basic_Project_Generator.Models
 {
-    public enum IOLinkPortKind { Empty, Expansion, Sensor }
+    public enum IOLinkPortKind { Empty, Expansion, Sensor,Input,Output }
 
     /// <summary>Cosa è collegato a una specifica porta (1-8) di un master IO-Link, letto dall'Excel.</summary>
     public class IOLinkPortAssignment

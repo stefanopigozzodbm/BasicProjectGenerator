@@ -130,7 +130,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_TiaPortal.Controls.Add(this.rdb_WithUI);
             this.grb_TiaPortal.Location = new System.Drawing.Point(6, 6);
             this.grb_TiaPortal.Name = "grb_TiaPortal";
-            this.grb_TiaPortal.Size = new System.Drawing.Size(211, 395);
+            this.grb_TiaPortal.Size = new System.Drawing.Size(211, 496);
             this.grb_TiaPortal.TabIndex = 0;
             this.grb_TiaPortal.TabStop = false;
             this.grb_TiaPortal.Text = "TIA Portal";
@@ -248,7 +248,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_TiaPortalProject.Controls.Add(this.btn_OpenProject);
             this.grb_TiaPortalProject.Location = new System.Drawing.Point(221, 6);
             this.grb_TiaPortalProject.Name = "grb_TiaPortalProject";
-            this.grb_TiaPortalProject.Size = new System.Drawing.Size(211, 395);
+            this.grb_TiaPortalProject.Size = new System.Drawing.Size(211, 496);
             this.grb_TiaPortalProject.TabIndex = 1;
             this.grb_TiaPortalProject.TabStop = false;
             this.grb_TiaPortalProject.Text = "TIA Portal project";
@@ -522,7 +522,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // btn_AddNewDevice
             // 
             this.btn_AddNewDevice.BackColor = System.Drawing.Color.LightBlue;
-            this.btn_AddNewDevice.Location = new System.Drawing.Point(64, 450);
+            this.btn_AddNewDevice.Location = new System.Drawing.Point(61, 450);
             this.btn_AddNewDevice.Name = "btn_AddNewDevice";
             this.btn_AddNewDevice.Size = new System.Drawing.Size(173, 33);
             this.btn_AddNewDevice.TabIndex = 13;
@@ -594,7 +594,7 @@ namespace Basic_Project_Generator.UserInterfaces
             this.grb_Compile.Controls.Add(this.lab_DeviceList);
             this.grb_Compile.Location = new System.Drawing.Point(1194, 6);
             this.grb_Compile.Name = "grb_Compile";
-            this.grb_Compile.Size = new System.Drawing.Size(211, 395);
+            this.grb_Compile.Size = new System.Drawing.Size(211, 496);
             this.grb_Compile.TabIndex = 3;
             this.grb_Compile.TabStop = false;
             this.grb_Compile.Text = "Compile";
@@ -731,7 +731,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // txt_elapsedTime
             // 
             this.txt_elapsedTime.AutoSize = true;
-            this.txt_elapsedTime.Location = new System.Drawing.Point(321, 284);
+            this.txt_elapsedTime.Location = new System.Drawing.Point(203, 286);
             this.txt_elapsedTime.Name = "txt_elapsedTime";
             this.txt_elapsedTime.Size = new System.Drawing.Size(71, 13);
             this.txt_elapsedTime.TabIndex = 6;
@@ -779,7 +779,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // btn_AddImportedModules
             // 
-            this.btn_AddImportedModules.Location = new System.Drawing.Point(138, 274);
+            this.btn_AddImportedModules.Location = new System.Drawing.Point(6, 276);
             this.btn_AddImportedModules.Name = "btn_AddImportedModules";
             this.btn_AddImportedModules.Size = new System.Drawing.Size(177, 33);
             this.btn_AddImportedModules.TabIndex = 0;

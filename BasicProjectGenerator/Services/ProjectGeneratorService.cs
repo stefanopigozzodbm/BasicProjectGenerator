@@ -830,7 +830,8 @@ namespace Basic_Project_Generator.Services
                     {
                         MasterCopyName = port.Code,        // chiave libreria, es. "AL2401"/"TP3232"
                         Code = port.InstanceName,          // nome istanza composto
-                        PortNumber = port.PortNumber
+                        PortNumber = port.PortNumber,
+                        Kind = port.Kind
                     });
                 }
 
