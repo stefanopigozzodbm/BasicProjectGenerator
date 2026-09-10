@@ -2491,6 +2491,8 @@ namespace Basic_Project_Generator.Interfaces
                 {
 
                     
+                     // in questo caso non è necessario leggere da nessuna libreria quindi do perscontato
+                     //che il modulo slave nuovo da inserire sia Plugable
 
                      slaveModulePlugable = true;
                   
