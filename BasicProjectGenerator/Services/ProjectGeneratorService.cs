@@ -119,6 +119,25 @@ namespace Basic_Project_Generator.Services
 
         #endregion // properties
 
+        #region Utility Methods
+        // Aggiungi questo metodo dentro la classe XmlResourceReader
+        public static Stream GetEmbeddedStream(string fileName)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            string resourceName = $"Basic_Project_Generator.Assets.{fileName}";
+
+            Stream stream = assembly.GetManifestResourceStream(resourceName);
+
+            if (stream == null)
+            {
+                string available = string.Join("\n", assembly.GetManifestResourceNames());
+                throw new FileNotFoundException($"Risorsa '{resourceName}' non trovata. Risorse disponibili:\n{available}");
+            }
+
+            return stream;
+        }
+        #endregion
+
         #region methods
 
         #region TIA Portal
@@ -598,8 +617,12 @@ namespace Basic_Project_Generator.Services
             var methodBase = MethodBase.GetCurrentMethod();
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
+
             var serializer = new XmlSerializer(typeof(ImExpansionCatalog));
-            using (var reader = new StreamReader("Assets\\ImExpansion.xml"))
+
+            // Sostituiamo il percorso fisico con lo stream incorporato
+            using (var stream = GetEmbeddedStream("ImExpansion.xml"))
+            using (var reader = new StreamReader(stream))
             {
                 var catalog = (ImExpansionCatalog)serializer.Deserialize(reader);
                 return catalog.ImExpansionItemComposition ?? new List<ImExpansion>();
@@ -623,7 +646,8 @@ namespace Basic_Project_Generator.Services
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
             DeviceCatalogLoaded = false;
-            DeviceCatalogXml = XDocument.Load("Assets\\DeviceCatalog.xml");
+            XDocument DeviceCatalogXml = XmlResourceReader.LoadEmbeddedXml("DeviceCatalog.xml");
+            //DeviceCatalogXml = XDocument.Load("Assets\\DeviceCatalog.xml");
             DeviceModel.LoadDeviceCatalog(DeviceCatalogXml);
             DeviceCatalogLoaded = true;
             return DeviceCatalogLoaded;
@@ -677,7 +701,8 @@ namespace Basic_Project_Generator.Services
         public bool LoadModuleCatalog([CallerMemberName] string caller = "")
         {
             ModuleCatalogLoaded = false;
-            ModuleCatalogXml = XDocument.Load("Assets\\ModuleCatalog.xml");
+            XDocument ModuleCatalogXml = XmlResourceReader.LoadEmbeddedXml("ModuleCatalog.xml");
+            //ModuleCatalogXml = XDocument.Load("Assets\\ModuleCatalog.xml");
             ModuleModel.LoadModuleCatalog(ModuleCatalogXml);
             ModuleCatalogLoaded = true;
             return ModuleCatalogLoaded;
@@ -689,7 +714,8 @@ namespace Basic_Project_Generator.Services
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
             var result = new List<IOLinkMasterModule>();
-            var doc = XDocument.Load("Assets\\IOLink_StartupSettings.xml");
+            XDocument doc = XmlResourceReader.LoadEmbeddedXml("IOLink_StartupSettings.xml");
+            //var doc = XDocument.Load("Assets\\IOLink_StartupSettings.xml");
 
             foreach (var element in doc.Root.Elements("IOLinkMasterModule"))
             {
@@ -715,7 +741,8 @@ namespace Basic_Project_Generator.Services
             if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
 
             var result = new List<IOLinkSlaveModule>();
-            var doc = XDocument.Load("Assets\\IOLink_StartupSettings.xml");
+            XDocument doc = XmlResourceReader.LoadEmbeddedXml("IOLink_StartupSettings.xml");
+            //var doc = XDocument.Load("Assets\\IOLink_StartupSettings.xml");
 
             foreach (var element in doc.Root.Elements("IOLinkExpModule").Concat(doc.Root.Elements("IOLinkSensorModule")))
             {
@@ -872,7 +899,9 @@ namespace Basic_Project_Generator.Services
             var startupSecurutyPolicys = new Dictionary<string, object>();
             var startupUmacSettings = new Dictionary<string, UmacUserSettings>();
 
-            var doc = XDocument.Load("Assets\\PlcStartupSettings.xml");
+            //var doc = XDocument.Load("Assets\\PlcStartupSettings.xml");
+            // Carica direttamente dalla memoria usando la classe che abbiamo creato al Passo 1:
+            XDocument doc = XmlResourceReader.LoadEmbeddedXml("PlcStartupSettings.xml");
 
             //ricerca di tutti gli attributi del PLC e dei valori associati, se sono numeri o booleani li converte in int o bool
             foreach (var element in doc.Root.Elements("Attribute"))

@@ -29,7 +29,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>6</ApplicationRevision>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -210,6 +210,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\XmlResourceReader.cs" />
     <Compile Include="Models\AccessLevel.cs" />
     <Compile Include="Models\AutoLogoff.cs" />
     <Compile Include="Models\Catalog.cs" />
@@ -305,21 +306,21 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\DeviceCatalog.xml">
+    <EmbeddedResource Include="Assets\DeviceCatalog.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\ImExpansion.xml">
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\ImExpansion.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\IOLink_StartupSettings.xml">
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\IOLink_StartupSettings.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\ModuleCatalog.xml">
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\ModuleCatalog.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\PlcStartupSettings.xml">
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\PlcStartupSettings.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="C:\Program Files\Siemens\Automation\Portal V17\PublicAPI\V17\Siemens.Engineering.dll" />
