@@ -1162,7 +1162,13 @@ namespace Basic_Project_Generator.Services
 
             listEntry.Add(new DbSymbolEntry { Name = "xxxy_descrizione" });
 
-            groups.Add(new DbSymbolGroup { Sigla = "341axyz", Entries = listEntry });
+            groups.Add(new DbSymbolGroup { Sigla = "341ax1yz", Entries = listEntry });
+            groups.Add(new DbSymbolGroup { Sigla = "341a2xyz", Entries = listEntry });
+            groups.Add(new DbSymbolGroup { Sigla = "3413axyz", Entries = listEntry });
+            groups.Add(new DbSymbolGroup { Sigla = "3414axyz", Entries = listEntry });
+            groups.Add(new DbSymbolGroup { Sigla = "341ax5yz", Entries = listEntry });
+            groups.Add(new DbSymbolGroup { Sigla = "341a6xyz", Entries = listEntry });
+
 
 
             var result = false;
