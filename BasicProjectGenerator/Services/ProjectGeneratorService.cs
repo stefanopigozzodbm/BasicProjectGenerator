@@ -1147,8 +1147,34 @@ namespace Basic_Project_Generator.Services
 
         }
 
+        public bool DbDebugTest(Models.DeviceItem plcDeviceItem,[CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
 
-        
+
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            List<DbSymbolGroup> groups = new List<DbSymbolGroup>();
+            DbSymbolEntry entry = new DbSymbolEntry { Name = "xxx_descrizione" };
+            List<DbSymbolEntry> listEntry = new List<DbSymbolEntry> { };
+
+            listEntry.Add(entry);
+
+            listEntry.Add(new DbSymbolEntry { Name = "xxxy_descrizione" });
+
+            groups.Add(new DbSymbolGroup { Sigla = "341axyz", Entries = listEntry });
+
+
+            var result = false;
+            if (_apiWrapper.DoImportDb("NAME_xxx",1234,groups, plcDeviceItem, caller))
+            {
+                result = true;
+            }
+            return result;
+        }
+
+
+
         #endregion
 
 

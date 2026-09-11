@@ -1,5 +1,6 @@
 ﻿//using Basic_Project_Generator.Models;
 using Basic_Project_Generator.Models.Configuration;
+using Basic_Project_Generator.Services.PlcBlocks;
 using Basic_Project_Generator.UserInterfaces;
 using Microsoft.VisualBasic.ApplicationServices;
 using NPOI.SS.Formula.Functions;
@@ -910,11 +911,11 @@ namespace Basic_Project_Generator.Interfaces
                     
                     SetDeviceAttributes(Device.DeviceItems[1], config.StartupAttributes);
 
-                    Subnet subnet = DoCreateSubnet("System:Subnet.Ethernet", "PN/IE_1");
+                    Subnet subnet = DoCreateSubnet(config.StartupSubnetName, config.StartupSubnetDescription);
 
                     SetSubnet(Device.DeviceItems[1], subnet);
 
-                    DoCreateIOSystem(Device.DeviceItems[1],"IO_System_DBM");
+                    DoCreateIOSystem(Device.DeviceItems[1], config.StartupIoSystemName);
 
                     //securty policy come specifiche interne DBM (anche legacy)
                     SetPlcSecurityPolicy(config.StartupSecurutyPolicy);
@@ -2671,7 +2672,6 @@ namespace Basic_Project_Generator.Interfaces
 
         #endregion // Device
 
-
         #region Debug
 
         /// <summary>
@@ -3040,6 +3040,55 @@ namespace Basic_Project_Generator.Interfaces
 
         #endregion // Compile
 
-        #endregion // methods
+        #region DB Mangament
+        /// <summary>
+        /// Genera un file XML per il DB e lo importa nel software del PLC.
+        /// </summary>
+        public bool DoImportDb(string dbName, int dbNumber, List<Models.DbSymbolGroup> groups, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            try
+            {
+                var document = DbXmlGenerator.Generate(dbName, dbNumber, groups);
+                var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), dbName + ".xml");
+                document.Save(tempPath);
+
+                PlcSoftware plcSoftware = null;
+
+                foreach (var device in CurrentProject.Devices)
+                {
+                    if (device.Name != plcDeviceItem.DeviceName) continue;
+
+                    foreach (var item in device.DeviceItems)
+                    {
+                        if (item.Name != plcDeviceItem.Name) continue;
+
+                        var softwareContainer = item.GetService<SoftwareContainer>();
+                        plcSoftware = softwareContainer?.Software as PlcSoftware;
+                    }
+                }
+
+                if (plcSoftware == null)
+                {
+                    _traceWriter.Write("PlcSoftware non trovato per '" + plcDeviceItem.Name + "'.");
+                    return false;
+                }
+
+                plcSoftware.BlockGroup.Blocks.Import(new System.IO.FileInfo(tempPath), ImportOptions.Override);
+
+                _traceWriter.Write("DB '" + dbName + "' (numero " + dbNumber + ") importato con successo, " + groups.Count + " gruppi.");
+                return true;
             }
+            catch (Exception exception)
+            {
+                _traceWriter.Write("Errore importando il DB '" + dbName + "': " + exception.Message);
+                return false;
+            }
+        }
+        #endregion
+
+        #endregion // methods
+    }
 }

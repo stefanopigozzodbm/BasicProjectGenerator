@@ -748,6 +748,12 @@ namespace Basic_Project_Generator.UserInterfaces
                 {
                     startupIpAddresses["Intereface1"] = overrideIpAddress;
                 }
+                //11/09/26 ovveride della subnet nme e descriptio e del nome della iosystem
+                var subnetName = (txb_SubnetName.Text.Trim());
+                var subnetDescription = (txb_SubnetDesc.Text.Trim());
+                var ioSystemName = (txb_IoSystemName.Text.Trim());
+
+
 
                 var config = new DeviceConfiguration
                 {
@@ -762,6 +768,9 @@ namespace Basic_Project_Generator.UserInterfaces
                     IntPeriphName = intPeriphName,
                     StartupAttributes = startupAttributes,
                     StartupIpAddresses = startupIpAddresses,
+                    StartupIoSystemName = ioSystemName,
+                    StartupSubnetDescription= subnetDescription,
+                    StartupSubnetName= subnetName,
                     StartupSecurutyPolicy = startupSecurutyPolicy,
                     StartupUmacSettings = startupUmacSettings
 
@@ -1232,6 +1241,21 @@ namespace Basic_Project_Generator.UserInterfaces
             }
         }
 
+        #region DataBlock DB
+
+            private void btn_CreateInDb_Click(object sender, EventArgs e)
+            {
+
+            }
+
+
+            private void btn_CreateOutDb_Click(object sender, EventArgs e)
+            {
+
+            }
+
+        #endregion
+
         #region Library
         private void btnOpenLibrary(object sender, EventArgs e)
         {
@@ -1251,6 +1275,8 @@ namespace Basic_Project_Generator.UserInterfaces
 
            
         }
+
+        #endregion
 
         #region Debug
         private void button2_Click(object sender, EventArgs e)
@@ -1310,6 +1336,22 @@ namespace Basic_Project_Generator.UserInterfaces
         }
 
 
+        private void btn_Debug_Click(object sender, EventArgs e)
+        {
+
+            var methodBase = MethodBase.GetCurrentMethod();
+            _traceWriter.Write(methodBase.Name);
+            _projectGeneratorService.DbDebugTest((Models.DeviceItem)cob_DeviceList.SelectedItem);
+
+        }
+
+
+
+
+
+
+
+
 
 
 
@@ -1319,11 +1361,6 @@ namespace Basic_Project_Generator.UserInterfaces
 
         #endregion
 
-        #endregion // methods
-
- 
-   
-
-       
+      
     }
 }

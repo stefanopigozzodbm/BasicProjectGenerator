@@ -105,6 +105,11 @@ namespace Basic_Project_Generator.UserInterfaces
             this.button2 = new System.Windows.Forms.Button();
             this.btnOpenLib = new System.Windows.Forms.Button();
             this.Tag = new System.Windows.Forms.TabPage();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.btn_Debug = new System.Windows.Forms.Button();
+            this.btn_CreateInDb = new System.Windows.Forms.Button();
+            this.btn_CreateOutDb = new System.Windows.Forms.Button();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -114,6 +119,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.tabControl1.SuspendLayout();
             this.HW_Siemens.SuspendLayout();
             this.HW_Other.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // grb_TiaPortal
@@ -417,6 +424,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             this.txb_SubnetName.Location = new System.Drawing.Point(18, 369);
             this.txb_SubnetName.Name = "txb_SubnetName";
+            this.txb_SubnetName.ReadOnly = true;
             this.txb_SubnetName.Size = new System.Drawing.Size(188, 20);
             this.txb_SubnetName.TabIndex = 18;
             this.txb_SubnetName.Text = "System:Subnet.Ethernet";
@@ -821,29 +829,29 @@ namespace Basic_Project_Generator.UserInterfaces
             // 
             // HW_Other
             // 
-            this.HW_Other.Controls.Add(this.button2);
-            this.HW_Other.Controls.Add(this.btnOpenLib);
+            this.HW_Other.Controls.Add(this.groupBox3);
+            this.HW_Other.Controls.Add(this.groupBox2);
             this.HW_Other.Location = new System.Drawing.Point(4, 22);
             this.HW_Other.Name = "HW_Other";
             this.HW_Other.Padding = new System.Windows.Forms.Padding(3);
             this.HW_Other.Size = new System.Drawing.Size(1411, 508);
             this.HW_Other.TabIndex = 1;
-            this.HW_Other.Text = "HW_Other";
+            this.HW_Other.Text = "Other";
             this.HW_Other.UseVisualStyleBackColor = true;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(138, 32);
+            this.button2.Location = new System.Drawing.Point(23, 29);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(124, 23);
             this.button2.TabIndex = 1;
-            this.button2.Text = "TEST ADD AL1102";
+            this.button2.Text = "Button2";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // btnOpenLib
             // 
-            this.btnOpenLib.Location = new System.Drawing.Point(24, 32);
+            this.btnOpenLib.Location = new System.Drawing.Point(39, 33);
             this.btnOpenLib.Name = "btnOpenLib";
             this.btnOpenLib.Size = new System.Drawing.Size(90, 23);
             this.btnOpenLib.TabIndex = 0;
@@ -860,6 +868,61 @@ namespace Basic_Project_Generator.UserInterfaces
             this.Tag.TabIndex = 2;
             this.Tag.Text = "Tag";
             this.Tag.UseVisualStyleBackColor = true;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.btn_CreateOutDb);
+            this.groupBox2.Controls.Add(this.btn_CreateInDb);
+            this.groupBox2.Controls.Add(this.btnOpenLib);
+            this.groupBox2.Location = new System.Drawing.Point(20, 20);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(241, 218);
+            this.groupBox2.TabIndex = 2;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Manual Utility";
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.btn_Debug);
+            this.groupBox3.Controls.Add(this.button2);
+            this.groupBox3.Location = new System.Drawing.Point(267, 20);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(241, 218);
+            this.groupBox3.TabIndex = 3;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Debug";
+            // 
+            // btn_Debug
+            // 
+            this.btn_Debug.Location = new System.Drawing.Point(23, 67);
+            this.btn_Debug.Name = "btn_Debug";
+            this.btn_Debug.Size = new System.Drawing.Size(124, 23);
+            this.btn_Debug.TabIndex = 2;
+            this.btn_Debug.Text = "Button3";
+            this.btn_Debug.UseVisualStyleBackColor = true;
+            this.btn_Debug.Click += new System.EventHandler(this.btn_Debug_Click);
+            // 
+            // btn_CreateInDb
+            // 
+            this.btn_CreateInDb.Location = new System.Drawing.Point(39, 67);
+            this.btn_CreateInDb.Name = "btn_CreateInDb";
+            this.btn_CreateInDb.Size = new System.Drawing.Size(104, 23);
+            this.btn_CreateInDb.TabIndex = 1;
+            this.btn_CreateInDb.Text = "Create INPUT DB";
+            this.btn_CreateInDb.TextImageRelation = System.Windows.Forms.TextImageRelation.TextAboveImage;
+            this.btn_CreateInDb.UseVisualStyleBackColor = true;
+            this.btn_CreateInDb.Click += new System.EventHandler(this.btn_CreateInDb_Click);
+            // 
+            // btn_CreateOutDb
+            // 
+            this.btn_CreateOutDb.Location = new System.Drawing.Point(39, 96);
+            this.btn_CreateOutDb.Name = "btn_CreateOutDb";
+            this.btn_CreateOutDb.Size = new System.Drawing.Size(104, 23);
+            this.btn_CreateOutDb.TabIndex = 2;
+            this.btn_CreateOutDb.Text = "Create OUTPUT DB";
+            this.btn_CreateOutDb.TextImageRelation = System.Windows.Forms.TextImageRelation.TextAboveImage;
+            this.btn_CreateOutDb.UseVisualStyleBackColor = true;
+            this.btn_CreateOutDb.Click += new System.EventHandler(this.btn_CreateOutDb_Click);
             // 
             // BasicProjectGenerator
             // 
@@ -889,6 +952,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.tabControl1.ResumeLayout(false);
             this.HW_Siemens.ResumeLayout(false);
             this.HW_Other.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -970,6 +1035,11 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.Button btn_DeselectAll;
         private System.Windows.Forms.Button btn_SelectAll;
         private System.Windows.Forms.Label txt_elapsedTime;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Button btn_Debug;
+        private System.Windows.Forms.Button btn_CreateInDb;
+        private System.Windows.Forms.Button btn_CreateOutDb;
     }
 }
 
