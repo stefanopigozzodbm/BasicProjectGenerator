@@ -14,7 +14,7 @@ namespace Basic_Project_Generator.Services.PlcBlocks
     {
         private static readonly XNamespace InterfaceNs = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
 
-        public static XDocument Generate(string dbName, int dbNumber, List<DbSymbolGroup> groups)
+        public static XDocument Generate(string dbName, int dbNumber, bool optimizedAcces, List<DbSymbolGroup> groups)
         {
             var sectionElement = new XElement(InterfaceNs + "Section", new XAttribute("Name", "Static"));
 
@@ -44,7 +44,8 @@ namespace Basic_Project_Generator.Services.PlcBlocks
                         new XElement("AttributeList",
                             new XElement("AutoNumber", "false"),
                             new XElement("Interface", sectionsElement),
-                            new XElement("MemoryLayout", "Standard"),
+                            optimizedAcces ? new XElement("MemoryLayout", "Optimized") : new XElement("MemoryLayout", "Standard"),
+                            optimizedAcces ? new XElement("MemoryReserve", "0") : null,
                             new XElement("Name", dbName),
                             new XElement("Namespace"),
                             new XElement("Number", dbNumber),

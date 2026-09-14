@@ -1160,7 +1160,7 @@ namespace Basic_Project_Generator.Services
                     if (item.DbOutputEntries.Count > 0)
                         outputGroups.Add(new DbSymbolGroup { Sigla = item.Name, Entries = item.DbOutputEntries });
                 }
-                else if (item.IsIOLinkMaster)
+                /*else if (item.IsIOLinkMaster)
                 {
                     var inputPorts = item.IOLinkPorts.Where(p => p.Kind == IOLinkPortKind.Input).OrderBy(p => p.PortNumber).ToList();
                     if (inputPorts.Count > 0)
@@ -1181,7 +1181,7 @@ namespace Basic_Project_Generator.Services
                             Entries = outputPorts.Select(p => new DbSymbolEntry { Name = p.InstanceName }).ToList()
                         });
                     }
-                }
+                }*/
                 // Sensor ed Expansion "marker" (sul master) non producono voci qui: i primi restano esclusi come da tuo punto 2,
                 // i secondi sono già rappresentati tramite il blocco dettaglio (IsIOLinkExpansionDetail) sopra.
             }

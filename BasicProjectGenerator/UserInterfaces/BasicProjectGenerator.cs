@@ -1150,9 +1150,9 @@ namespace Basic_Project_Generator.UserInterfaces
 
 
                         var detailItems = _importedItems.Where(i => i.IsIOLinkExpansionDetail).ToList();
-                        var itemsForDbGeneration = checkedIoLinkMasterItems.Concat(detailItems).ToList();
+                        //var itemsForDbGeneration = checkedIoLinkMasterItems.Concat(detailItems).ToList();
 
-                        var (dbInputGroups, dbOutputGroups) = _projectGeneratorService.BuildDbSymbolGroups(itemsForDbGeneration);
+                        var (dbInputGroups, dbOutputGroups) = _projectGeneratorService.BuildDbSymbolGroups(detailItems);
 
                         if (dbInputGroups.Count > 0)
                         {

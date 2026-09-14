@@ -29,6 +29,8 @@ namespace Basic_Project_Generator.Services
         //private const string ExpansionDescriptionMarkerPrefix = "SLAVE DI IO-LINK"; // sostituisce ExpansionDescriptionMarker: ora riconosce 8P, 10P, ecc.
         private const string ExpansionDescriptionPrefixDi = "SLAVE DI IO-LINK";
         private const string ExpansionDescriptionPrefixDo = "SLAVE DO IO-LINK";
+        private const string MasterExpansionDescriptionPrefix = "MASTER IO-LINK";
+      
 
         private static bool IsExpansionDescription(string description)
         {
@@ -40,6 +42,17 @@ namespace Basic_Project_Generator.Services
             return trimmed.StartsWith(ExpansionDescriptionPrefixDi, StringComparison.OrdinalIgnoreCase) ||
                    trimmed.StartsWith(ExpansionDescriptionPrefixDo, StringComparison.OrdinalIgnoreCase);
         }
+
+        private static bool IsMasterExpansionDescription(string description)
+        {
+            if (string.IsNullOrWhiteSpace(description))
+                return false;
+
+            string trimmed = description.Trim();
+
+            return trimmed.StartsWith(MasterExpansionDescriptionPrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
         private static readonly string[] ReserveKeywords = { "RISERVA", "RESERVE" };// valori di Stringa sulla colonna Descrizione1 che indicano che la riga non deve essere considerata per i canali Safety
 
         private enum Direction { Input, Output }
@@ -84,14 +97,14 @@ namespace Basic_Project_Generator.Services
                     var isMaster = ioLinkMasterCatalog?.Any(mm => Normalize(mm.MasterCopyName) == normalized) == true;
                     var isImExpansion = imExpansionCatalog?.Any(im => Normalize(im.OrderNumber) == normalized) == true;
 
-                    if (isDevice || isModule || isMaster || isImExpansion)
+                    if (isDevice || isModule|| isImExpansion) // || isMaster 
                     {
                         continue; // non è candidato a blocco dettaglio, è già uno dei tipi noti
                     }
 
                     // Secondo segnale, indipendente dal primo: la riga deve dichiararsi esplicitamente come slave IO-Link
                     var headerDescription = GetCellText(row, ColumnDescrizione1);
-                    if (IsExpansionDescription(headerDescription))
+                    if (IsExpansionDescription(headerDescription) || IsMasterExpansionDescription(headerDescription))
                     {
                         knownDetailSiglas.Add(GetCellText(row, ColumnSiglaScheda));
                     }
@@ -155,6 +168,10 @@ namespace Basic_Project_Generator.Services
                             currentItem.ItemType = SymbolItemType.IOLinkMaster;
                             currentItem.IsIOLinkMaster = true;
                             currentItem.IOLinkMasterCode = masterMatch.MasterCopyName;
+                            if (knownDetailSiglas.Contains(currentItem.Name))
+                            {
+                                currentItem.IsIOLinkExpansionDetail = true;
+                            }
                         }
                         else if (imExpansionMatch != null)
                         {
@@ -292,8 +309,17 @@ namespace Basic_Project_Generator.Services
                                     InstanceName = siglaScheda + "_" + portNumber + "_" + "Digital Input"
                                 });
                             }
-                            
-                        
+
+                        if (currentItem.IsIOLinkExpansionDetail )
+                        {
+                            var descrizioneColumnDescizione2b = GetCellText(row, ColumnDescrizione2);
+                            var descrizioneColumnNoteb = GetCellText(row, ColumnNote).Trim();
+                            var fullDescription = string.Join(" ", new[] { GetCellText(row, ColumnDescrizione1), descrizioneColumnDescizione2b, descrizioneColumnNoteb }
+                                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                            currentDbChannelRows.Add((fullDescription,  "I"  ));
+                        }
+
 
                         continue;
                     }

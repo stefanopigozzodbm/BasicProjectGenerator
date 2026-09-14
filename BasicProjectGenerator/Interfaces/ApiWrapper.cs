@@ -3051,7 +3051,7 @@ namespace Basic_Project_Generator.Interfaces
 
             try
             {
-                var document = DbXmlGenerator.Generate(dbName, dbNumber, groups);
+                var document = DbXmlGenerator.Generate(dbName, dbNumber,false, groups);
                 var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), dbName + ".xml");
                 document.Save(tempPath);
 
