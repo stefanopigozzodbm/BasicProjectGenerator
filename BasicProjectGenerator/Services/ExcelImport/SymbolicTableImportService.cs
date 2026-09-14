@@ -377,6 +377,7 @@ namespace Basic_Project_Generator.Services
                 }
 
                 FinalizeSafetyChannels(currentItem, currentSafetyRows);
+                FinalizeDbChannels(currentItem, currentDbChannelRows);
             }
 
             return result;
@@ -386,8 +387,38 @@ namespace Basic_Project_Generator.Services
         {
             if (item == null || !item.IsIOLinkExpansionDetail || rows.Count == 0) return;
 
-            item.DbInputEntries = rows.Where(r => r.IoType == "I").Select(r => new DbSymbolEntry { Name = "xxx-" + r.Description }).ToList();
-            item.DbOutputEntries = rows.Where(r => r.IoType == "Q").Select(r => new DbSymbolEntry { Name = "xxx-" + r.Description }).ToList();
+            item.DbInputEntries = BuildUniqueDbEntries(rows.Where(r => r.IoType == "I").Select(r => r.Description));
+            item.DbOutputEntries = BuildUniqueDbEntries(rows.Where(r => r.IoType == "Q").Select(r => r.Description));
+        }
+
+        /// <summary>
+        /// Costruisce i DbSymbolEntry garantendo nomi univoci all'interno dello stesso Struct:
+        /// se una descrizione si ripete (es. più righe "RISERVA"), aggiunge un suffisso numerico
+        /// progressivo dalla seconda occorrenza in poi, altrimenti TIA rifiuta l'import per nome duplicato.
+        /// L'ordine di posizione (bit) resta invariato: si aggiunge solo un suffisso al nome, non si scartano righe.
+        /// </summary>
+        private static List<DbSymbolEntry> BuildUniqueDbEntries(IEnumerable<string> descriptions)
+        {
+            var result = new List<DbSymbolEntry>();
+            var occurrenceCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var description in descriptions)
+            {
+                var baseName = "xxx-" + description;
+
+                if (occurrenceCounts.TryGetValue(baseName, out var count))
+                {
+                    occurrenceCounts[baseName] = count + 1;
+                    result.Add(new DbSymbolEntry { Name = baseName + "_" + (count + 1) });
+                }
+                else
+                {
+                    occurrenceCounts[baseName] = 1;
+                    result.Add(new DbSymbolEntry { Name = baseName });
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

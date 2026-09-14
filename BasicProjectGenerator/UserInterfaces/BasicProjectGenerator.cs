@@ -1149,7 +1149,10 @@ namespace Basic_Project_Generator.UserInterfaces
                     masterErrorCount = checkedIoLinkMasterItems.Count - masterAdded;
 
 
-                        var (dbInputGroups, dbOutputGroups) = _projectGeneratorService.BuildDbSymbolGroups(checkedIoLinkMasterItems);
+                        var detailItems = _importedItems.Where(i => i.IsIOLinkExpansionDetail).ToList();
+                        var itemsForDbGeneration = checkedIoLinkMasterItems.Concat(detailItems).ToList();
+
+                        var (dbInputGroups, dbOutputGroups) = _projectGeneratorService.BuildDbSymbolGroups(itemsForDbGeneration);
 
                         if (dbInputGroups.Count > 0)
                         {
