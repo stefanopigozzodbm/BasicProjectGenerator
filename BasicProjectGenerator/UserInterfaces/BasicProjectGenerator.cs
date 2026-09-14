@@ -1164,7 +1164,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
                         // diagnostica risultati inserimento come PopUp
 
-                        MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti/non selezionati.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti/non selezionati.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     MessageBox.Show(imExpansionAdded + " moduli ImExpansion aggiunti, " + imepxansionErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -1172,7 +1172,8 @@ namespace Basic_Project_Generator.UserInterfaces
 
                     MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                }
+                
+                    }
                     catch (Exception exception)
                     {
                         _traceWriter.Write(exception.Message);

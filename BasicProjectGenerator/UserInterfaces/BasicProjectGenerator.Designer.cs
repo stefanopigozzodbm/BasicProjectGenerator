@@ -102,14 +102,14 @@ namespace Basic_Project_Generator.UserInterfaces
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.HW_Siemens = new System.Windows.Forms.TabPage();
             this.HW_Other = new System.Windows.Forms.TabPage();
-            this.button2 = new System.Windows.Forms.Button();
-            this.btnOpenLib = new System.Windows.Forms.Button();
-            this.Tag = new System.Windows.Forms.TabPage();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.btn_Debug = new System.Windows.Forms.Button();
-            this.btn_CreateInDb = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.btn_CreateOutDb = new System.Windows.Forms.Button();
+            this.btn_CreateInDb = new System.Windows.Forms.Button();
+            this.btnOpenLib = new System.Windows.Forms.Button();
+            this.Tag = new System.Windows.Forms.TabPage();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -119,8 +119,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.tabControl1.SuspendLayout();
             this.HW_Siemens.SuspendLayout();
             this.HW_Other.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // grb_TiaPortal
@@ -839,48 +839,6 @@ namespace Basic_Project_Generator.UserInterfaces
             this.HW_Other.Text = "Other";
             this.HW_Other.UseVisualStyleBackColor = true;
             // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(23, 29);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(124, 23);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "Button2";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // btnOpenLib
-            // 
-            this.btnOpenLib.Location = new System.Drawing.Point(39, 33);
-            this.btnOpenLib.Name = "btnOpenLib";
-            this.btnOpenLib.Size = new System.Drawing.Size(90, 23);
-            this.btnOpenLib.TabIndex = 0;
-            this.btnOpenLib.Text = "Open Library ...";
-            this.btnOpenLib.UseVisualStyleBackColor = true;
-            this.btnOpenLib.Click += new System.EventHandler(this.btnOpenLibrary);
-            // 
-            // Tag
-            // 
-            this.Tag.Location = new System.Drawing.Point(4, 22);
-            this.Tag.Name = "Tag";
-            this.Tag.Padding = new System.Windows.Forms.Padding(3);
-            this.Tag.Size = new System.Drawing.Size(1411, 508);
-            this.Tag.TabIndex = 2;
-            this.Tag.Text = "Tag";
-            this.Tag.UseVisualStyleBackColor = true;
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.btn_CreateOutDb);
-            this.groupBox2.Controls.Add(this.btn_CreateInDb);
-            this.groupBox2.Controls.Add(this.btnOpenLib);
-            this.groupBox2.Location = new System.Drawing.Point(20, 20);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(241, 218);
-            this.groupBox2.TabIndex = 2;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Manual Utility";
-            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.btn_Debug);
@@ -902,16 +860,27 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_Debug.UseVisualStyleBackColor = true;
             this.btn_Debug.Click += new System.EventHandler(this.btn_Debug_Click);
             // 
-            // btn_CreateInDb
+            // button2
             // 
-            this.btn_CreateInDb.Location = new System.Drawing.Point(39, 67);
-            this.btn_CreateInDb.Name = "btn_CreateInDb";
-            this.btn_CreateInDb.Size = new System.Drawing.Size(104, 23);
-            this.btn_CreateInDb.TabIndex = 1;
-            this.btn_CreateInDb.Text = "Create INPUT DB";
-            this.btn_CreateInDb.TextImageRelation = System.Windows.Forms.TextImageRelation.TextAboveImage;
-            this.btn_CreateInDb.UseVisualStyleBackColor = true;
-            this.btn_CreateInDb.Click += new System.EventHandler(this.btn_CreateInDb_Click);
+            this.button2.Location = new System.Drawing.Point(23, 29);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(124, 23);
+            this.button2.TabIndex = 1;
+            this.button2.Text = "Button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.btn_CreateOutDb);
+            this.groupBox2.Controls.Add(this.btn_CreateInDb);
+            this.groupBox2.Controls.Add(this.btnOpenLib);
+            this.groupBox2.Location = new System.Drawing.Point(20, 20);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(241, 218);
+            this.groupBox2.TabIndex = 2;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Manual Utility";
             // 
             // btn_CreateOutDb
             // 
@@ -923,6 +892,37 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_CreateOutDb.TextImageRelation = System.Windows.Forms.TextImageRelation.TextAboveImage;
             this.btn_CreateOutDb.UseVisualStyleBackColor = true;
             this.btn_CreateOutDb.Click += new System.EventHandler(this.btn_CreateOutDb_Click);
+            // 
+            // btn_CreateInDb
+            // 
+            this.btn_CreateInDb.Location = new System.Drawing.Point(39, 67);
+            this.btn_CreateInDb.Name = "btn_CreateInDb";
+            this.btn_CreateInDb.Size = new System.Drawing.Size(104, 23);
+            this.btn_CreateInDb.TabIndex = 1;
+            this.btn_CreateInDb.Text = "Create INPUT DB";
+            this.btn_CreateInDb.TextImageRelation = System.Windows.Forms.TextImageRelation.TextAboveImage;
+            this.btn_CreateInDb.UseVisualStyleBackColor = true;
+            this.btn_CreateInDb.Click += new System.EventHandler(this.btn_CreateInDb_Click);
+            // 
+            // btnOpenLib
+            // 
+            this.btnOpenLib.Location = new System.Drawing.Point(39, 33);
+            this.btnOpenLib.Name = "btnOpenLib";
+            this.btnOpenLib.Size = new System.Drawing.Size(90, 23);
+            this.btnOpenLib.TabIndex = 0;
+            this.btnOpenLib.Text = "Open Library ...";
+            this.btnOpenLib.UseVisualStyleBackColor = true;
+            this.btnOpenLib.Click += new System.EventHandler(this.btnOpenLibrary);
+            // 
+            // Tag
+            // 
+            this.Tag.Location = new System.Drawing.Point(4, 22);
+            this.Tag.Name = "Tag";
+            this.Tag.Padding = new System.Windows.Forms.Padding(3);
+            this.Tag.Size = new System.Drawing.Size(1411, 508);
+            this.Tag.TabIndex = 2;
+            this.Tag.Text = "Tag";
+            this.Tag.UseVisualStyleBackColor = true;
             // 
             // BasicProjectGenerator
             // 
@@ -952,8 +952,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.tabControl1.ResumeLayout(false);
             this.HW_Siemens.ResumeLayout(false);
             this.HW_Other.ResumeLayout(false);
-            this.groupBox2.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

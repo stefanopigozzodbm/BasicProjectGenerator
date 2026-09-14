@@ -119,6 +119,9 @@ namespace Basic_Project_Generator.Services
                         FinalizeSafetyChannels(currentItem, currentSafetyRows);
                         currentSafetyRows = new List<(string, string, string, string)>();
 
+                        FinalizeDbChannels(currentItem, currentDbChannelRows);
+                        currentDbChannelRows = new List<(string Description, string IoType)>();
+
                         var normalized = Normalize(orderNumber);
 
                         currentItem = new ImportedSymbolItem
@@ -369,10 +372,11 @@ namespace Basic_Project_Generator.Services
 
                         currentDbChannelRows.Add((fullDescription, category == AddressCategory.DigitalInput ? "I" : "Q"));
                     }
+                   
+
                 }
 
                 FinalizeSafetyChannels(currentItem, currentSafetyRows);
-                FinalizeDbChannels(currentItem, currentDbChannelRows);
             }
 
             return result;
@@ -533,6 +537,8 @@ namespace Basic_Project_Generator.Services
         {
             switch (tipologia.Trim().ToUpperInvariant())
             {
+                case "XI": category = AddressCategory.DigitalInput; return true; // la X davanti a I è sui moduli IoLinkMaster o IoLinkSlave
+                case "XQ": category = AddressCategory.DigitalOutput; return true; // la X davanti a Q è sui moduli IoLinkMaster o IoLinkSlave
                 case "I": category = AddressCategory.DigitalInput; return true;
                 case "Q": category = AddressCategory.DigitalOutput; return true;
                 case "AIW":
