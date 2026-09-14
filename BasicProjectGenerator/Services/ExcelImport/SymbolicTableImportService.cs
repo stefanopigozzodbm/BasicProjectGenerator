@@ -102,6 +102,7 @@ namespace Basic_Project_Generator.Services
 
                 ImportedSymbolItem currentItem = null;
                 var currentSafetyRows = new List<(string Description, string Pin1Raw, string Pin2Raw, string Indirizzo)>();
+                var currentDbChannelRows = new List<(string Description, string IoType)>();
 
                 string currentImExpansionInstanceName = null; // sigla della stazione ET200SP attualmente "attiva"
                 string currentImExpansionRackValue = null;    // valore di colonna B (Rack) della stazione attiva
@@ -164,6 +165,11 @@ namespace Basic_Project_Generator.Services
 
                             _traceWriter.Write("Stazione ET200SP trovata: '" + currentItem.Name + "' (Rack=" + rackValue + ", " + imExpansionMatch.TemplateName + ")");
                         }
+                        else if (knownDetailSiglas.Contains(currentItem.Name))
+                        {
+                            currentItem.IsIOLinkExpansionDetail = true;
+                        }
+
                         // Se non è nessuno dei tre: probabile blocco dettaglio espansione, già gestito dalla pre-scansione, nessuna azione qui.
 
                         // Assegna l'appartenenza a una stazione ET200SP (se Rack coincide con quella attualmente attiva), altrimenti resetta
@@ -328,6 +334,9 @@ namespace Basic_Project_Generator.Services
                         continue;
                     }
 
+
+
+
                     if (string.IsNullOrWhiteSpace(tipologia) || string.IsNullOrWhiteSpace(indirizzo)) continue;
 
                     if (TryGetCategory(tipologia, out var category) && TryGetStartAddress(indirizzo, out var startAddress))
@@ -351,12 +360,30 @@ namespace Basic_Project_Generator.Services
                             currentSafetyRows.Add((description, pin1Raw, pin2Raw, indirizzo));
                         }
                     }
+                    if (currentItem.IsIOLinkExpansionDetail && (category == AddressCategory.DigitalInput || category == AddressCategory.DigitalOutput))
+                    {
+                        var descrizioneColumnDescizione2b = GetCellText(row, ColumnDescrizione2);
+                        var descrizioneColumnNoteb = GetCellText(row, ColumnNote).Trim();
+                        var fullDescription = string.Join(" ", new[] { GetCellText(row, ColumnDescrizione1), descrizioneColumnDescizione2b, descrizioneColumnNoteb }
+                            .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                        currentDbChannelRows.Add((fullDescription, category == AddressCategory.DigitalInput ? "I" : "Q"));
+                    }
                 }
 
                 FinalizeSafetyChannels(currentItem, currentSafetyRows);
+                FinalizeDbChannels(currentItem, currentDbChannelRows);
             }
 
             return result;
+        }
+
+        private void FinalizeDbChannels(ImportedSymbolItem item, List<(string Description, string IoType)> rows)
+        {
+            if (item == null || !item.IsIOLinkExpansionDetail || rows.Count == 0) return;
+
+            item.DbInputEntries = rows.Where(r => r.IoType == "I").Select(r => new DbSymbolEntry { Name = "xxx-" + r.Description }).ToList();
+            item.DbOutputEntries = rows.Where(r => r.IoType == "Q").Select(r => new DbSymbolEntry { Name = "xxx-" + r.Description }).ToList();
         }
 
         /// <summary>

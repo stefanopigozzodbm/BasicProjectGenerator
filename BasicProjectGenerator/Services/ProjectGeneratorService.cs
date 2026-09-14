@@ -1128,6 +1128,68 @@ namespace Basic_Project_Generator.Services
         }
         #endregion
 
+        #region DataBlock DB
+
+
+        /// <summary>
+        /// ImportDb
+        /// </summary>
+        /// Interfaccia tra ProjetGeneratoreService e ApiWrapper per l'importazione dei simboli in un DB.
+        /// <param name="plcDeviceItem"></param>
+        /// <param name="caller"></param>
+        public bool ImportDb(string dbName, int dbNumber, List<DbSymbolGroup> groups, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        {
+            return _apiWrapper.DoImportDb(dbName, dbNumber, groups, plcDeviceItem, caller);
+        }
+
+        public (List<DbSymbolGroup> InputGroups, List<DbSymbolGroup> OutputGroups) BuildDbSymbolGroups(List<ImportedSymbolItem> importedItems, [CallerMemberName] string caller = "")
+        {
+            var methodBase = MethodBase.GetCurrentMethod();
+            if (methodBase.ReflectedType != null) _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller);
+
+            var inputGroups = new List<DbSymbolGroup>();
+            var outputGroups = new List<DbSymbolGroup>();
+
+            foreach (var item in importedItems)
+            {
+                if (item.IsIOLinkExpansionDetail)
+                {
+                    if (item.DbInputEntries.Count > 0)
+                        inputGroups.Add(new DbSymbolGroup { Sigla = item.Name, Entries = item.DbInputEntries });
+
+                    if (item.DbOutputEntries.Count > 0)
+                        outputGroups.Add(new DbSymbolGroup { Sigla = item.Name, Entries = item.DbOutputEntries });
+                }
+                else if (item.IsIOLinkMaster)
+                {
+                    var inputPorts = item.IOLinkPorts.Where(p => p.Kind == IOLinkPortKind.Input).OrderBy(p => p.PortNumber).ToList();
+                    if (inputPorts.Count > 0)
+                    {
+                        inputGroups.Add(new DbSymbolGroup
+                        {
+                            Sigla = item.Name,
+                            Entries = inputPorts.Select(p => new DbSymbolEntry { Name = p.InstanceName }).ToList()
+                        });
+                    }
+
+                    var outputPorts = item.IOLinkPorts.Where(p => p.Kind == IOLinkPortKind.Output).OrderBy(p => p.PortNumber).ToList();
+                    if (outputPorts.Count > 0)
+                    {
+                        outputGroups.Add(new DbSymbolGroup
+                        {
+                            Sigla = item.Name,
+                            Entries = outputPorts.Select(p => new DbSymbolEntry { Name = p.InstanceName }).ToList()
+                        });
+                    }
+                }
+                // Sensor ed Expansion "marker" (sul master) non producono voci qui: i primi restano esclusi come da tuo punto 2,
+                // i secondi sono già rappresentati tramite il blocco dettaglio (IsIOLinkExpansionDetail) sopra.
+            }
+
+            return (inputGroups, outputGroups);
+        }
+
+        #endregion
         #region Debug
 
         public bool DebugTest(Models.DeviceItem deviceItem, [CallerMemberName] string caller = "")

@@ -1149,10 +1149,22 @@ namespace Basic_Project_Generator.UserInterfaces
                     masterErrorCount = checkedIoLinkMasterItems.Count - masterAdded;
 
 
+                        var (dbInputGroups, dbOutputGroups) = _projectGeneratorService.BuildDbSymbolGroups(checkedIoLinkMasterItems);
 
-                    // diagnostica risultati inserimento come PopUp
+                        if (dbInputGroups.Count > 0)
+                        {
+                            _projectGeneratorService.ImportDb("INPUT", 14, dbInputGroups, plcDeviceItem);
+                        }
 
-                    MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti/non selezionati.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        if (dbOutputGroups.Count > 0)
+                        {
+                            _projectGeneratorService.ImportDb("OUTPUT", 183, dbOutputGroups, plcDeviceItem);
+                        }
+
+
+                        // diagnostica risultati inserimento come PopUp
+
+                        MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti/non selezionati.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     MessageBox.Show(imExpansionAdded + " moduli ImExpansion aggiunti, " + imepxansionErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 

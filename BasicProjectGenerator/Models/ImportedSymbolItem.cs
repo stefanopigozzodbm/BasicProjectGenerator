@@ -39,6 +39,9 @@ namespace Basic_Project_Generator.Models
         public ImExpansion MatchedImExpansion { get; set; }
         public string ImExpansionParentName { get; set; } // null = appartiene al rack della CPU; altrimenti sigla della stazione ET200SP (es. "20A1")
         public List<IOLinkPortAssignment> IOLinkPorts { get; set; } = new List<IOLinkPortAssignment>();
+        public bool IsIOLinkExpansionDetail { get; set; }
+        public List<DbSymbolEntry> DbInputEntries { get; set; } = new List<DbSymbolEntry>();
+        public List<DbSymbolEntry> DbOutputEntries { get; set; } = new List<DbSymbolEntry>();
 
 
     }

@@ -3076,6 +3076,27 @@ namespace Basic_Project_Generator.Interfaces
                     return false;
                 }
 
+                //plcSoftware.BlockGroup.Blocks.Import(new System.IO.FileInfo(tempPath), ImportOptions.Override);
+                // Se il DB esiste già, Import con Override a volte non lo sovrascrive ma lancia eccezione:
+                // lo cerco e lo cancello esplicitamente prima di reimportare.
+                var existingDb = plcSoftware.BlockGroup.Blocks
+                    .OfType<Siemens.Engineering.SW.Blocks.PlcBlock>()
+                    .FirstOrDefault(b => b.Name == dbName);
+
+                if (existingDb != null)
+                {
+                    try
+                    {
+                        existingDb.Delete();
+                        _traceWriter.Write("DB '" + dbName + "' esistente cancellato prima della reimportazione.");
+                    }
+                    catch (Exception deleteException)
+                    {
+                        _traceWriter.Write("Impossibile cancellare il DB esistente '" + dbName + "': " + deleteException.Message);
+                        return false;
+                    }
+                }
+
                 plcSoftware.BlockGroup.Blocks.Import(new System.IO.FileInfo(tempPath), ImportOptions.Override);
 
                 _traceWriter.Write("DB '" + dbName + "' (numero " + dbNumber + ") importato con successo, " + groups.Count + " gruppi.");
