@@ -358,7 +358,17 @@ namespace Basic_Project_Generator.Services
                                 });
                             }
 
-                        
+                        if (currentItem.IsIOLinkExpansionDetail)
+                        {
+                            var descrizioneColumnDescizione2b = GetCellText(row, ColumnDescrizione2);
+                            var descrizioneColumnNoteb = GetCellText(row, ColumnNote).Trim();
+                            var fullDescription = string.Join(" ", new[] { GetCellText(row, ColumnDescrizione1), descrizioneColumnDescizione2b, descrizioneColumnNoteb }
+                                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                            currentDbChannelRows.Add((fullDescription, "Q"));
+                        }
+
+
 
                         continue;
                     }
@@ -408,6 +418,8 @@ namespace Basic_Project_Generator.Services
 
             return result;
         }
+
+
 
         private void FinalizeDbChannels(ImportedSymbolItem item, List<(string Description, string IoType)> rows)
         {
