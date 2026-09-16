@@ -1165,15 +1165,21 @@ namespace Basic_Project_Generator.UserInterfaces
                         }
 
 
+                        //autocompilazione progetto
+
+                        var deviceItem = (DeviceItem)cob_DeviceList.SelectedItem;
+
+                        _projectGeneratorService.CompileDevice(deviceItem);
+
                         // diagnostica risultati inserimento come PopUp
 
-                    MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti/non selezionati.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti/non selezionati.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    MessageBox.Show(imExpansionAdded + " moduli ImExpansion aggiunti, " + imepxansionErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(imExpansionAdded + " moduli ImExpansion aggiunti, " + imepxansionErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    MessageBox.Show(masterAdded + " moduli Master aggiunti, " + masterErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(masterAdded + " moduli Master aggiunti, " + masterErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 
                     }
