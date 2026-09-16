@@ -1149,19 +1149,36 @@ namespace Basic_Project_Generator.UserInterfaces
                     masterErrorCount = checkedIoLinkMasterItems.Count - masterAdded;
 
 
+                    //6) Creazione DB di INPUT e OUTPUT
+                    //
                         var detailItems = _importedItems.Where(i => i.IsIOLinkExpansionDetail).ToList();
-                        //var itemsForDbGeneration = checkedIoLinkMasterItems.Concat(detailItems).ToList();
+
+                        var dbInputGroupsCount = 0;
+                        var dbOutputGroupsCount = 0;
+                        var result = false;
 
                         var (dbInputGroups, dbOutputGroups) = _projectGeneratorService.BuildDbSymbolGroups(detailItems);
 
                         if (dbInputGroups.Count > 0)
                         {
-                            _projectGeneratorService.ImportDb("INPUT", 14, dbInputGroups, plcDeviceItem);
-                        }
+                            result = _projectGeneratorService.ImportDb("INPUT", 14, dbInputGroups, plcDeviceItem);
+                            if (result)
+                            {
 
-                        if (dbOutputGroups.Count > 0)
-                        {
-                            _projectGeneratorService.ImportDb("OUTPUT", 183, dbOutputGroups, plcDeviceItem);
+                                dbInputGroupsCount = dbInputGroups.Count;
+
+                            }
+
+                            if (dbOutputGroups.Count > 0)
+                            {
+                                result = _projectGeneratorService.ImportDb("OUTPUT", 183, dbOutputGroups, plcDeviceItem);
+                                if (result)
+                                {
+
+                                    dbOutputGroupsCount = dbOutputGroups.Count;
+
+                                }
+                            }
                         }
 
 
@@ -1181,7 +1198,11 @@ namespace Basic_Project_Generator.UserInterfaces
 
                         MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                
+                        MessageBox.Show(dbInputGroupsCount + " Gruppi DB_INPUT aggiunti, "+ dbOutputGroupsCount + " Gruppi DB_OUTPUT aggiunti", "Import Terminato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+
+                     
+
                     }
                     catch (Exception exception)
                     {
@@ -1195,6 +1216,24 @@ namespace Basic_Project_Generator.UserInterfaces
                 var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
                 txt_elapsedTime.Text = "Elapsed Time: " + elapsedSeconds.ToString("F2") + " s";
                 _traceWriter.Write("btn_AddImportedModules_Click completato in " + elapsedSeconds.ToString("F2") + " secondi.");
+
+                //crea un file di log con tutto quello che c'è nel _traceWriter
+               
+                var righe = lib_TraceWriterOutput.Items.Cast<object>().Select(item => item.ToString());
+                string dataOra = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string nomeFile = $"log_{dataOra}.txt";
+
+                // 1. Ottiene il percorso assoluto della cartella dell'eseguibile
+                string cartellaRelease = AppDomain.CurrentDomain.BaseDirectory;
+
+                _traceWriter.Write("Copy log file to" + cartellaRelease);
+
+                // 2. Unisce il percorso della cartella e il nome del file
+                string percorsoCompleto = Path.Combine(cartellaRelease, nomeFile);
+
+                File.WriteAllLines(percorsoCompleto, righe);
+
+
             }
         }
 
