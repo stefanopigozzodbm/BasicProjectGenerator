@@ -30,7 +30,8 @@ namespace Basic_Project_Generator.Services
         private const string ExpansionDescriptionPrefixDi = "SLAVE DI IO-LINK";
         private const string ExpansionDescriptionPrefixDo = "SLAVE DO IO-LINK";
         private const string MasterExpansionDescriptionPrefix = "MASTER IO-LINK";
-      
+        private const string ManifoldExpansionDescriptionPrefix = "MANIFOLD";
+
 
         private static bool IsExpansionDescription(string description)
         {
@@ -51,6 +52,18 @@ namespace Basic_Project_Generator.Services
             string trimmed = description.Trim();
 
             return trimmed.StartsWith(MasterExpansionDescriptionPrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+
+        private static bool IsManifoldExpansionDescription(string description)
+        {
+            if (string.IsNullOrWhiteSpace(description))
+                return false;
+
+            string trimmed = description.Trim();
+
+            return trimmed.StartsWith(ManifoldExpansionDescriptionPrefix, StringComparison.OrdinalIgnoreCase);
+            
         }
 
         private static readonly string[] ReserveKeywords = { "RISERVA", "RESERVE" };// valori di Stringa sulla colonna Descrizione1 che indicano che la riga non deve essere considerata per i canali Safety
@@ -97,18 +110,20 @@ namespace Basic_Project_Generator.Services
                     var isMaster = ioLinkMasterCatalog?.Any(mm => Normalize(mm.MasterCopyName) == normalized) == true;
                     var isImExpansion = imExpansionCatalog?.Any(im => Normalize(im.OrderNumber) == normalized) == true;
 
-                    if (isDevice || isModule|| isImExpansion) // || isMaster 
+                    if (isDevice || isModule|| isImExpansion) // || isMaster tolto appositamente per potere avere un master con anche in qualifaicatore IsIOLinkExpansionDetail
                     {
                         continue; // non è candidato a blocco dettaglio, è già uno dei tipi noti
                     }
 
                     // Secondo segnale, indipendente dal primo: la riga deve dichiararsi esplicitamente come slave IO-Link
                     var headerDescription = GetCellText(row, ColumnDescrizione1);
-                    if (IsExpansionDescription(headerDescription) || IsMasterExpansionDescription(headerDescription))
+                    if (IsExpansionDescription(headerDescription) || 
+                        IsMasterExpansionDescription(headerDescription) ||
+                        IsManifoldExpansionDescription(headerDescription))
                     {
                         knownDetailSiglas.Add(GetCellText(row, ColumnSiglaScheda));
                     }
-                    // Altrimenti: probabile riga di tutt'altro tipo (es. manifold pneumatico), correttamente ignorata qui.
+                     
                 }
 
 
@@ -127,7 +142,7 @@ namespace Basic_Project_Generator.Services
 
                     var orderNumber = GetCellText(row, ColumnCodiceUnita);
 
-                    if (!string.IsNullOrWhiteSpace(orderNumber))
+                    if (!string.IsNullOrWhiteSpace(orderNumber) && orderNumber != "MONO_VTUX M")
                     {
                         FinalizeSafetyChannels(currentItem, currentSafetyRows);
                         currentSafetyRows = new List<(string, string, string, string)>();
@@ -610,6 +625,7 @@ namespace Basic_Project_Generator.Services
                 case "XQ": category = AddressCategory.DigitalOutput; return true; // la X davanti a Q è sui moduli IoLinkMaster o IoLinkSlave
                 case "I": category = AddressCategory.DigitalInput; return true;
                 case "Q": category = AddressCategory.DigitalOutput; return true;
+                case "A": category = AddressCategory.DigitalOutput; return true;
                 case "AIW":
                 case "PEW": category = AddressCategory.AnalogInput; return true;
                 case "AQW":
