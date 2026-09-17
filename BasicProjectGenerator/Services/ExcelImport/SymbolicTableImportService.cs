@@ -249,7 +249,7 @@ namespace Basic_Project_Generator.Services
                             var isReserve = ReserveKeywords.Any(k => string.Equals(descrizione?.Trim(), k, StringComparison.OrdinalIgnoreCase));
 
                             //filtro per descrizione su colonna L Descrizione1 = ExpansionDescriptionMarker = SLAVE IO LONK DI 8P
-                            var isExpansionMarker = IsExpansionDescription(descrizioneColumnDescizione1);
+                            var isExpansionMarker = IsExpansionDescription(descrizioneColumnDescizione1)  || IsManifoldExpansionDescription(descrizioneColumnDescizione1); ;
 
                             if (isExpansionMarker && !string.IsNullOrWhiteSpace(connettore))
                             {
