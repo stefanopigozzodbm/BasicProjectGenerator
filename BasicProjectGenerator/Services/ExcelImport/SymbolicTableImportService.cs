@@ -142,7 +142,7 @@ namespace Basic_Project_Generator.Services
 
                     var orderNumber = GetCellText(row, ColumnCodiceUnita);
 
-                    if (!string.IsNullOrWhiteSpace(orderNumber) && orderNumber != "MONO_VTUX M")
+                    if (!string.IsNullOrWhiteSpace(orderNumber) && orderNumber != "MONO_VTUX M") // se l'orderNumber non è vuoto e non è il valore "MONO_VTUX M" (che è un placeholder di Excel per righe vuote), allora è una riga header
                     {
                         FinalizeSafetyChannels(currentItem, currentSafetyRows);
                         currentSafetyRows = new List<(string, string, string, string)>();
