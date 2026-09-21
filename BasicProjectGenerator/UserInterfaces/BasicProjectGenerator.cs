@@ -9,11 +9,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace Basic_Project_Generator.UserInterfaces
 {
@@ -45,6 +47,26 @@ namespace Basic_Project_Generator.UserInterfaces
             _projectGeneratorService = new ProjectGeneratorService(_traceWriter, _apiWrapper);
 
             ManageUiState();
+        }
+
+        private void lib_TraceWriterOutput_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+
+            e.DrawBackground();
+
+            var color = SystemColors.WindowText;
+            if (lib_TraceWriterOutput.Items[e.Index] is TraceLine traceLine)
+            {
+                color = traceLine.Color;
+            }
+
+            using (var brush = new SolidBrush(color))
+            {
+                e.Graphics.DrawString(lib_TraceWriterOutput.Items[e.Index].ToString(), e.Font, brush, e.Bounds);
+            }
+
+            e.DrawFocusRectangle();
         }
 
         #endregion // ctor
@@ -166,7 +188,7 @@ namespace Basic_Project_Generator.UserInterfaces
         private void UpdateProcessUiState()
         {
             var methodBase = MethodBase.GetCurrentMethod();
-            _traceWriter.Write(methodBase.Name);
+            _traceWriter.Write(methodBase.Name,TraceColors.Ok);
 
             var currentProcessId = _projectGeneratorService.GetCurrentTiaProcessId();
             txb_CurrentProcessId.Text = currentProcessId;

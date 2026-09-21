@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -6,12 +7,26 @@ using System.Windows.Forms;
 
 namespace Basic_Project_Generator.Interfaces
 {
+    /// <summary>Una riga di log con il colore con cui va disegnata nella ListBox.</summary>
+    public class TraceLine
+    {
+        public string Text { get; }
+        public Color Color { get; }
+
+        public TraceLine(string text, Color color)
+        {
+            Text = text;
+            Color = color;
+        }
+
+        public override string ToString() => Text;
+    }
+
     public class TraceWriter : TextWriter
     {
         #region fields
 
         private readonly ListBox _list;
-        private StringBuilder _content;
         private int _maxHorizontalSize;
 
         #endregion // fields
@@ -20,7 +35,6 @@ namespace Basic_Project_Generator.Interfaces
 
         public TraceWriter(ListBox list)
         {
-            _content = new StringBuilder();
             _list = list;
         }
 
@@ -35,19 +49,27 @@ namespace Basic_Project_Generator.Interfaces
         #region methods
 
         /// <summary>
-        /// Writes a log message to trace output
+        /// Writes a log message to trace output, con colore di default.
         /// </summary>
-        /// <param name="value"></param>
         public override void Write(string value)
+        {
+            Write(value, TraceColors.Default);
+        }
+
+        /// <summary>
+        /// Writes a log message to trace output con un colore esplicito
+        /// (es. TraceColors.Ok, TraceColors.Warning, TraceColors.Error).
+        /// </summary>
+        public void Write(string value, Color color)
         {
             base.Write(value);
 
             var input = ReplaceSpecialCharacters(value);
             var timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            _content.Append(timeStamp + "\t" + input);
-            _list.Items.Add(_content.ToString());
+            var text = timeStamp + "\t" + input;
+
+            _list.Items.Add(new TraceLine(text, color));
             _list.SelectedIndex = _list.Items.Count - 1;
-            _content = new StringBuilder();
 
             DisplayHorizontalScroll();
         }
@@ -75,8 +97,6 @@ namespace Basic_Project_Generator.Interfaces
         /// <summary>
         /// Replace special characters with space
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
         private static string ReplaceSpecialCharacters(string value)
         {
             var result = Regex.Replace(value, "\n|\r|\t", " ");

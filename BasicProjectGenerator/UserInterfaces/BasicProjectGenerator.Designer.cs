@@ -663,6 +663,8 @@ namespace Basic_Project_Generator.UserInterfaces
             this.lib_TraceWriterOutput.Name = "lib_TraceWriterOutput";
             this.lib_TraceWriterOutput.Size = new System.Drawing.Size(1418, 251);
             this.lib_TraceWriterOutput.TabIndex = 4;
+            this.lib_TraceWriterOutput.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.lib_TraceWriterOutput.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lib_TraceWriterOutput_DrawItem);
             // 
             // grb_AddModule
             // 

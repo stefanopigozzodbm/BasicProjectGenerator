@@ -173,7 +173,7 @@ namespace Basic_Project_Generator.Interfaces
 
             if (!typeof(T).IsEnum)
             {
-                _traceWriter.Write("T must be an Enumeration type!");
+                _traceWriter.Write("T must be an Enumeration type!",TraceColors.Error);
                 throw new Exception("T must be an Enumeration type!");
             }
             var enumValue = ((T[])Enum.GetValues(typeof(T)))[0];
@@ -449,7 +449,7 @@ namespace Basic_Project_Generator.Interfaces
             var result = false;
             DoCloseProject();
             var newProject = TiaPortal.Projects.Create(projectModel.TargetDirectory, projectModel.Name);
-            _traceWriter.Write($"TiaPortal.Projects.Create({projectModel.TargetDirectory.FullName}, {projectModel.Name}");
+            _traceWriter.Write($"TiaPortal.Projects.Create({projectModel.TargetDirectory.FullName}, {projectModel.Name}",TraceColors.Ok);
             if (newProject != null)
             {
                 CurrentProject = newProject;
@@ -461,7 +461,7 @@ namespace Basic_Project_Generator.Interfaces
         private Project UMACProtectedProjectOpen(string projectFilePath,UmacCredentialsParameters umacParameters)
 
         {
-            
+            var methodBase = MethodBase.GetCurrentMethod();
 
             try
 
@@ -498,7 +498,7 @@ namespace Basic_Project_Generator.Interfaces
             catch (Exception ex)
 
             {
-                _traceWriter.Write("UMACProtectedProjectOpen - Exception: "+ ex.Message);
+                _traceWriter.Write(methodBase.Name + " - Exception: "+ ex.Message, TraceColors.Error);
                 return null;
                
             }
@@ -566,7 +566,7 @@ namespace Basic_Project_Generator.Interfaces
                 }
                 catch(Exception e)
                 {
-                    _traceWriter.Write("DoOpenProject - Failed to retrive ProjectProtectionUser");
+                    _traceWriter.Write(methodBase.Name + " - Failed to retrive ProjectProtectionUser",TraceColors.Error);
                 }
 
 
@@ -653,17 +653,17 @@ namespace Basic_Project_Generator.Interfaces
 
             if(CurrentProject == null)
             {
-                _traceWriter.Write("No project is currently open.");
+                _traceWriter.Write("No project is currently open.",TraceColors.Error);
                 return false;
             }
 
             if(string.IsNullOrEmpty(admUsr) || string.IsNullOrEmpty(admPsw))
             {
-                _traceWriter.Write("Admin username or password is null or empty.");
+                _traceWriter.Write("Admin username or password is null or empty.", TraceColors.Error);
                 return false;
             } if(string.IsNullOrEmpty(admPsw))
             {
-                _traceWriter.Write("Admin password is null or empty.");
+                _traceWriter.Write("Admin password is null or empty.", TraceColors.Error);
                 return false;
             }
 
@@ -679,7 +679,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception ex)
             {
-                _traceWriter.Write($"Error protecting project: {ex.Message}");
+                _traceWriter.Write($"Error protecting project: {ex.Message}", TraceColors.Error);
                 return false;
             }
             return true;
@@ -698,7 +698,7 @@ namespace Basic_Project_Generator.Interfaces
 
             if (CurrentProject == null)
             {
-                _traceWriter.Write("No project is currently open.");
+                _traceWriter.Write("No project is currently open.", TraceColors.Warning);
                 return false;
             }
 
@@ -707,7 +707,7 @@ namespace Basic_Project_Generator.Interfaces
                 var umacConfigurator = CurrentProject.GetService<UmacConfigurator>();
                 if (umacConfigurator == null)
                 {
-                    _traceWriter.Write("UmacConfigurator service is not available.");
+                    _traceWriter.Write("UmacConfigurator service is not available.", TraceColors.Error);
                     return false;
                 }
 
@@ -722,7 +722,7 @@ namespace Basic_Project_Generator.Interfaces
                     {
                         if (string.IsNullOrEmpty(userUmacSettings.Password))
                         {
-                            _traceWriter.Write("Password mancante per l'utente '" + userUmacSettings.Name + "', utente saltato.");
+                            _traceWriter.Write("Missing password for the user: '" + userUmacSettings.Name + "', user saved.", TraceColors.Warning);
                             continue;
                         }
 
@@ -750,7 +750,7 @@ namespace Basic_Project_Generator.Interfaces
                         var roles = newUser.GetAttribute("Roles") as RoleAssociation;
                         if (roles == null)
                         {
-                            _traceWriter.Write("Impossibile leggere la RoleAssociation per l'utente '" + userUmacSettings.Name + "'.");
+                            _traceWriter.Write("Not possible to read RoleAssociation for that user '" + userUmacSettings.Name , TraceColors.Error);
                             continue;
                         }
 
@@ -766,30 +766,30 @@ namespace Basic_Project_Generator.Interfaces
                                 var role = systemRoles.FirstOrDefault(r => r.Identifier == roleAssignment.Name);
                                 if (role == null)
                                 {
-                                    _traceWriter.Write("Ruolo '" + roleAssignment.Name + "' non trovato tra i SystemRoles per l'utente '" + userUmacSettings.Name + "' (nome errato nell'XML?).");
+                                    _traceWriter.Write("Role '" + roleAssignment.Name + "' in the SystemRoles for this user '" + userUmacSettings.Name + "' (wrong input in the XML StartupPlcConfiguration?)", TraceColors.Error);
                                     continue;
                                 }
 
                                 roles.Add(role);
-                                _traceWriter.Write("Ruolo '" + roleAssignment.Name + "' assegnato a '" + userUmacSettings.Name + "'.");
+                                _traceWriter.Write("Role '" + roleAssignment.Name + "' assigned to '" + userUmacSettings.Name, TraceColors.Error);
                             }
                             catch (Exception roleException)
                             {
-                                _traceWriter.Write("Errore assegnando il ruolo '" + roleAssignment.Name + "' a '" + userUmacSettings.Name + "': " + roleException.Message);
+                                _traceWriter.Write("Error assigning the role '" + roleAssignment.Name + "' a '" + userUmacSettings.Name + "': " + roleException.Message);
                             }
                         }
 
-                        _traceWriter.Write("Utente UMAC '" + userUmacSettings.Name + "' creato con successo.");
+                        _traceWriter.Write("User from UMAC '" + userUmacSettings.Name + "' successfully created.", TraceColors.Ok);
                     }
                     catch (Exception userException)
                     {
-                        _traceWriter.Write("Errore creando l'utente UMAC '" + userUmacSettings.Name + "': " + userException.Message);
+                        _traceWriter.Write("Error creating user UMAC '" + userUmacSettings.Name + "': " + userException.Message, TraceColors.Error);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _traceWriter.Write("Error setting UMAC users: " + ex.Message);
+                _traceWriter.Write("Error setting UMAC users: " + ex.Message, TraceColors.Error);
                 return false;
             }
 
@@ -805,7 +805,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore impostando la politica di sicurezza del PLC: " + exception.Message);
+                _traceWriter.Write("Error setting the safety policy in the PLC: " + exception.Message, TraceColors.Error);
                 return false;
             }
         }
@@ -900,7 +900,7 @@ namespace Basic_Project_Generator.Interfaces
             {
                 if (Device != null)
                 {
-                    _traceWriter.Write("Assign IO Add to: " + config.Name);
+                    _traceWriter.Write("Assign IO Add to: " + config.Name, TraceColors.Ok);
                     SetDeviceAddresses(config.CatalogDevice, config.DigitalInputStartAddress, config.DigitalOutputStartAddress,
                         config.AnalogInputStartAddress, config.AnalogOutputStartAddress, config.IntPeriphName);
 
@@ -931,11 +931,11 @@ namespace Basic_Project_Generator.Interfaces
             {
                 if (methodBase.ReflectedType != null)
                 {
-                    _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " - trovato in intPeriphName: " + exception.Message);
+                    _traceWriter.Write(methodBase.ReflectedType.Name + "." + methodBase.Name + " - trovato in intPeriphName: " + exception.Message, TraceColors.Error);
                 }
                 else
                 {
-                    _traceWriter.Write("DoAddNewDevice - trovato in intPeriphName: " + exception.Message);
+                    _traceWriter.Write(methodBase.Name +" - find in intPeriphName: " + exception.Message, TraceColors.Ok);
                 }
             }
         }
@@ -1095,11 +1095,11 @@ namespace Basic_Project_Generator.Interfaces
                         {
                             passwordPolicy.SetAttribute(kvp.Key, kvp.Value);
                             legacyPasswordPolicy.SetAttribute(kvp.Key, kvp.Value);
-                            _traceWriter.Write("Settato Attributo Policy" + kvp.Key + " al valore: " + kvp.Value);
+                            _traceWriter.Write("Setted Policy Attribute" + kvp.Key + " to value: " + kvp.Value, TraceColors.Ok);
                         }
                         catch (Exception exception)
                         {
-                            _traceWriter.Write("Errore impostando " + kvp.Key + ": " + exception.Message);
+                            _traceWriter.Write("Error during setting " + kvp.Key + ": " + exception.Message, TraceColors.Error);
                         }
                     }
                 }
@@ -1127,11 +1127,11 @@ namespace Basic_Project_Generator.Interfaces
 
                 if (!intPeriphName.TryGetValue(owner.PositionNumber, out var onboardName))
                 {
-                    _traceWriter.Write(owner.PositionNumber + " - NON trovato in intPeriphName");
+                    _traceWriter.Write(owner.PositionNumber + " - NOT found in intPeriphName", TraceColors.Warning);
                     continue;
                 }
 
-                _traceWriter.Write(owner.PositionNumber + " - trovato in intPeriphName: " + onboardName);
+                _traceWriter.Write(owner.PositionNumber + " - foundd in intPeriphName: " + onboardName, TraceColors.Ok);
 
                 int? valueToSet = null;
 
@@ -1141,7 +1141,7 @@ namespace Basic_Project_Generator.Interfaces
 
                     if (valueToSet.HasValue && excelAddresses.Contains(valueToSet.Value))
                     {
-                        _traceWriter.Write("ATTENZIONE: indirizzo costante " + valueToSet.Value + " di " + onboardName + " coincide con un indirizzo già assegnato dall'Excel. Verificare manualmente.");
+                        _traceWriter.Write("WARNING: costant address " + valueToSet.Value + " of " + onboardName + " is the same with another adress in excel file. Check manualy", TraceColors.Warning);
                     }
                 }
                 else if (onboardName == "AI2" && ioType == "Input")
@@ -1158,11 +1158,11 @@ namespace Basic_Project_Generator.Interfaces
                     try
                     {
                         address.SetAttribute("StartAddress", valueToSet.Value);
-                        _traceWriter.Write(onboardName + " (" + ioType + ") impostato a " + valueToSet.Value);
+                        _traceWriter.Write(onboardName + " (" + ioType + ") setted to " + valueToSet.Value, TraceColors.Error);
                     }
                     catch (Exception exception)
                     {
-                        _traceWriter.Write("Errore impostando " + onboardName + ": " + exception.Message);
+                        _traceWriter.Write("Error during setting " + onboardName + ": " + exception.Message, TraceColors.Error);
                     }
                 }
             }
@@ -1184,17 +1184,17 @@ namespace Basic_Project_Generator.Interfaces
 
             if (!System.Net.IPAddress.TryParse(ipAddress, out _))
             {
-                _traceWriter.Write("Indirizzo IP non valido: '" + ipAddress + "', assegnazione saltata.");
+                _traceWriter.Write("Not Valid IP Address: '" + ipAddress + "', assignation skipped.", TraceColors.Warning);
                 return;
             }
 
             if (TrySetIpAddressRecursive(DeviceItem, ipAddress))
             {
-                _traceWriter.Write("IP " + ipAddress + " impostato su " + DeviceItem.Name);
+                _traceWriter.Write("IP " + ipAddress + " setted to " + DeviceItem.Name, TraceColors.Ok);
             }
             else
             {
-                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + DeviceItem.Name + ", IP non impostato.");
+                _traceWriter.Write("Can't find PROFINET interface on " + DeviceItem.Name + ", IP not setted.", TraceColors.Error);
             }
         }
 
@@ -1215,7 +1215,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore impostando IP su " + currentPath + ": " + exception.Message);
+                _traceWriter.Write("Error setting IP address on " + currentPath + ": " + exception.Message, TraceColors.Error);
             }
 
             foreach (var childItem in deviceItem.DeviceItems)
@@ -1245,11 +1245,11 @@ namespace Basic_Project_Generator.Interfaces
 
             if (networkInterface != null)
             {
-                _traceWriter.Write("NetworkInterface trovata a partire da " + deviceItem.Name);
+                _traceWriter.Write("NetworkInterface found starting from" + deviceItem.Name, TraceColors.Ok);
             }
             else
             {
-                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + deviceItem.Name);
+                _traceWriter.Write("No PROFINET Interface Found on " + deviceItem.Name, TraceColors.Error);
             }
 
             return networkInterface;
@@ -1264,14 +1264,14 @@ namespace Basic_Project_Generator.Interfaces
                 var networkInterface = deviceItem.GetService<Siemens.Engineering.HW.Features.NetworkInterface>();
                 if (networkInterface != null && networkInterface.Nodes.Count > 0)
                 {
-                    _traceWriter.Write("NetworkInterface trovata al percorso: " + currentPath);
-                    Debug.WriteLine("NetworkInterface trovata al percorso: " + currentPath);
+                    _traceWriter.Write("NetworkInterface found in path: " + currentPath, TraceColors.Ok);
+                    Debug.WriteLine("NetworkInterface fonf in path: " + currentPath);
                     return networkInterface;
                 }
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore cercando la NetworkInterface su " + currentPath + ": " + exception.Message);
+                _traceWriter.Write("Error searching NetworkInterface on " + currentPath + ": " + exception.Message, TraceColors.Error);
             }
 
             foreach (var childItem in deviceItem.DeviceItems)
@@ -1296,18 +1296,18 @@ namespace Basic_Project_Generator.Interfaces
         {
             if (deviceNumber <= 0 || deviceNumber > 512)
             {
-                _traceWriter.Write("DeviceNumber: '" + deviceNumber + "', fuori range 1-512");
+                _traceWriter.Write("DeviceNumber: '" + deviceNumber + "', out of range 1-512", TraceColors.Error);
                 return;
             }
 
            
             if (TrySetDeviceNumberRecursive(DeviceItem, deviceNumber))
             {
-                _traceWriter.Write("DeviceNumber " + deviceNumber + " impostato su " + DeviceItem.Name);
+                _traceWriter.Write("DeviceNumber " + deviceNumber + " setted on " + DeviceItem.Name, TraceColors.Ok);
             }
             else
             {
-                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + DeviceItem.Name + ", deviceNumber non impostato.");
+                _traceWriter.Write("Can't found any network PROFINET interface on " + DeviceItem.Name + ", deviceNumber non setted.", TraceColors.Error);
             }
         }
 
@@ -1321,15 +1321,15 @@ namespace Basic_Project_Generator.Interfaces
                 if (networkInterface != null && networkInterface.Nodes.Count > 0)
                 {
                     networkInterface.IoConnectors[0].SetAttribute("PnDeviceNumber", deviceNumber);
-                    _traceWriter.Write("NetworkInterface trovata al percorso: " + currentPath);
-                    Debug.WriteLine("NetworkInterface trovata al percorso: " + currentPath);
+                    _traceWriter.Write("NetworkInterface found on path: " + currentPath, TraceColors.Ok);
+                    Debug.WriteLine("NetworkInterface found on path: " + currentPath);
                     return true; 
 
                 }
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore impostando DeviceNumber su " + currentPath + ": " + exception.Message);
+                _traceWriter.Write("Error setting DeviceNumber on " + currentPath + ": " + exception.Message, TraceColors.Error);
             }
 
             foreach (var childItem in deviceItem.DeviceItems)
@@ -1353,18 +1353,18 @@ namespace Basic_Project_Generator.Interfaces
         {
             if (iosytem == null)
             {
-                _traceWriter.Write("IOSystem: '" + iosytem.ToString() + "Nulla! ");
+                _traceWriter.Write("IOSystem: '" + iosytem.ToString() + "null! ");
                 return;
             }
 
 
             if (TrySetIoSystemRecursive(DeviceItem, iosytem))
             {
-                _traceWriter.Write("IOSystem " + iosytem.ToString() + " impostata su " + DeviceItem.Name);
+                _traceWriter.Write("IOSystem " + iosytem.ToString() + " setted on" + DeviceItem.Name);
             }
             else
             {
-                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + DeviceItem.Name + ", IOSystem non impostata.");
+                _traceWriter.Write("Can't find PROFINET interface on " + DeviceItem.Name + ", IOSystem not setted.");
             }
         }
 
@@ -1379,15 +1379,15 @@ namespace Basic_Project_Generator.Interfaces
                 {
                     networkInterface.IoConnectors[0].ConnectToIoSystem(iosytem);
                         
-                    _traceWriter.Write("NetworkInterface trovata al percorso imposta IoSystem: " + currentPath);
-                    Debug.WriteLine("NetworkInterface trovata al percorso imposta IoSystem: " + currentPath);
+                    _traceWriter.Write("NetworkInterface found on Io-System path: " + currentPath, TraceColors.Ok);
+                    Debug.WriteLine("NetworkInterface found on Io-System path: " + currentPath);
                     return true;
 
                 }
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore impostando IOSystem su " + currentPath + ": " + exception.Message);
+                _traceWriter.Write("Error setting IO-System on " + currentPath + ": " + exception.Message, TraceColors.Error);
             }
 
             foreach (var childItem in deviceItem.DeviceItems)
@@ -1412,7 +1412,7 @@ namespace Basic_Project_Generator.Interfaces
                 {
                     networkInterface.IoControllers[0].CreateIoSystem(ioSystemName);
 
-                    _traceWriter.Write("Iosytem creato al percorso: " + currentPath);
+                    _traceWriter.Write("Iosytem created at path: " + currentPath, TraceColors.Ok);
                   
                     return true;
 
@@ -1420,7 +1420,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore creando IOSystem su " + currentPath + ": " + exception.Message);
+                _traceWriter.Write("Error creating IOSystem on " + currentPath + ": " + exception.Message, TraceColors.Error);
 
                 return false;
             }
@@ -1441,7 +1441,7 @@ namespace Basic_Project_Generator.Interfaces
         {
             if (ioSystemName == "")
             {
-                _traceWriter.Write("IOSystem: '" + ioSystemName + " stringa invalida ");
+                _traceWriter.Write("IOSystem: '" + ioSystemName + " invalid string", TraceColors.Error);
                 return false;
             }
 
@@ -1451,12 +1451,12 @@ namespace Basic_Project_Generator.Interfaces
             {
                 if (TryCreateIoSystemRecursive(deviceItem, ioSystemName))
                 {
-                    _traceWriter.Write("IOSystem " + ioSystemName + " creata con successo.");
+                    _traceWriter.Write("IOSystem " + ioSystemName + " succesfuly created", TraceColors.Ok);
                     return true;
                 }
                 else
                 {
-                    _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + deviceItem.Name + ", IOSystem non creata.");
+                    _traceWriter.Write("Can't find any PROFINET interface on " + deviceItem.Name + ", IOSystem not created", TraceColors.Error);
                     return false;
                 }
             }
@@ -1464,7 +1464,7 @@ namespace Basic_Project_Generator.Interfaces
             catch (Exception exception)
             {
 
-                _traceWriter.Write("Errore creando IOSystem su  " + exception.Message);
+                _traceWriter.Write("Error creating IOSystem on  " + exception.Message, TraceColors.Error);
                 return false;
             }
 
@@ -1478,7 +1478,7 @@ namespace Basic_Project_Generator.Interfaces
         {
             if (subnetName == "")
             {
-                _traceWriter.Write("Subnet: '" + subnetName + " stringa invalida ");
+                _traceWriter.Write("Subnet: '" + subnetName + " invalid string ", TraceColors.Error);
                 return null;
             }
 
@@ -1491,13 +1491,13 @@ namespace Basic_Project_Generator.Interfaces
             catch (Exception exception)
             {
 
-                _traceWriter.Write("Subnet " + subnetName + " non esistente, creo una nuova Subnet: " + exception.Message);
+                _traceWriter.Write("Subnet " + subnetName + " not exist, creating i new Subnet: " + exception.Message, TraceColors.Warning);
             }
 
 
             try
             {
-                _traceWriter.Write("Subnet " + subnetName + " creata con successo.");
+                _traceWriter.Write("Subnet " + subnetName + " succefuly created.", TraceColors.Ok);
                 return CurrentProject.Subnets.Create(subnetName, subnetDescription);
                 
 
@@ -1505,7 +1505,7 @@ namespace Basic_Project_Generator.Interfaces
             catch (Exception exception)
             {
 
-                _traceWriter.Write("Errore impostando IOSystem su " + exception.Message);
+                _traceWriter.Write("Error during setting IOSystem on " + exception.Message, TraceColors.Error);
                 return null;
             }
         }
@@ -1535,20 +1535,20 @@ namespace Basic_Project_Generator.Interfaces
                     {
                         if (string.IsNullOrEmpty(ioSystemName))
                         {
-                            _traceWriter.Write("IoSystem name is empty. Cannot create iosystem.");
+                            _traceWriter.Write("IoSystem name is empty. Cannot create iosystem.", TraceColors.Error);
                             return;
                         }
 
                         if (item.DeviceItems[1] != null)
                         {
-                            _traceWriter.Write("DoCreateIOSystem: " + ioSystemName);
+                            _traceWriter.Write("Starting creating Io-System: " + ioSystemName, TraceColors.Ok);
                             DoCreateIOSystem(item.DeviceItems[2], ioSystemName); // il 2 è giusto perchè vado a filtrare anche il Name
 
                         }
                         else
                         {
                             //scaturisce se richiamo la creazione di un IOSytem senza PLC esistente per cui Deivce = null
-                            _traceWriter.Write("Device null, cannot create IOSystem");
+                            _traceWriter.Write("Device null, cannot create IOSystem", TraceColors.Error);
                             return;
 
                         }
@@ -1557,7 +1557,7 @@ namespace Basic_Project_Generator.Interfaces
                     catch (Exception exception)
                     {
 
-                        _traceWriter.Write("DoCreateIOSystem - exception: " + exception.Message);
+                        _traceWriter.Write("DoCreateIOSystem - exception: " + exception.Message, TraceColors.Error);
 
                     }
 
@@ -1593,20 +1593,20 @@ namespace Basic_Project_Generator.Interfaces
                     {
                         if (subnet==null)
                         {
-                            _traceWriter.Write("Subnet is empty. Cannot set subnet.");
+                            _traceWriter.Write("Subnet is empty. Cannot set subnet.", TraceColors.Error);
                             return;
                         }
 
                         if (item.DeviceItems[1] != null)
                         {
-                            _traceWriter.Write("SetSubnet: " + subnet);
+                            _traceWriter.Write("Setting Subnet: " + subnet, TraceColors.Ok);
                             SetSubnet(item.DeviceItems[2], subnet); // il 2 è giusto perchè vado a filtrare anche il Name
 
                         }
                         else
                         {
                             //scaturisce se richiamo la creazione di un IOSytem senza PLC esistente per cui Deivce = null
-                            _traceWriter.Write("Subnet null, cannot create connection to plc");
+                            _traceWriter.Write("Subnet null, cannot create connection to plc", TraceColors.Error);
                             return;
 
                         }
@@ -1615,7 +1615,7 @@ namespace Basic_Project_Generator.Interfaces
                     catch (Exception exception)
                     {
 
-                        _traceWriter.Write("DoFindAndSetSubnet - exception: " + exception.Message);
+                        _traceWriter.Write(methodBase.Name+" - exception: " + exception.Message, TraceColors.Error);
 
                     }
 
@@ -1640,7 +1640,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore impostando la politica di sicurezza del PLC: " + exception.Message);
+                _traceWriter.Write("Error setting security policy on PLC: " + exception.Message, TraceColors.Error);
                 return false;
             }
         }
@@ -1655,18 +1655,18 @@ namespace Basic_Project_Generator.Interfaces
         {
             if (subnet == null)
             {
-                _traceWriter.Write("subnet: '" + subnet.ToString() + "Nulla! ");
+                _traceWriter.Write("subnet: '" + subnet.ToString() + "null! ", TraceColors.Error);
                 return;
             }
 
 
             if (TrySetSubnetRecursive(DeviceItem, subnet))
             {
-                _traceWriter.Write("Subnet " + subnet.ToString() + " impostata su " + DeviceItem.Name);
+                _traceWriter.Write("Subnet " + subnet.ToString() + " setted on" + DeviceItem.Name, TraceColors.Ok);
             }
             else
             {
-                _traceWriter.Write("Nessuna interfaccia PROFINET trovata su " + DeviceItem.Name + ", subnet non impostata.");
+                _traceWriter.Write("Can't find any PROFINET interface on " + DeviceItem.Name + ", subnet non setted.", TraceColors.Error);
             }
         }
 
@@ -1738,7 +1738,7 @@ namespace Basic_Project_Generator.Interfaces
                         {
                                         IsModified = true;
                                         result = true;
-                                        _traceWriter.Write("Module plugged in slot " + slot);
+                                        //_traceWriter.Write("Module plugged in slot " + slot, TraceColors.Ok);
 
                                         SetModuleAddresses(newModule, config.InputStartAddress, config.OutputStartAddress);
 
@@ -1763,7 +1763,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 if (!result)
                 {
-                    _traceWriter.Write("No free/valid slot found for module " + config.Name);
+                    _traceWriter.Write("No free/valid slot found for module " + config.Name, TraceColors.Warning);
                 }
             }
             return result;
@@ -1788,14 +1788,14 @@ namespace Basic_Project_Generator.Interfaces
             var stationDevice = CurrentProject.UngroupedDevicesGroup.Devices.FirstOrDefault(d => d.Name == imExpansionInstanceName);
             if (stationDevice == null)
             {
-                _traceWriter.Write("Stazione ImExpansion '" + imExpansionInstanceName + "' non trovata: impossibile aggiungere il modulo '" + config.Name + "'.");
+                _traceWriter.Write("Station ImExpansion '" + imExpansionInstanceName + "' non found: not possible to add module: '" + config.Name + TraceColors.Error);
                 return false;
             }
 
             var targetRack = stationDevice.DeviceItems.FirstOrDefault(); // Rack_0 della stazione, stesso pattern già usato per il rack della CPU
             if (targetRack == null)
             {
-                _traceWriter.Write("Rack non trovato sulla stazione '" + imExpansionInstanceName + "'.");
+                _traceWriter.Write("Rack non found on station '" + imExpansionInstanceName , TraceColors.Error);
                 return false;
             }
 
@@ -1851,11 +1851,11 @@ namespace Basic_Project_Generator.Interfaces
 
                     _traceWriter.Write("Channel " + channelConfig.ChannelNumber + " su " + moduleDeviceItem.Name +
                         ": Failsafe_SensorEvaluation=" + channelConfig.FailsafeSensorEvaluation +
-                        ", Failsafe_SensorSupply=" + channelConfig.FailsafeSensorSupply);
+                        ", Failsafe_SensorSupply=" + channelConfig.FailsafeSensorSupply,, TraceColors.Ok);
                 }
                 catch (Exception exception)
                 {
-                    _traceWriter.Write("Errore impostando Safety su channel " + channelConfig.ChannelNumber + " di " + moduleDeviceItem.Name + ": " + exception.Message, "Probabilmente modulo Safety S71200");
+                    _traceWriter.Write("Error setting safety on channel " + channelConfig.ChannelNumber + " of " + moduleDeviceItem.Name + ": " + exception.Message, "Probably S71200 safety module", TraceColors.Error);
                 }
             }
         }
@@ -1887,11 +1887,11 @@ namespace Basic_Project_Generator.Interfaces
                 try
                 {
                     address.SetAttribute("StartAddress", inputStartAddress.Value);
-                    _traceWriter.Write("Input start address set to " + inputStartAddress.Value + " on " + deviceItem.Name);
+                    _traceWriter.Write("Input start address set to " + inputStartAddress.Value + " on " + deviceItem.Name, TraceColors.Ok);
                 }
                 catch (Exception exception)
                 {
-                    _traceWriter.Write("Unable to set input address on " + deviceItem.Name + ": " + exception.Message);
+                    _traceWriter.Write("Unable to set input address on " + deviceItem.Name + ": " + exception.Message, TraceColors.Error);
                 }
             }
         }
@@ -1900,12 +1900,12 @@ namespace Basic_Project_Generator.Interfaces
             try
             {
                 address.SetAttribute("StartAddress", outputStartAddress.Value);
-                _traceWriter.Write("Output start address set to " + outputStartAddress.Value + " on " + deviceItem.Name);
+                _traceWriter.Write("Output start address set to " + outputStartAddress.Value + " on " + deviceItem.Name, TraceColors.Ok);
                 outputAddressSetSuccessfully = true;
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Output non scrivibile su " + deviceItem.Name + " (" + exception.Message + "), provo a impostare l'Input corrispondente (probabile modulo Safety).");
+                _traceWriter.Write("Output not writable " + deviceItem.Name + " (" + exception.Message + "), try to set associated input (probably safety module)", TraceColors.Warning);
             }
         }
     }
@@ -1916,11 +1916,11 @@ namespace Basic_Project_Generator.Interfaces
         try
         {
             inputAddressFallback.SetAttribute("StartAddress", outputStartAddress.Value);
-            _traceWriter.Write("Modulo Safety: Output " + outputStartAddress.Value + " impostato via Input su " + deviceItem.Name);
+            _traceWriter.Write("Modul Safety: Output " + outputStartAddress.Value + " setted by Input on " + deviceItem.Name, TraceColors.Ok);
         }
         catch (Exception exception)
         {
-            _traceWriter.Write("Impossibile impostare l'indirizzo (né Output né Input fallback) su " + deviceItem.Name + ": " + exception.Message);
+            _traceWriter.Write("Impossible to set input or output address on: " + deviceItem.Name + ": " + exception.Message, TraceColors.Error);
         }
     }
 }
@@ -1996,7 +1996,7 @@ namespace Basic_Project_Generator.Interfaces
 
                     if (attributeInfo == null)
                     {
-                        _traceWriter.Write("Attributo '" + kvp.Key + "' non trovato su " + deviceItem.Name);
+                        _traceWriter.Write("Attribute '" + kvp.Key + "' not found on " + deviceItem.Name, TraceColors.Error);
                         continue;
                     }
 
@@ -2004,7 +2004,7 @@ namespace Basic_Project_Generator.Interfaces
 
                     if (targetType == null)
                     {
-                        _traceWriter.Write("Attributo '" + kvp.Key + "' non ha SupportedTypes definiti, provo a impostarlo senza conversione.");
+                        _traceWriter.Write("Attribute '" + kvp.Key + "' not have SupportedTypes defined, trying direct assignement", TraceColors.Warning);
                         deviceItem.SetAttribute(kvp.Key, kvp.Value);
                         continue;
                     }
@@ -2012,11 +2012,11 @@ namespace Basic_Project_Generator.Interfaces
                     var convertedValue = ConvertToAttributeType(kvp.Value, targetType);
 
                     deviceItem.SetAttribute(kvp.Key, convertedValue);
-                    _traceWriter.Write(kvp.Key + " impostato a " + convertedValue + " (" + targetType.Name + ") su " + deviceItem.Name);
+                    _traceWriter.Write(kvp.Key + " setted to " + convertedValue + " (" + targetType.Name + ") on " + deviceItem.Name, TraceColors.Ok);
                 }
                 catch (Exception exception)
                 {
-                    _traceWriter.Write("Errore impostando '" + kvp.Key + "' su " + deviceItem.Name + ": " + exception.Message);
+                    _traceWriter.Write("Error setting '" + kvp.Key + "' on " + deviceItem.Name + ": " + exception.Message, TraceColors.Error);
                 }
             }
         }
@@ -2053,12 +2053,12 @@ namespace Basic_Project_Generator.Interfaces
                 var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(config.TypeIdentifier, instanceName, instanceName);
                 if (newDevice == null)
                 {
-                    _traceWriter.Write("Creazione stazione ET200SP '" + instanceName + "' fallita.");
+                    _traceWriter.Write("Creating station ET200SP '" + instanceName + "' failed.", TraceColors.Error);
                     return false;
                 }
 
                 IsModified = true;
-                _traceWriter.Write("Stazione ET200SP '" + instanceName + "' creata da catalogo (" + config.TemplateName + ").");
+                _traceWriter.Write("Station ET200SP '" + instanceName + "' created from catalog (" + config.TemplateName + ").", TraceColors.Ok);
 
                 IoSystem ioSystem = null;
                 Subnet subnet = null;
@@ -2075,7 +2075,7 @@ namespace Basic_Project_Generator.Interfaces
                         var plcNetworkInterface = FindNetworkInterface(item);
                         if (plcNetworkInterface == null || plcNetworkInterface.IoControllers.Count == 0)
                         {
-                            _traceWriter.Write("NetworkInterface/IoController del PLC non trovati.");
+                            _traceWriter.Write("NetworkInterface/IoController of PLC not founded.", TraceColors.Error);
                             return false;
                         }
 
@@ -2093,7 +2093,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 if (ioSystem == null || string.IsNullOrWhiteSpace(config.SubnetIp))
                 {
-                    _traceWriter.Write("Impossibile determinare IoSystem/IP del PLC per la stazione '" + instanceName + "'.");
+                    _traceWriter.Write("Impossible to determine IoSystem/IP of PLC for the station '" + instanceName, TraceColors.Error);
                     return false;
                 }
 
@@ -2119,8 +2119,8 @@ namespace Basic_Project_Generator.Interfaces
 
                     SetDeviceNumber(ioDeviceHead, deviceNumber);
 
-                    _traceWriter.Write("Stazione '" + instanceName + "' collegata all'IO-System del PLC con IP " + totalIpAddress);
-                    _traceWriter.Write("Stazione '" + instanceName + "' settato deviceNumber " + deviceNumber);
+                    _traceWriter.Write("Station '" + instanceName + "' connected to IO-System of PLC with IP " + totalIpAddress, TraceColors.Ok);
+                    _traceWriter.Write("Station '" + instanceName + "' setted deviceNumber " + deviceNumber, TraceColors.Ok);
 
                     return true;
 

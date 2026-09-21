@@ -211,6 +211,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\XmlResourceReader.cs" />
+    <Compile Include="Interfaces\TraceColors.cs" />
     <Compile Include="Models\AccessLevel.cs" />
     <Compile Include="Models\AutoLogoff.cs" />
     <Compile Include="Models\Catalog.cs" />
