@@ -31,7 +31,19 @@ namespace Basic_Project_Generator.Services
         private const string ExpansionDescriptionPrefixDo = "SLAVE DO IO-LINK";
         private const string MasterExpansionDescriptionPrefix = "MASTER IO-LINK";
         private const string ManifoldExpansionDescriptionPrefix = "MANIFOLD";
-
+        private const string ValveExpansionSiglaScheda = "MONO_VTUX M";
+        private static readonly string[] ReserveKeywords = { "RISERVA", "RESERVE" };// valori di Stringa sulla colonna Descrizione1 che indicano che la riga non deve essere considerata per i canali Safety
+        private const string CQTipologyIdentifier = "C/Q";
+        private const string DigitalInputIoLinkTipologyIdentifier = "XI";
+        private const string DigitalOutputIoLinkTipologyIdentifier = "XQ";
+        private const string DigitalInputTipologyIdentifier = "I";
+        private const string DigitalInputDeTipologyIdentifier = "I";
+        private const string DigitalOutputTipologyIdentifier = "Q";
+        private const string DigitalOutputDeTipologyIdentifier = "A";
+        private const string AnalogInputTipologyIdentifier = "AIW";
+        private const string AnalogInputDeTipologyIdentifier = "PEW";
+        private const string AnalogOutputTipologyIdentifier = "AQW";
+        private const string AnalogOutputDeTipologyIdentifier = "PAW";
 
         private static bool IsExpansionDescription(string description)
         {
@@ -66,7 +78,6 @@ namespace Basic_Project_Generator.Services
             
         }
 
-        private static readonly string[] ReserveKeywords = { "RISERVA", "RESERVE" };// valori di Stringa sulla colonna Descrizione1 che indicano che la riga non deve essere considerata per i canali Safety
 
         private enum Direction { Input, Output }
 
@@ -142,7 +153,7 @@ namespace Basic_Project_Generator.Services
 
                     var orderNumber = GetCellText(row, ColumnCodiceUnita);
 
-                    if (!string.IsNullOrWhiteSpace(orderNumber) && orderNumber != "MONO_VTUX M") // se l'orderNumber non è vuoto e non è il valore "MONO_VTUX M" (che è un placeholder di Excel per righe vuote), allora è una riga header
+                    if (!string.IsNullOrWhiteSpace(orderNumber) && orderNumber != ValveExpansionSiglaScheda) // se l'orderNumber non è vuoto e non è il valore "MONO_VTUX M" (che è un placeholder di Excel per righe vuote), allora è una riga header
                     {
                         FinalizeSafetyChannels(currentItem, currentSafetyRows);
                         currentSafetyRows = new List<(string, string, string, string)>();
@@ -229,7 +240,7 @@ namespace Basic_Project_Generator.Services
                     var indirizzo = GetCellText(row, ColumnIndirizzo);
                     var pin1Indirizzo = GetAddressFromPin1Description(pin1);
 
-                    if (currentItem.IsIOLinkMaster && tipologia.Trim().Equals("C/Q", StringComparison.OrdinalIgnoreCase))
+                    if (currentItem.IsIOLinkMaster && tipologia.Trim().Equals(CQTipologyIdentifier, StringComparison.OrdinalIgnoreCase))
                     {
                         if (int.TryParse(indirizzo, out var globalIndex))
                         {
@@ -292,7 +303,7 @@ namespace Basic_Project_Generator.Services
                     }
 
                     //10/09/26
-                    if (currentItem.IsIOLinkMaster && (tipologia.Trim().Equals("XI", StringComparison.OrdinalIgnoreCase)))
+                    if (currentItem.IsIOLinkMaster && (tipologia.Trim().Equals(DigitalInputIoLinkTipologyIdentifier, StringComparison.OrdinalIgnoreCase)))
                     {
                         
                             var portNumber = (pin1Indirizzo % 8) + 1;
@@ -340,7 +351,7 @@ namespace Basic_Project_Generator.Services
                     }
 
 
-                    if (currentItem.IsIOLinkMaster && (tipologia.Trim().Equals("XQ", StringComparison.OrdinalIgnoreCase)))
+                    if (currentItem.IsIOLinkMaster && (tipologia.Trim().Equals(DigitalOutputIoLinkTipologyIdentifier, StringComparison.OrdinalIgnoreCase)))
                     {
                         
                             var portNumber = (pin1Indirizzo % 8) + 1;
@@ -587,26 +598,7 @@ namespace Basic_Project_Generator.Services
             return parts.Length >= 2 && int.TryParse(parts[1], out channel);
         }
 
-        private static bool TryGetDirection(string tipologia, out Direction direction)
-        {
-            switch (tipologia.Trim().ToUpperInvariant())
-            {
-                case "I":
-                case "AIW":
-                case "PEW":
-                    direction = Direction.Input;
-                    return true;
-                case "Q":
-                case "AQW":
-                case "PAW":
-                    direction = Direction.Output;
-                    return true;
-                default:
-                    direction = Direction.Input;
-                    return false;
-            }
-        }
-
+     
         private static bool TryGetStartAddress(string indirizzo, out int startAddress)
         {
             // Digitale "0.0" -> prendo solo la parte byte (prima del punto)
@@ -621,15 +613,15 @@ namespace Basic_Project_Generator.Services
         {
             switch (tipologia.Trim().ToUpperInvariant())
             {
-                case "XI": category = AddressCategory.DigitalInput; return true; // la X davanti a I è sui moduli IoLinkMaster o IoLinkSlave
-                case "XQ": category = AddressCategory.DigitalOutput; return true; // la X davanti a Q è sui moduli IoLinkMaster o IoLinkSlave
-                case "I": category = AddressCategory.DigitalInput; return true;
-                case "Q": category = AddressCategory.DigitalOutput; return true;
-                case "A": category = AddressCategory.DigitalOutput; return true;
-                case "AIW":
-                case "PEW": category = AddressCategory.AnalogInput; return true;
-                case "AQW":
-                case "PAW": category = AddressCategory.AnalogOutput; return true;
+                case DigitalInputIoLinkTipologyIdentifier: category = AddressCategory.DigitalInput; return true; // la X davanti a I è sui moduli IoLinkMaster o IoLinkSlave
+                case DigitalOutputIoLinkTipologyIdentifier: category = AddressCategory.DigitalOutput; return true; // la X davanti a Q è sui moduli IoLinkMaster o IoLinkSlave
+                case DigitalInputTipologyIdentifier: category = AddressCategory.DigitalInput; return true;
+                case DigitalOutputTipologyIdentifier: category = AddressCategory.DigitalOutput; return true;
+                case DigitalOutputDeTipologyIdentifier: category = AddressCategory.DigitalOutput; return true;
+                case AnalogInputTipologyIdentifier: //fall-throught
+                case AnalogInputDeTipologyIdentifier: category = AddressCategory.AnalogInput; return true;
+                case AnalogOutputTipologyIdentifier: //fall-throught
+                case AnalogOutputDeTipologyIdentifier: category = AddressCategory.AnalogOutput; return true;
                 default: category = AddressCategory.DigitalInput; return false;
             }
         }

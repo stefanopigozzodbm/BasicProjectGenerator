@@ -7,6 +7,7 @@ using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 
 using Siemens.Engineering.Library;
+using Siemens.Engineering.Online.Configurations;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +18,7 @@ using System.Web.Security;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Basic_Project_Generator.Services
 {
@@ -888,7 +890,9 @@ namespace Basic_Project_Generator.Services
         public (Dictionary<string, object> dictAttribute, 
             Dictionary<string, object> dictIpAddress, 
             Dictionary<string, object> startupSecurutyPolicys, 
-            Dictionary<string, UmacUserSettings> startupUmacSettings) 
+            Dictionary<string, UmacUserSettings> startupUmacSettings,
+            Dictionary<string, DbSettings> startupDbSettings
+            ) 
             LoadPlcStartupSettings([CallerMemberName] string caller = "")
         {
             var methodBase = MethodBase.GetCurrentMethod();
@@ -898,6 +902,7 @@ namespace Basic_Project_Generator.Services
             var ipAddressDict = new Dictionary<string, object>();
             var startupSecurutyPolicys = new Dictionary<string, object>();
             var startupUmacSettings = new Dictionary<string, UmacUserSettings>();
+            var startupDbSettings = new Dictionary<string, DbSettings>();
 
             //var doc = XDocument.Load("Assets\\PlcStartupSettings.xml");
             // Carica direttamente dalla memoria usando la classe che abbiamo creato al Passo 1:
@@ -1080,9 +1085,62 @@ namespace Basic_Project_Generator.Services
                 }
             }
 
+            //Parsing dei dati creazione DB
+            //per DB INPUT e OUTPUT con simbolici nomi IOLink
+            //dbName è il nome che verrà fisicamente scritto sulla DB
+            //dbNumber è il numero della DB che verrà fisicamente scritto sulla DB
+            //dbOptimized è il flag che indica se la DB è ottimizzata o meno
+            //Name è il nome identificativo della DB che verrà usato per richiamarla in seguito, non è il nome fisico della DB su TIA Portal, ma serve solo per richiamarla in seguito
+
+            var dbsElements = doc.Root.Element("Dbs")?.Elements("Db");
+            if (dbsElements != null)
+            {
+                foreach (var dbElement in dbsElements)
+                {
+                    try
+                    {
+                        var name = dbElement.Element("Name")?.Value;
+
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            _traceWriter.Write("DB senza nome identificativo: elemento saltato.");
+                            continue;
+                        }
+
+                        var dbName = dbElement.Element("Dbname")?.Value;
+                        var dbOptimized = dbElement.Element("Optimized")?.Value;
+                        var dbNumber = dbElement.Element("Number")?.Value;
+
+                        if (string.IsNullOrWhiteSpace(dbOptimized) || string.IsNullOrWhiteSpace(dbName) || dbNumber == null)
+                        {
+                            _traceWriter.Write("Parametri DB non validi: verificare PlcStartupSettings / DataBlockDB.");
+                            continue;
+                        }
+
+                        var dbSettings = new DbSettings
+                        {
+                            Name = name,
+                            Dbname = dbName,
+                            Optimized = bool.TryParse(dbOptimized, out var isOptimized) && isOptimized,
+                            Number = int.TryParse(dbNumber, out var parsedNumber) ? parsedNumber : 0
+                        };
+
+                  
+
+                   
+                        startupDbSettings[name] = dbSettings;
+                    }
+                    catch (Exception dbException)
+                    {
+                        _traceWriter.Write("Errore leggendo una configurazione DB: " + dbException.Message);
+                    }
+                }
 
 
-            return (attributeDict,ipAddressDict,startupSecurutyPolicys,startupUmacSettings);
+            }
+
+
+                return (attributeDict,ipAddressDict,startupSecurutyPolicys,startupUmacSettings,startupDbSettings);
         }
 
         public bool AddNewModuleToImExpansion(ModuleConfiguration config, string imExpansionInstanceName, [CallerMemberName] string caller = "")

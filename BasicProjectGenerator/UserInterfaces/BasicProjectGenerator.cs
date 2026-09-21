@@ -449,7 +449,7 @@ namespace Basic_Project_Generator.UserInterfaces
                 {
                     CloseProject();
 
-                    var (startupAttributes, startupIpAddresses, startupSecurutyPolicy, startupUmacSettings) = _projectGeneratorService.LoadPlcStartupSettings();
+                    var (startupAttributes, startupIpAddresses, startupSecurutyPolicy, startupUmacSettings, startupDbSettings) = _projectGeneratorService.LoadPlcStartupSettings();
 
                     Cursor.Current = Cursors.WaitCursor;
 
@@ -739,7 +739,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
                 var catalogDevice = _projectGeneratorService.NewDevice;
                 var intPeriphName = catalogDevice.GetOnboardIoByPosition();
-                var (startupAttributes,startupIpAddresses,startupSecurutyPolicy,startupUmacSettings) = _projectGeneratorService.LoadPlcStartupSettings();
+                var (startupAttributes,startupIpAddresses,startupSecurutyPolicy,startupUmacSettings,startupDbSettings) = _projectGeneratorService.LoadPlcStartupSettings();
 
                 //ovveride dell'indirizzo i de dafult su PlcStartupSettings.xml
                 //se diversamente specificato sul campo di input tb_PlcIpAddress
@@ -1015,7 +1015,11 @@ namespace Basic_Project_Generator.UserInterfaces
         {
             var stopwatch = Stopwatch.StartNew();
 
-            try { 
+            var (startupAttributes, startupIpAddresses, startupSecurutyPolicy, startupUmacSettings, startupDbSettings) = _projectGeneratorService.LoadPlcStartupSettings();
+
+
+            try
+            { 
             var libraryOpened = _projectGeneratorService.OpenLibrary();
             if (libraryOpened)
             {
@@ -1161,7 +1165,9 @@ namespace Basic_Project_Generator.UserInterfaces
 
                         if (dbInputGroups.Count > 0)
                         {
-                            result = _projectGeneratorService.ImportDb("INPUT", 14, dbInputGroups, plcDeviceItem);
+                            startupDbSettings.TryGetValue("INPUT", out var inputDbSettings);
+                            
+                            result = _projectGeneratorService.ImportDb(inputDbSettings.Dbname, inputDbSettings.Number, dbInputGroups, plcDeviceItem);
                             if (result)
                             {
 
@@ -1171,7 +1177,8 @@ namespace Basic_Project_Generator.UserInterfaces
 
                             if (dbOutputGroups.Count > 0)
                             {
-                                result = _projectGeneratorService.ImportDb("OUTPUT", 183, dbOutputGroups, plcDeviceItem);
+                                startupDbSettings.TryGetValue("OUTPUT", out var outputDbSettings);
+                                result = _projectGeneratorService.ImportDb(outputDbSettings.Dbname, outputDbSettings.Number, dbOutputGroups, plcDeviceItem);
                                 if (result)
                                 {
 
@@ -1363,7 +1370,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
             Cursor.Current = Cursors.WaitCursor;
 
-            var (startupAttributes, startupIpAddresses, startupSecurutyPolicy, startupUmacSettings) = _projectGeneratorService.LoadPlcStartupSettings();
+            var (startupAttributes, startupIpAddresses, startupSecurutyPolicy, startupUmacSettings, startupDbSettings) = _projectGeneratorService.LoadPlcStartupSettings();
 
             var config = new DeviceConfiguration
             {

@@ -219,6 +219,7 @@
     <Compile Include="Models\Configuration\IOLinkAddressCursor.cs" />
     <Compile Include="Models\Configuration\IOLinkMasterModule.cs" />
     <Compile Include="Models\Configuration\IOLinkSlaveModule.cs" />
+    <Compile Include="Models\DbSettings.cs" />
     <Compile Include="Models\DbSymbolGroup.cs" />
     <Compile Include="Models\DeviceModel.cs" />
     <Compile Include="Models\Device.cs" />

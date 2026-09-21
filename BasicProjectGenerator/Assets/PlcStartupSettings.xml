@@ -37,7 +37,7 @@
 	<!-- IpAddress è un attributo del PLC ma non è assegnabile come gli altri, sopra è su un'altro percorso -->
 	<IpAddresses>
 		<IpAddress>
-			<Name>Intereface1</Name><!--default IP address per il PLC -->
+			<Name>Interefac	e1</Name><!--default IP address per il PLC -->
 			<Firstoctet>10</Firstoctet> 
 			<Secondoctet>0</Secondoctet>
 			<Thirdoctet>0</Thirdoctet>
@@ -332,4 +332,20 @@
 			
 	</Users>
 
-	</StartupSettings>
+	<!-- DataBlock DB -->
+	<Dbs>
+		<Db>
+			<Name>INPUT</Name> <!-- non cambiare placeholder a programma-->
+			<Dbname>DB_INPUT</Dbname>
+			<Optimized>False</Optimized>
+			<Number>15</Number>
+		</Db>
+		<Db>
+			<Name>OUTPUT</Name> <!-- non cambiare placeholder a programma-->
+			<Dbname>DB_OUTPUT</Dbname>
+			<Optimized>False</Optimized>
+			<Number>184</Number>
+		</Db>
+	</Dbs>
+	
+</StartupSettings>
