@@ -38,7 +38,7 @@ namespace Basic_Project_Generator.UserInterfaces
         {
             InitializeComponent();
 
-            _traceWriter = new TraceWriter(lib_TraceWriterOutput);
+            _traceWriter = new TraceWriter(lib_TraceWriterOutput,cb_twShowError,cb_twShowWarning,cb_twShowInfo);
             var methodBase = MethodBase.GetCurrentMethod();
             _traceWriter.Write(methodBase.Name + " called from " + caller + "\n");
 
@@ -1436,22 +1436,6 @@ namespace Basic_Project_Generator.UserInterfaces
         }
 
 
-
-
-
-
-
-
-
-
-
-
-        #endregion
-
-        #endregion
-
-        #endregion
-
         private void cb_twShowError_CheckedChanged(object sender, EventArgs e)
         {
 
@@ -1462,9 +1446,35 @@ namespace Basic_Project_Generator.UserInterfaces
 
         }
 
-        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        private void cb_twShowInfo_CheckedChanged(object sender, EventArgs e)
         {
 
         }
+
+        private void bt_Clear_Click(object sender, EventArgs e)
+        {
+
+            _traceWriter.Clear();
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        #endregion
+
+        #endregion
+
+        #endregion
+
+
     }
 }

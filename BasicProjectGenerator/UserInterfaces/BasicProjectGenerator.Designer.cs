@@ -110,10 +110,10 @@ namespace Basic_Project_Generator.UserInterfaces
             this.btn_CreateInDb = new System.Windows.Forms.Button();
             this.btnOpenLib = new System.Windows.Forms.Button();
             this.Tag = new System.Windows.Forms.TabPage();
-            this.btn_twShowAll = new System.Windows.Forms.Button();
             this.cb_twShowError = new System.Windows.Forms.CheckBox();
             this.cb_twShowWarning = new System.Windows.Forms.CheckBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.cb_twShowInfo = new System.Windows.Forms.CheckBox();
+            this.bt_Clear = new System.Windows.Forms.Button();
             this.grb_TiaPortal.SuspendLayout();
             this.grb_TiaPortalProject.SuspendLayout();
             this.grb_AddNewDevice.SuspendLayout();
@@ -930,19 +930,10 @@ namespace Basic_Project_Generator.UserInterfaces
             this.Tag.Text = "Tag";
             this.Tag.UseVisualStyleBackColor = true;
             // 
-            // btn_twShowAll
-            // 
-            this.btn_twShowAll.Location = new System.Drawing.Point(1352, 552);
-            this.btn_twShowAll.Name = "btn_twShowAll";
-            this.btn_twShowAll.Size = new System.Drawing.Size(74, 27);
-            this.btn_twShowAll.TabIndex = 12;
-            this.btn_twShowAll.Text = "Show All";
-            this.btn_twShowAll.UseVisualStyleBackColor = false;
-            // 
             // cb_twShowError
             // 
             this.cb_twShowError.AutoSize = true;
-            this.cb_twShowError.Location = new System.Drawing.Point(1350, 585);
+            this.cb_twShowError.Location = new System.Drawing.Point(1350, 552);
             this.cb_twShowError.Name = "cb_twShowError";
             this.cb_twShowError.Size = new System.Drawing.Size(48, 17);
             this.cb_twShowError.TabIndex = 13;
@@ -953,7 +944,7 @@ namespace Basic_Project_Generator.UserInterfaces
             // cb_twShowWarning
             // 
             this.cb_twShowWarning.AutoSize = true;
-            this.cb_twShowWarning.Location = new System.Drawing.Point(1350, 608);
+            this.cb_twShowWarning.Location = new System.Drawing.Point(1350, 590);
             this.cb_twShowWarning.Name = "cb_twShowWarning";
             this.cb_twShowWarning.Size = new System.Drawing.Size(66, 17);
             this.cb_twShowWarning.TabIndex = 14;
@@ -961,16 +952,26 @@ namespace Basic_Project_Generator.UserInterfaces
             this.cb_twShowWarning.UseVisualStyleBackColor = true;
             this.cb_twShowWarning.CheckedChanged += new System.EventHandler(this.cb_twShowWarning_CheckedChanged);
             // 
-            // checkBox3
+            // cb_twShowInfo
             // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Location = new System.Drawing.Point(1350, 631);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(44, 17);
-            this.checkBox3.TabIndex = 15;
-            this.checkBox3.Text = "Info";
-            this.checkBox3.UseVisualStyleBackColor = true;
-            this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
+            this.cb_twShowInfo.AutoSize = true;
+            this.cb_twShowInfo.Location = new System.Drawing.Point(1350, 631);
+            this.cb_twShowInfo.Name = "cb_twShowInfo";
+            this.cb_twShowInfo.Size = new System.Drawing.Size(44, 17);
+            this.cb_twShowInfo.TabIndex = 15;
+            this.cb_twShowInfo.Text = "Info";
+            this.cb_twShowInfo.UseVisualStyleBackColor = true;
+            this.cb_twShowInfo.CheckedChanged += new System.EventHandler(this.cb_twShowInfo_CheckedChanged);
+            // 
+            // bt_Clear
+            // 
+            this.bt_Clear.Location = new System.Drawing.Point(1350, 666);
+            this.bt_Clear.Name = "bt_Clear";
+            this.bt_Clear.Size = new System.Drawing.Size(75, 23);
+            this.bt_Clear.TabIndex = 17;
+            this.bt_Clear.Text = "Clear";
+            this.bt_Clear.UseVisualStyleBackColor = true;
+            this.bt_Clear.Click += new System.EventHandler(this.bt_Clear_Click);
             // 
             // BasicProjectGenerator
             // 
@@ -978,10 +979,10 @@ namespace Basic_Project_Generator.UserInterfaces
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1442, 815);
-            this.Controls.Add(this.checkBox3);
+            this.Controls.Add(this.bt_Clear);
+            this.Controls.Add(this.cb_twShowInfo);
             this.Controls.Add(this.cb_twShowWarning);
             this.Controls.Add(this.cb_twShowError);
-            this.Controls.Add(this.btn_twShowAll);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.lib_TraceWriterOutput);
             this.MinimumSize = new System.Drawing.Size(250, 300);
@@ -1093,10 +1094,10 @@ namespace Basic_Project_Generator.UserInterfaces
         private System.Windows.Forms.Button btn_Debug;
         private System.Windows.Forms.Button btn_CreateInDb;
         private System.Windows.Forms.Button btn_CreateOutDb;
-        private System.Windows.Forms.Button btn_twShowAll;
         private System.Windows.Forms.CheckBox cb_twShowError;
         private System.Windows.Forms.CheckBox cb_twShowWarning;
-        private System.Windows.Forms.CheckBox checkBox3;
+        private System.Windows.Forms.CheckBox cb_twShowInfo;
+        private System.Windows.Forms.Button bt_Clear;
     }
 }
 

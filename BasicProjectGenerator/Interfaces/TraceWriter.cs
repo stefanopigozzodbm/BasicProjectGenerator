@@ -27,15 +27,23 @@ namespace Basic_Project_Generator.Interfaces
         #region fields
 
         private readonly ListBox _list;
+        private readonly CheckBox _showError;
+        private readonly CheckBox _showWarning;
+        private readonly CheckBox _showInfo;
+
+
         private int _maxHorizontalSize;
 
         #endregion // fields
 
         #region ctor
 
-        public TraceWriter(ListBox list)
+        public TraceWriter(ListBox list, CheckBox showError, CheckBox showWarning, CheckBox showInfo)
         {
             _list = list;
+            _showError = showError;
+            _showWarning = showWarning;
+            _showInfo = showInfo;
         }
 
         #endregion // ctor
@@ -62,18 +70,25 @@ namespace Basic_Project_Generator.Interfaces
         /// </summary>
         public void Write(string value, Color color)
         {
-            
-            base.Write(value);
 
-            var input = ReplaceSpecialCharacters(value);
-            var timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var text = timeStamp + "\t" + input;
+            if (_showError.Checked && color == TraceColors.Error ||
+                _showWarning.Checked && color == TraceColors.Warning ||
+                _showInfo.Checked && color == TraceColors.Ok) 
+                {
 
-            _list.Items.Add(new TraceLine(text, color));
-            _list.SelectedIndex = _list.Items.Count - 1;
+                    base.Write(value);
 
-            DisplayHorizontalScroll();
-        }
+                    var input = ReplaceSpecialCharacters(value);
+                    var timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                    var text = timeStamp + "\t" + input;
+
+                    _list.Items.Add(new TraceLine(text, color));
+                    _list.SelectedIndex = _list.Items.Count - 1;
+
+                    DisplayHorizontalScroll();
+
+                }
+            }
 
         /// <summary>
         /// Activates the horizontal scroll bar if the message is too long for the trace output
@@ -93,6 +108,16 @@ namespace Basic_Project_Generator.Interfaces
             }
 
             if (_list != null) _list.HorizontalExtent = _maxHorizontalSize;
+        }
+
+        /// <summary>
+        /// Cancella il contenuto della ListBox e azzera lo scroll orizzontale.
+        /// </summary>
+        public void Clear()
+        {
+            _list.Items.Clear();
+            _maxHorizontalSize = 0;
+            _list.HorizontalExtent = 0;
         }
 
         /// <summary>
