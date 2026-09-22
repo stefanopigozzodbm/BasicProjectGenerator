@@ -1851,7 +1851,7 @@ namespace Basic_Project_Generator.Interfaces
 
                     _traceWriter.Write("Channel " + channelConfig.ChannelNumber + " su " + moduleDeviceItem.Name +
                         ": Failsafe_SensorEvaluation=" + channelConfig.FailsafeSensorEvaluation +
-                        ", Failsafe_SensorSupply=" + channelConfig.FailsafeSensorSupply,, TraceColors.Ok);
+                        ", Failsafe_SensorSupply=" + channelConfig.FailsafeSensorSupply, TraceColors.Ok);
                 }
                 catch (Exception exception)
                 {
@@ -2132,7 +2132,7 @@ namespace Basic_Project_Generator.Interfaces
                     if (methodBase.ReflectedType != null)
                     {
                         Debug.WriteLine(methodBase.ReflectedType.Name + "." + methodBase.Name + " called from " + caller + "Exception: " + e.Message);
-                        _traceWriter.Write("Errore aggiungendo la stazione ET200SP '" + instanceName + "': " + e.Message);
+                        _traceWriter.Write("Error adding station ET200SP '" + instanceName + "': " + e.Message, TraceColors.Error);
                     }
 
                     return false;
