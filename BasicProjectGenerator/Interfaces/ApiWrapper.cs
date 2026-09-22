@@ -33,6 +33,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Windows.Forms;
 using static Org.BouncyCastle.Math.EC.ECCurve;
+using static System.Windows.Forms.AxHost;
 using static System.Windows.Forms.LinkLabel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
@@ -582,7 +583,7 @@ namespace Basic_Project_Generator.Interfaces
                 var newProject=UMACProtectedProjectOpen(path, umacParameters);//originale var newProject = TiaPortal.Projects.Open(new FileInfo(path));
 
 
-                _traceWriter.Write($"TiaPortal.Projects.Open({path}");
+                _traceWriter.Write($"TiaPortal.Projects.Open({path})", TraceColors.Ok);
                 if (newProject != null)
                 {
                     CurrentProject = newProject;
@@ -1099,7 +1100,7 @@ namespace Basic_Project_Generator.Interfaces
                         }
                         catch (Exception exception)
                         {
-                            _traceWriter.Write("Error during setting " + kvp.Key + ": " + exception.Message, TraceColors.Error);
+                            _traceWriter.Write("Error during setting " + kvp.Key + ": " + exception.Message, TraceColors.Warning);
                         }
                     }
                 }
@@ -1353,18 +1354,18 @@ namespace Basic_Project_Generator.Interfaces
         {
             if (iosytem == null)
             {
-                _traceWriter.Write("IOSystem: '" + iosytem.ToString() + "null! ");
+                _traceWriter.Write("IOSystem: '" + iosytem.ToString() + "null! ", TraceColors.Error);
                 return;
             }
 
 
             if (TrySetIoSystemRecursive(DeviceItem, iosytem))
             {
-                _traceWriter.Write("IOSystem " + iosytem.ToString() + " setted on" + DeviceItem.Name);
+                _traceWriter.Write("IOSystem " + iosytem.ToString() + " setted on" + DeviceItem.Name, TraceColors.Ok);
             }
             else
             {
-                _traceWriter.Write("Can't find PROFINET interface on " + DeviceItem.Name + ", IOSystem not setted.");
+                _traceWriter.Write("Can't find PROFINET interface on " + DeviceItem.Name + ", IOSystem not setted.", TraceColors.Error);
             }
         }
 
@@ -1420,7 +1421,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Error creating IOSystem on " + currentPath + ": " + exception.Message, TraceColors.Error);
+                _traceWriter.Write("Error creating IOSystem on " + currentPath + ": " + exception.Message, TraceColors.Warning);
 
                 return false;
             }
@@ -1456,7 +1457,7 @@ namespace Basic_Project_Generator.Interfaces
                 }
                 else
                 {
-                    _traceWriter.Write("Can't find any PROFINET interface on " + deviceItem.Name + ", IOSystem not created", TraceColors.Error);
+                    _traceWriter.Write("Can't find any PROFINET interface on " + deviceItem.Name + ", IOSystem not created", TraceColors.Warning);
                     return false;
                 }
             }
@@ -1505,7 +1506,7 @@ namespace Basic_Project_Generator.Interfaces
             catch (Exception exception)
             {
 
-                _traceWriter.Write("Error during setting IOSystem on " + exception.Message, TraceColors.Error);
+                _traceWriter.Write("Error during setting IOSystem on " + exception.Message, TraceColors.Warning);
                 return null;
             }
         }
@@ -1681,15 +1682,15 @@ namespace Basic_Project_Generator.Interfaces
                 {
                     networkInterface.Nodes[0].ConnectToSubnet(subnet);
 
-                    _traceWriter.Write("NetworkInterface trovata al percorso imposta Subnet: " + currentPath);
-                    Debug.WriteLine("NetworkInterface trovata al percorso imposta Subnet: " + currentPath);
+                    _traceWriter.Write("NetworkInterface found on path" +path+ "setted Subnet: " + currentPath, TraceColors.Ok);
+                    Debug.WriteLine("NetworkInterface found on path" + path + "setted Subnet: " + currentPath);
                     return true;
 
                 }
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore impostando Subnet su " + currentPath + ": " + exception.Message);
+                _traceWriter.Write("Error setting subnet on " + currentPath + ": " + exception.Message, TraceColors.Error);
             }
 
             foreach (var childItem in deviceItem.DeviceItems)
@@ -1818,7 +1819,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Impossibile accedere a DeviceItems[0] su " + moduleDeviceItem.Name + " per configurazione Safety: " + exception.Message);
+                _traceWriter.Write("Not possible to access DeviceItems[0] on " + moduleDeviceItem.Name + " for Safety configuration: " + exception.Message, TraceColors.Error);
                 return;
             }
 
@@ -1932,14 +1933,14 @@ namespace Basic_Project_Generator.Interfaces
         /// </summary>
         private void SetModulePotentialGroup(System.UInt64 potential,DeviceItem newModule)
         {
-
+            var methodBase = MethodBase.GetCurrentMethod();
             try
             {
                 newModule.SetAttribute("PotentialGroup", potential);//Device.DeviceItems[index].SetAttribute("PotentialGroup", potential);
             }
             catch (Exception e)
             {
-                _traceWriter.Write("SetModulePotentialGroup" + e.Message);
+                _traceWriter.Write(methodBase.Name + e.Message, TraceColors.Error);
 
             }
         }
@@ -2179,14 +2180,14 @@ namespace Basic_Project_Generator.Interfaces
 
                 if (freeEntry == null)
                 {
-                    _traceWriter.Write("Sottomodulo FREE (32I/32O) non trovato nel catalogo HW per '" + masterArticleNumber + "'.");
+                    _traceWriter.Write("Submodule '" + FreePortSubmoduleDescription + "' non trovato nel catalogo HW per '" + masterArticleNumber,TraceColors.Error);
                     return null;
                 }
 
                 var freeItem = portsContainer.PlugNew(freeEntry.TypeIdentifier, "FREE_" + portNumber, portNumber);
                 if (freeItem == null)
                 {
-                    _traceWriter.Write("Impossibile piazzare il placeholder FREE sulla porta " + portNumber + ".");
+                    _traceWriter.Write("Impossible to place free placeholder on port " + portNumber, TraceColors.Error);
                     return null;
                 }
 
@@ -2208,12 +2209,12 @@ namespace Basic_Project_Generator.Interfaces
                     }
                 }
 
-                _traceWriter.Write("Porta " + portNumber + ": placeholder FREE 32I/32O piazzato (spazio riservato).");
+                _traceWriter.Write("Port " + portNumber + ": placeholder FREE" + FreePortSubmoduleDescription, TraceColors.Ok);
                 return freeItem;
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore piazzando il placeholder FREE sulla porta " + portNumber + ": " + exception.Message);
+                _traceWriter.Write("Errore piazzando il placeholder FREE sulla porta " + portNumber + ": " + exception.Message, TraceColors.Error);
                 return null;
             }
         }
@@ -2234,7 +2235,7 @@ namespace Basic_Project_Generator.Interfaces
 
             if (methodBase?.ReflectedType != null)
             {
-                _traceWriter.Write($"{methodBase.ReflectedType.Name}.{methodBase.Name} chiamato da {caller}");
+                _traceWriter.Write($"{methodBase.ReflectedType.Name}.{methodBase.Name} called from {caller}");
             }
 
             try
@@ -2247,7 +2248,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 if (masterEntry == null)
                 {
-                    _traceWriter.Write($"Master IO-Link '{config.MasterCopyName}' non trovato nel catalogo HW (DAP).");
+                    _traceWriter.Write($"Master IO-Link '{config.MasterCopyName}' not found on HW catalog.", TraceColors.Error);
                     return (false, slaveAddedCount);
                 }
 
@@ -2255,12 +2256,12 @@ namespace Basic_Project_Generator.Interfaces
                 var newDevice = CurrentProject.UngroupedDevicesGroup.Devices.CreateWithItem(masterEntry.TypeIdentifier, config.MasterCopyName, config.Code);
                 if (newDevice == null)
                 {
-                    _traceWriter.Write($"Creazione master IO-Link '{config.MasterCopyName}' fallita.");
+                    _traceWriter.Write($"Creation of IO-Link Master '{config.MasterCopyName}' failed.", TraceColors.Error);
                     return (false, slaveAddedCount);
                 }
 
                 IsModified = true;
-                _traceWriter.Write($"Master IO-Link '{config.MasterCopyName}' creato da catalogo HW.");
+                _traceWriter.Write($"IO-Link Master '{config.MasterCopyName}' created from HW catalog.", TraceColors.Ok);
 
                 // 3. Validazione struttura dispositivo
                 if (newDevice.DeviceItems.Count <= 1)
@@ -2278,7 +2279,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 while (usedIps.Contains(subnetPrefix + candidateIpLastOctet)) // incrementa l'ultimo ip rilevato di IpDeviceStep fino a che non ne trova 1 libero
                 {
-                    _traceWriter.Write("IP " + subnetPrefix + candidateIpLastOctet + " già in uso, provo il successivo.");
+                    _traceWriter.Write("IP " + subnetPrefix + candidateIpLastOctet + " already in use, trying the next one.", TraceColors.Warning);
                     candidateIpLastOctet += config.IpDeviceStep;
                 }
 
@@ -2296,7 +2297,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 while (usedDevNumber.Contains(candidateDeviceNumber))//incrementa l'ultimo ip rilevato di IpDeviceStep fino a che non ne trova 1 libero
                 {
-                    _traceWriter.Write("DeviceNumber " + candidateDeviceNumber + " già in uso, provo il successivo.");
+                    _traceWriter.Write("DeviceNumber " + candidateDeviceNumber + " already in use, trying the next one.", TraceColors.Warning);
                     candidateDeviceNumber += config.IpDeviceStep; // vale anch per il devicenumber
                 }
 
@@ -2314,7 +2315,7 @@ namespace Basic_Project_Generator.Interfaces
                 var candidateInput = config.GetInputStartAddress(occurrenceIndex);
                 while (usedInputAddresses.Contains(candidateInput))
                 {
-                    _traceWriter.Write("Indirizzo Input " + candidateInput + " già occupato, avanzo di " + config.AddressStep);
+                    _traceWriter.Write("Indirizzo Input " + candidateInput + " already in use, trying the next one.", TraceColors.Warning);
                     candidateInput += config.AddressStep;
                 }
                 // stesso per Output
@@ -2322,7 +2323,7 @@ namespace Basic_Project_Generator.Interfaces
                 var candidateOutput = config.GetOutputStartAddress(occurrenceIndex);
                 while (usedOutputAddresses.Contains(candidateOutput))
                 {
-                    _traceWriter.Write("Indirizzo Output " + candidateOutput + " già occupato, avanzo di " + config.AddressStep);
+                    _traceWriter.Write("Address Output " + candidateOutput + " already in use, trying to increase address by " + config.AddressStep, TraceColors.Warning);
                     candidateOutput += config.AddressStep;
                 }
 
@@ -2337,7 +2338,7 @@ namespace Basic_Project_Generator.Interfaces
                 var portsContainer = FindPortsContainer(masterItem);
                 if (portsContainer == null)
                 {
-                    _traceWriter.Write("Contenitore porte non trovato su " + config.Code + ": impossibile piazzare gli slave IO-Link.");
+                    _traceWriter.Write("Port container no found on " + config.Code + ": not possbile to place IO-Link slaves.", TraceColors.Error);
                 }
                 else
                 {
@@ -2371,11 +2372,11 @@ namespace Basic_Project_Generator.Interfaces
                         try
                         {
                             freeItem.Delete();
-                            _traceWriter.Write("Placeholder FREE rimosso.");
+                            _traceWriter.Write("Autoremoval of FREE placeholder" + FreePortSubmoduleDescription + "successful.", TraceColors.Ok);
                         }
                         catch (Exception exception)
                         {
-                            _traceWriter.Write("Impossibile rimuovere il placeholder FREE: " + exception.Message);
+                            _traceWriter.Write("Impossible to remove FREE placeholder: "+ FreePortSubmoduleDescription +" exception: " + exception.Message, TraceColors.Error);
                         }
                     }
                 }
@@ -2384,7 +2385,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write($"Errore durante la configurazione del master IO-Link '{config.MasterCopyName}': {exception.ToString()}");
+                _traceWriter.Write($"Error during configuration of IO-Link master '{config.MasterCopyName}': {exception.ToString()}", TraceColors.Error);
 
            
                 return (false, slaveAddedCount);
@@ -2442,7 +2443,7 @@ namespace Basic_Project_Generator.Interfaces
                     var globalLibraryScope = FindSubFolderByName(CurrentUserGlobalLibrary.MasterCopyFolder, masterArticleNumber);
                     if (globalLibraryScope == null)
                     {
-                        _traceWriter.Write("ERRORE: nessuna sottocartella '" + masterArticleNumber + "' trovata in libreria globale. Piazzamento di '" + config.MasterCopyName + "' annullato.");
+                        _traceWriter.Write("ERROR: no subfolder '" + masterArticleNumber + "' found in global library. Placement of '" + config.MasterCopyName + "' cancelled.", TraceColors.Error);
                         return false;
                     }
 
@@ -2455,7 +2456,7 @@ namespace Basic_Project_Generator.Interfaces
 
                     if (sourceMasterCopy == null)
                     {
-                        _traceWriter.Write("Master Copy '" + config.MasterCopyName + "' non trovata in libreria.");
+                        _traceWriter.Write("ERROR: Master Copy '" + config.MasterCopyName + "' not found in library.", TraceColors.Error);
                         return false;
                     }
 
@@ -2477,14 +2478,14 @@ namespace Basic_Project_Generator.Interfaces
                     
                     if (portsContainer == null)
                     {
-                        _traceWriter.Write("Contenitore porte non trovato su " + masterDeviceItem.Name);
+                        _traceWriter.Write("ERROR: Port container not found on " + masterDeviceItem.Name, TraceColors.Error);
                         return false;
                     }
 
                     slaveModulePlugable = CheckPortCanPlugMove(portsContainer, newSlaveModuleDeviceItem, config.PortNumber);
                     if (!slaveModulePlugable)
                     {
-                        _traceWriter.Write("Impossibile piazzare slave '" + config.MasterCopyName + "' sulla porta " + config.PortNumber);
+                        _traceWriter.Write("ERROR: Impossible to place slave '" + config.MasterCopyName + "' on port " + config.PortNumber, TraceColors.Error);
                         return false;
                     }
                 }
@@ -2523,7 +2524,7 @@ namespace Basic_Project_Generator.Interfaces
                             }
                             else 
                             { 
-                                _traceWriter.Write("Sottomodulo: "+ DigitalInputPortSubmoduleDescription + masterArticleNumber + "'.");
+                                _traceWriter.Write("ERROR: Submodule: " + DigitalInputPortSubmoduleDescription + " not found for article " + masterArticleNumber + "'.", TraceColors.Error);
                             }
 
                         }
@@ -2541,7 +2542,7 @@ namespace Basic_Project_Generator.Interfaces
                             }
                             else
                             {
-                                _traceWriter.Write("Sottomodulo: " + DigitalOutputPortSubmoduleDescription + masterArticleNumber + "'.");
+                                _traceWriter.Write("ERROR: Submodule: " + DigitalOutputPortSubmoduleDescription + " not found for article " + masterArticleNumber + "'.", TraceColors.Error);
                             }
 
                         }
@@ -2550,7 +2551,7 @@ namespace Basic_Project_Generator.Interfaces
                         {
                             IsModified = true;
                             result = true;
-                            _traceWriter.Write("newSlaveModule plugged in slot " + config.PortNumber);
+                            _traceWriter.Write("newSlaveModule plugged in slot " + config.PortNumber, TraceColors.Ok);
 
                             //assegna nome personalizzato al singolo IOlink_Slave
                             newSlaveModule.SetAttribute("Name", config.Code);
@@ -2565,13 +2566,13 @@ namespace Basic_Project_Generator.Interfaces
                                 if (ioType == "Input")
                                 {
                                     address.SetAttribute("StartAddress", cursor.NextInputAddress);
-                                    _traceWriter.Write(config.Code + ": Input StartAddress=" + cursor.NextInputAddress + " (Length=" + lengthBytes + " byte)");
+                                    _traceWriter.Write(config.Code + ": Input StartAddress=" + cursor.NextInputAddress + " (Length=" + lengthBytes + " byte)", TraceColors.Ok);
                                     cursor.NextInputAddress += lengthBytes;
                                 }
                                 else if (ioType == "Output")
                                 {
                                     address.SetAttribute("StartAddress", cursor.NextOutputAddress);
-                                    _traceWriter.Write(config.Code + ": Output StartAddress=" + cursor.NextOutputAddress + " (Length=" + lengthBytes + " byte)");
+                                    _traceWriter.Write(config.Code + ": Output StartAddress=" + cursor.NextOutputAddress + " (Length=" + lengthBytes + " byte)", TraceColors.Ok);
                                     cursor.NextOutputAddress += lengthBytes;
                                 }
                             }
@@ -2596,7 +2597,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore piazzando slave '" + config.MasterCopyName + "': " + exception.Message);
+                _traceWriter.Write("Error placing slave '" + config.MasterCopyName + "': " + exception.Message, TraceColors.Error);
                 return false;
             }
         }
@@ -2619,7 +2620,7 @@ namespace Basic_Project_Generator.Interfaces
                     var networkInterface = FindNetworkInterface(item); // questo è migliore perchè cerca ricorsivamente tra i figli del DeviceItem, non solo tra i DeviceItems diretti
                     if (networkInterface == null || networkInterface.Nodes.Count == 0)
                     {
-                        _traceWriter.Write("NetworkInterface del PLC non trovata o senza nodi.");
+                        _traceWriter.Write("NetworkInterface of PLC not found or without nodes", TraceColors.Error);
                         return (false,0);
                     }
 
@@ -2634,7 +2635,7 @@ namespace Basic_Project_Generator.Interfaces
 
             if (ioSystem == null || string.IsNullOrWhiteSpace(config.SubnetIp))
             {
-                _traceWriter.Write("Impossibile determinare IoSystem/IP del PLC per il master '" + config.Code + "'.");
+                _traceWriter.Write("Impossible determine IoSystem/IP of PLC for the master '" + config.Code , TraceColors.Error);
                 return (false,0);
             }
 
@@ -2661,7 +2662,7 @@ namespace Basic_Project_Generator.Interfaces
         {
             if (PortNumber > 8 || PortNumber < 1)
             {
-                _traceWriter.Write("PortNumber: '" + PortNumber + "', fuori range 1-8");
+                _traceWriter.Write("PortNumber: '" + PortNumber + "', out of range 1-8", TraceColors.Error);
                 return false;
             }
             return targetPort.CanPlugMove(slaveMasterCopy, PortNumber);//ex typeidentifier = "GSD: GSDML - V2.34 - IFM - AL1102 - 20181105.XML / SM / IDS_1 Port x IO - Link 4I"
@@ -2729,52 +2730,19 @@ namespace Basic_Project_Generator.Interfaces
             foreach (var masterCopy in folder.MasterCopies)
             {
                 Debug.WriteLine(indent + "[MasterCopy] " + masterCopy.Name);
-                _traceWriter.Write(indent + "[MasterCopy] " + masterCopy.Name);
+                _traceWriter.Write(indent + "[MasterCopy] " + masterCopy.Name,TraceColors.Ok);
             }
 
             foreach (var subFolder in folder.Folders)
             {
                Debug.WriteLine(indent + "[Folder] " + subFolder.Name);
-                _traceWriter.Write(indent + "[Folder] " + subFolder.Name);
+                _traceWriter.Write(indent + "[Folder] " + subFolder.Name, TraceColors.Ok);
                 DumpMasterCopyFolderRecursive(subFolder, indent + "  ");
             }
         }
 
 
-        /// <summary>
-        /// BOZZA NON VERIFICATA. Copia una Master Copy dalla libreria globale aperta alla libreria di progetto,
-        /// poi ne piazza un'istanza nella DeviceItemComposition indicata (es. le porte del master IO-Link).
-        /// </summary>
-        private bool PlaceFromLibrary(string masterCopyName, DeviceItem targetContainer, string instanceName)
-        {
-            try
-            {
-                var sourceMasterCopy = FindMasterCopyRecursive(CurrentUserGlobalLibrary.MasterCopyFolder, masterCopyName);
-                if (sourceMasterCopy == null)
-                {
-                    _traceWriter.Write("Master Copy '" + masterCopyName + "' non trovata nella libreria globale.");
-                    return false;
-                }
-
-                var projectLibrary = CurrentProject.ProjectLibrary; // <-- da verificare
-                var projectMasterCopy = projectLibrary.MasterCopyFolder.MasterCopies.CreateFrom(sourceMasterCopy); // <-- da verificare
-
-                var newItem = targetContainer.DeviceItems.CreateFrom(projectMasterCopy); // <-- il punto più incerto
-                if (newItem != null)
-                {
-                    newItem.Name = instanceName;
-                    IsModified = true;
-                    _traceWriter.Write("Piazzato '" + masterCopyName + "' come '" + instanceName + "' su " + targetContainer.Name);
-                    return true;
-                }
-            }
-            catch (Exception exception)
-            {
-                _traceWriter.Write("Errore piazzando '" + masterCopyName + "' da libreria: " + exception.Message);
-            }
-
-            return false;
-        }
+       
 
         private MasterCopy FindMasterCopyRecursive(MasterCopyFolder folder, string name)
         {
@@ -2866,7 +2834,7 @@ namespace Basic_Project_Generator.Interfaces
                                 deviceNotFound = false;
                                 var actIpAddress = networkInterface.Nodes[0].GetAttribute("Address");
 
-                                _traceWriter.Write("NetworkInterface trovata con actIpAddress " + actIpAddress);
+                                _traceWriter.Write("NetworkInterface founded with actIpAddress " + actIpAddress,TraceColors.Ok);
 
                                 test_config.SubnetIp = actIpAddress.ToString();
                                 test_config_imexpansion.SubnetIp = actIpAddress.ToString();
@@ -2891,7 +2859,7 @@ namespace Basic_Project_Generator.Interfaces
 
             if (deviceNotFound)
             {
-                _traceWriter.Write("No device found to compile!");
+                _traceWriter.Write("No device found to compile!",TraceColors.Error);
             }
         
             
@@ -2956,7 +2924,7 @@ namespace Basic_Project_Generator.Interfaces
                                     var plcCompiler = controllerTarget.GetService<ICompilable>();
                                     var plcCompilerResult = plcCompiler.Compile();
                                     var compilerMessage = "Compiling Software of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                                    _traceWriter.Write(compilerMessage);
+                                    _traceWriter.Write(compilerMessage, TraceColors.Ok);
                                     if (plcCompilerResult.Messages.Count > 0)
                                     {
                                         if (plcCompilerResult.Messages != null && plcCompilerResult.Messages.Count > 0)
@@ -2975,7 +2943,7 @@ namespace Basic_Project_Generator.Interfaces
                                     var hmiCompiler = hmiTarget.GetService<ICompilable>();
                                     var hmiCompilerResult = hmiCompiler.Compile();
                                     var compilerMessage = "Compiling HMI of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                                    _traceWriter.Write(compilerMessage);
+                                    _traceWriter.Write(compilerMessage, TraceColors.Ok);
                                     if (hmiCompilerResult.Messages.Count > 0)
                                     {
                                         if (hmiCompilerResult.Messages != null && hmiCompilerResult.Messages.Count > 0)
@@ -2992,7 +2960,7 @@ namespace Basic_Project_Generator.Interfaces
                             deviceNotFound = false;
                             var compileResult = compileProvider.Compile();
                             var compilerMessage = "Compiling Hardware of " + deviceItem.DeviceName + " - " + deviceItem.Name;
-                            _traceWriter.Write(compilerMessage);
+                            _traceWriter.Write(compilerMessage, TraceColors.Ok);
                             if (compileResult.Messages.Count > 0)
                             {
                                 if (compileResult.Messages != null && compileResult.Messages.Count > 0)
@@ -3008,7 +2976,7 @@ namespace Basic_Project_Generator.Interfaces
 
             if (deviceNotFound)
             {
-            _traceWriter.Write("No device found to compile!");
+            _traceWriter.Write("No device found to compile!",TraceColors.Error);
             }
             }
 
@@ -3027,14 +2995,28 @@ namespace Basic_Project_Generator.Interfaces
                     }
                     if (!string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
                     {
-                        var compilerMessage = "Path: " + path + " / State: " + message.State + " / Description: " + message.Description;
-                        _traceWriter.Write(compilerMessage);
+                        var state = message.State.ToString();
+                        var compilerMessage = "Path: " + path + " / State: " + state + " / Description: " + message.Description;
+                        if(state.Contains("error", StringComparison.OrdinalIgnoreCase)){
+                            _traceWriter.Write(compilerMessage, TraceColors.Error);
+                        }
+                        else {
+                            _traceWriter.Write(compilerMessage, TraceColors.Ok);
+                        }
                     }
                     if (string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(message.Description))
                     {
-                        var compilerMessage = "State: " + message.State + " / Description: " + message.Description;
-                        _traceWriter.Write(compilerMessage);
-                    }
+                        var state = message.State.ToString();
+                        var compilerMessage = "State: " + state + " / Description: " + message.Description;
+                        if (state.Contains("error", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _traceWriter.Write(compilerMessage, TraceColors.Error);
+                        }
+                        else
+                        {
+                            _traceWriter.Write(compilerMessage, TraceColors.Ok);
+                        }
+                }
                 }
             }
 
@@ -3072,7 +3054,7 @@ namespace Basic_Project_Generator.Interfaces
 
                 if (plcSoftware == null)
                 {
-                    _traceWriter.Write("PlcSoftware non trovato per '" + plcDeviceItem.Name + "'.");
+                    _traceWriter.Write("PlcSoftware not found for '" + plcDeviceItem.Name + "'.", TraceColors.Error, TraceColors.Error);
                     return false;
                 }
 
@@ -3088,23 +3070,23 @@ namespace Basic_Project_Generator.Interfaces
                     try
                     {
                         existingDb.Delete();
-                        _traceWriter.Write("DB '" + dbName + "' esistente cancellato prima della reimportazione.");
+                        _traceWriter.Write("DB '" + dbName + "' deleted before reimporting.", TraceColors.Ok);
                     }
                     catch (Exception deleteException)
                     {
-                        _traceWriter.Write("Impossibile cancellare il DB esistente '" + dbName + "': " + deleteException.Message);
+                        _traceWriter.Write("Impossible to delete the existing DB '" + dbName + "': " + deleteException.Message, TraceColors.Error);
                         return false;
                     }
                 }
 
                 plcSoftware.BlockGroup.Blocks.Import(new System.IO.FileInfo(tempPath), ImportOptions.Override);
 
-                _traceWriter.Write("DB '" + dbName + "' (numero " + dbNumber + ") importato con successo, " + groups.Count + " gruppi.");
+                _traceWriter.Write("DB '" + dbName + "' (number " + dbNumber + ") imported successfully, " + groups.Count + " groups.", TraceColors.Ok);
                 return true;
             }
             catch (Exception exception)
             {
-                _traceWriter.Write("Errore importando il DB '" + dbName + "': " + exception.Message);
+                _traceWriter.Write("Error importing DB '" + dbName + "': " + exception.Message, TraceColors.Error);
                 return false;
             }
         }

@@ -62,6 +62,7 @@ namespace Basic_Project_Generator.Interfaces
         /// </summary>
         public void Write(string value, Color color)
         {
+            
             base.Write(value);
 
             var input = ReplaceSpecialCharacters(value);
