@@ -835,11 +835,19 @@ namespace Basic_Project_Generator.Services
 
                 var occurrenceIndex = occurrenceCounters.TryGetValue("IoLinkMasters", out var count) ? count : 0;
                 occurrenceCounters["IoLinkMasters"] = occurrenceIndex + 1; // lasciato per diagnostica ma non usato
-                
+
                 //modificato 09/09/26 l'occurenceIndex serve per gestire più master dello stesso tipo,
                 //per tipo si intendo IoLinkMaster non necessariamnete col lo stesso MastercopyName (
                 //potrebbe esse AL 1100 o AL 1102, la numerazione basata su occurenceIndex
                 //deve comunuqe essre la stessa.
+
+                //23/09/26 agginto per pulizia
+                //la subnetIp con cui il PLC è stato creato (ex 10.0.0.x) che sia di dafult on ovveride 
+                //nel'istante in cui vinene richiamtao addNewDevice veniva trovata dentro DoAddIOLinkMasterFromPlc
+                //con questo metodo la estraggo prima di creare la runtimeConfig qui sotto con un apposito metodo in apiWarpper.cs
+                //che restituisce la subnetIp del plcDeviceItem passato 
+
+                var subnetIp = _apiWrapper.getSubnetIp(plcDeviceItem);
 
                 var runtimeConfig = new IOLinkMasterModule
                 {
@@ -850,7 +858,8 @@ namespace Basic_Project_Generator.Services
                     AddressStep = template.AddressStep,
                     BaseIpLastOctet = template.BaseIpLastOctet,
                     BaseDeviceNumber = template.BaseDeviceNumber,
-                    IpDeviceStep = template.IpDeviceStep
+                    IpDeviceStep = template.IpDeviceStep,
+                    SubnetIp = subnetIp
                 };
 
                 foreach (var port in item.IOLinkPorts)

@@ -1100,7 +1100,7 @@ namespace Basic_Project_Generator.Interfaces
                         }
                         catch (Exception exception)
                         {
-                            _traceWriter.Write("Error during setting " + kvp.Key + ": " + exception.Message, TraceColors.Warning);
+                            _traceWriter.Write("Warning during setting " + kvp.Key + ": " + exception.Message, TraceColors.Warning);
                         }
                     }
                 }
@@ -1163,7 +1163,7 @@ namespace Basic_Project_Generator.Interfaces
                     }
                     catch (Exception exception)
                     {
-                        _traceWriter.Write("Error during setting " + onboardName + ": " + exception.Message, TraceColors.Error);
+                        _traceWriter.Write("Warning during setting " + onboardName + ": " + exception.Message, TraceColors.Error);
                     }
                 }
             }
@@ -1506,7 +1506,7 @@ namespace Basic_Project_Generator.Interfaces
             catch (Exception exception)
             {
 
-                _traceWriter.Write("Error during setting IOSystem on " + exception.Message, TraceColors.Warning);
+                _traceWriter.Write("Warning during setting IOSystem on " + exception.Message, TraceColors.Warning);
                 return null;
             }
         }
@@ -1667,7 +1667,7 @@ namespace Basic_Project_Generator.Interfaces
             }
             else
             {
-                _traceWriter.Write("Can't find any PROFINET interface on " + DeviceItem.Name + ", subnet non setted.", TraceColors.Error);
+                _traceWriter.Write("Can't find any PROFINET interface on " + DeviceItem.Name + ", subnet non setted.", TraceColors.Warning);
             }
         }
 
@@ -2603,6 +2603,41 @@ namespace Basic_Project_Generator.Interfaces
         }
 
 
+        /// <summary>
+        /// Restituisce la subnetIp del plcDeviceItem passato 
+        /// iterando sui vari deviceitem con quel nome nel progetto corrente
+        /// </summary>
+        /// <param name="plcDeviceItem"></param>
+        /// <param name="caller"></param>
+        public string getSubnetIp(Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
+        {
+            var subnetIp = "";
+            foreach (var device in CurrentProject.Devices)
+            {
+                if (device.Name != plcDeviceItem.DeviceName) continue;
+
+                foreach (var item in device.DeviceItems)
+                {
+                    if (item.Name != plcDeviceItem.Name) continue;
+
+                    var networkInterface = FindNetworkInterface(item); // questo è migliore perchè cerca ricorsivamente tra i figli del DeviceItem, non solo tra i DeviceItems diretti
+                    if (networkInterface == null || networkInterface.Nodes.Count == 0)
+                    {
+                        _traceWriter.Write("NetworkInterface of PLC not found or without nodes", TraceColors.Error);
+                        subnetIp = "";
+                    }
+
+                    subnetIp = networkInterface.Nodes[0].GetAttribute("Address")?.ToString();
+                }
+            }
+
+            return subnetIp;
+
+        }
+
+
+
+
 
         public (bool MasterAdded, int SlaveAddedCount) DoAddIOLinkMasterFromPlc(IOLinkMasterModule config, int occurrenceIndex, Models.DeviceItem plcDeviceItem, [CallerMemberName] string caller = "")
         {
@@ -2625,7 +2660,6 @@ namespace Basic_Project_Generator.Interfaces
                     }
 
                     ioSystem = networkInterface.IoControllers[0].IoSystem;
-                    config.SubnetIp = networkInterface.Nodes[0].GetAttribute("Address")?.ToString();
                 }
             }
 
@@ -2633,7 +2667,7 @@ namespace Basic_Project_Generator.Interfaces
            
             subnet = CurrentProject.Subnets[0]; // stesso limite già presente in DoTestDebug: prima subnet del progetto
 
-            if (ioSystem == null || string.IsNullOrWhiteSpace(config.SubnetIp))
+            if (ioSystem == null)
             {
                 _traceWriter.Write("Impossible determine IoSystem/IP of PLC for the master '" + config.Code , TraceColors.Error);
                 return (false,0);
@@ -2645,7 +2679,7 @@ namespace Basic_Project_Generator.Interfaces
         }
 
 
-        /// <summary> <-- DA VERIFICARE con TIA Openness Explorer sul vostro master reale già piazzato </summary>
+        
         private DeviceItem FindPortsContainer(DeviceItem masterDeviceItem)
         {
             foreach (var child in masterDeviceItem.DeviceItems)
