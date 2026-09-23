@@ -933,6 +933,8 @@ namespace Basic_Project_Generator.UserInterfaces
             // cb_twShowError
             // 
             this.cb_twShowError.AutoSize = true;
+            this.cb_twShowError.Checked = true;
+            this.cb_twShowError.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_twShowError.Location = new System.Drawing.Point(1350, 552);
             this.cb_twShowError.Name = "cb_twShowError";
             this.cb_twShowError.Size = new System.Drawing.Size(48, 17);
@@ -944,6 +946,8 @@ namespace Basic_Project_Generator.UserInterfaces
             // cb_twShowWarning
             // 
             this.cb_twShowWarning.AutoSize = true;
+            this.cb_twShowWarning.Checked = true;
+            this.cb_twShowWarning.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_twShowWarning.Location = new System.Drawing.Point(1350, 590);
             this.cb_twShowWarning.Name = "cb_twShowWarning";
             this.cb_twShowWarning.Size = new System.Drawing.Size(66, 17);
@@ -955,6 +959,8 @@ namespace Basic_Project_Generator.UserInterfaces
             // cb_twShowInfo
             // 
             this.cb_twShowInfo.AutoSize = true;
+            this.cb_twShowInfo.Checked = true;
+            this.cb_twShowInfo.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_twShowInfo.Location = new System.Drawing.Point(1350, 631);
             this.cb_twShowInfo.Name = "cb_twShowInfo";
             this.cb_twShowInfo.Size = new System.Drawing.Size(44, 17);

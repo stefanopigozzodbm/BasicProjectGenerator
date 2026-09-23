@@ -193,7 +193,7 @@
 				<Role>
 					<Name>PLCFAdministrator</Name>
 					<Number>15</Number>
-					<Enable>False</Enable>
+					<Enable>True</Enable>
 				</Role>
 				<Role>
 					<Name>PLCOperator</Name>
