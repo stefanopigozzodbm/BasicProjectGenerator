@@ -2266,7 +2266,7 @@ namespace Basic_Project_Generator.Interfaces
                 // 3. Validazione struttura dispositivo
                 if (newDevice.DeviceItems.Count <= 1)
                 {
-                    throw new InvalidOperationException($"Il dispositivo '{config.MasterCopyName}' non possiede il SubDeviceItem atteso all'indice 1.");
+                    throw new InvalidOperationException($"The Device'{config.MasterCopyName}' mot have the SubDeviceItem attended at the index 1");
                 }
 
                 var masterItem = newDevice.DeviceItems[1];
@@ -2749,13 +2749,13 @@ namespace Basic_Project_Generator.Interfaces
         {
             if (CurrentUserGlobalLibrary == null)
             {
-                Debug.WriteLine("Nessuna libreria aperta.");
-                _traceWriter.Write("Nessuna libreria aperta.");
+                Debug.WriteLine("No Library Opened.");
+                _traceWriter.Write("No Library Opened.");
                 return;
             }
 
-            Debug.WriteLine("--- Struttura libreria: " + CurrentUserGlobalLibrary.Name + " ---");
-            _traceWriter.Write("--- Struttura libreria: " + CurrentUserGlobalLibrary.Name + " ---");
+            Debug.WriteLine("--- Library Structure: " + CurrentUserGlobalLibrary.Name + " ---");
+            _traceWriter.Write("--- Library Structure: " + CurrentUserGlobalLibrary.Name + " ---");
             DumpMasterCopyFolderRecursive(CurrentUserGlobalLibrary.MasterCopyFolder, "");
         }
 

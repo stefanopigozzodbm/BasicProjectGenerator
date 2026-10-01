@@ -133,7 +133,7 @@ namespace Basic_Project_Generator.Services
             if (stream == null)
             {
                 string available = string.Join("\n", assembly.GetManifestResourceNames());
-                throw new FileNotFoundException($"Risorsa '{resourceName}' non trovata. Risorse disponibili:\n{available}");
+                throw new FileNotFoundException($"Resurce '{resourceName}' not found. Available resurces:\n{available}");
             }
 
             return stream;
@@ -773,7 +773,7 @@ namespace Basic_Project_Generator.Services
                 var template = ImCatalog.FirstOrDefault(m => string.Equals(m.TypeIdentifier, item.TypeIdentifier, StringComparison.OrdinalIgnoreCase));
                 if (template == null)
                 {
-                    _traceWriter.Write("Nessuna voce di catalogo trovata per IM-Expansion '" + item.OrderNumber + "'.");
+                    _traceWriter.Write("No device in HarwareCatalog found for IM-Expansion '" + item.OrderNumber + "'.");
                     continue;
                 }
 
@@ -829,7 +829,7 @@ namespace Basic_Project_Generator.Services
                 var template = masterCatalog.FirstOrDefault(m => string.Equals(m.MasterCopyName, item.IOLinkMasterCode, StringComparison.OrdinalIgnoreCase));
                 if (template == null)
                 {
-                    _traceWriter.Write("Nessuna voce di catalogo trovata per master IO-Link '" + item.IOLinkMasterCode + "'.");
+                    _traceWriter.Write("No device in HardwareCatalog found for master IO-Link '" + item.IOLinkMasterCode + "'.");
                     continue;
                 }
 
@@ -1013,7 +1013,7 @@ namespace Basic_Project_Generator.Services
                         var userName = userElement.Element("Name")?.Value;
                         if (string.IsNullOrWhiteSpace(userName))
                         {
-                            _traceWriter.Write("Utente UMAC senza Name: elemento saltato.");
+                            _traceWriter.Write("User UMAC without name: element skipped.");
                             continue;
                         }
 
@@ -1042,7 +1042,7 @@ namespace Basic_Project_Generator.Services
 
                                     if (string.IsNullOrWhiteSpace(roleName) || !int.TryParse(roleNumberRaw, out var roleNumber))
                                     {
-                                        _traceWriter.Write("Role non valido per utente '" + userName + "': Name/Number mancanti o non numerici.");
+                                        _traceWriter.Write("Role not valid for the user: '" + userName + "': Name/Number missed or not numeric.");
                                         continue;
                                     }
 
@@ -1055,14 +1055,14 @@ namespace Basic_Project_Generator.Services
 
                                     if (userSettings.Roles[roleNumber] != null)
                                     {
-                                        _traceWriter.Write("ATTENZIONE: Number " + roleNumber + " duplicato per utente '" + userName + "', il Role precedente viene sovrascritto.");
+                                        _traceWriter.Write("ATTENTION: Number " + roleNumber + " duplicate for the user '" + userName + "', the precedent Role is overwritten.");
                                     }
 
                                     userSettings.Roles[roleNumber] = new UmacRoleAssignment { Name = roleName, Enable = roleEnable };
                                 }
                                 catch (Exception roleException)
                                 {
-                                    _traceWriter.Write("Errore leggendo un Role per l'utente '" + userName + "': " + roleException.Message);
+                                    _traceWriter.Write("Error reading role for the user '" + userName + "': " + roleException.Message);
                                 }
                             }
                         }
@@ -1075,21 +1075,21 @@ namespace Basic_Project_Generator.Services
 
                         if (userSettings.IsProjectProtectionUser != engineeringAdminEnabled)
                         {
-                            _traceWriter.Write("ATTENZIONE: utente '" + userName + "' ha Type=" + userSettings.IsProjectProtectionUser +
-                                " ma il ruolo 'Engineering administrator' ha Enable=" + engineeringAdminEnabled +
+                            _traceWriter.Write("ATTENTION: user '" + userName + "' has Type=" + userSettings.IsProjectProtectionUser +
+                                " but the  'Engineering administrator' ha Enable=" + engineeringAdminEnabled +
                                 ". Verificare l'XML: i due valori dovrebbero coincidere.");
                         }
 
                         if (startupUmacSettings.ContainsKey(userName))
                         {
-                            _traceWriter.Write("ATTENZIONE: utente UMAC '" + userName + "' duplicato nell'XML, la voce precedente viene sovrascritta.");
+                            _traceWriter.Write("ATTENTION: user UMAC '" + userName + "' duplicate on XML, the previus value will overwritten");
                         }
 
                         startupUmacSettings[userName] = userSettings;
                     }
                     catch (Exception userException)
                     {
-                        _traceWriter.Write("Errore leggendo un utente UMAC: " + userException.Message);
+                        _traceWriter.Write("Error reading UMAC User: " + userException.Message);
                     }
                 }
             }

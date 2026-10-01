@@ -958,13 +958,13 @@ namespace Basic_Project_Generator.UserInterfaces
             {
                 if (cob_ModuleTemplates.SelectedItem == null)
                 {
-                    MessageBox.Show("Seleziona un modulo dal menu a tendina.", "Dati mancanti", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Select a module from drop down menu.", "Missing Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(txb_ModuleName.Text))
                 {
-                    MessageBox.Show("Inserisci un nome per il modulo.", "Dati mancanti", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Insert a name for the module", "Missing Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
@@ -985,7 +985,7 @@ namespace Basic_Project_Generator.UserInterfaces
                     Cursor.Current = Cursors.Default;
 
                     if (!added)
-                        MessageBox.Show("Impossibile inserire il modulo: nessuno slot libero/compatibile trovato.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Impossible insert the module: no free/compatible slot found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     else
                         txb_ModuleName.Clear();
                 }
@@ -1021,15 +1021,15 @@ namespace Basic_Project_Generator.UserInterfaces
 
                     _traceWriter.Write("Import: " +
                         _importedItems.Count(i => i.ItemType == SymbolItemType.Device) + " device, " +
-                        _importedItems.Count(i => i.ItemType == SymbolItemType.Module) + " moduli, " +
+                        _importedItems.Count(i => i.ItemType == SymbolItemType.Module) + " moduls, " +
                         _importedItems.Count(i => i.ItemType == SymbolItemType.IOLinkMaster) + " IOLinkMaster, " +
-                        _importedItems.Count(i => i.ItemType == SymbolItemType.Unknown) + " non riconosciuti.");
+                        _importedItems.Count(i => i.ItemType == SymbolItemType.Unknown) + " not recognised.");
                 }
             }
             catch (Exception exception)
             {
                 _traceWriter.Write(exception.Message);
-                MessageBox.Show(exception.Message, "Errore importazione", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(exception.Message, "Import error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1077,7 +1077,7 @@ namespace Basic_Project_Generator.UserInterfaces
 
                     if (checkedDeviceItems.Count > 1)
                     {
-                        MessageBox.Show("Puoi selezionare una sola CPU per volta.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("You can select only one CPU per time", "Attention", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
@@ -1162,7 +1162,7 @@ namespace Basic_Project_Generator.UserInterfaces
                         Cursor.Current = Cursors.Default;
 
                         if (added) addedCount++;
-                        else { errorCount++; _traceWriter.Write("Fallito: " + item.Name); }
+                        else { errorCount++; _traceWriter.Write("Failed: " + item.Name); }
                     }
 
 
@@ -1219,15 +1219,15 @@ namespace Basic_Project_Generator.UserInterfaces
 
                         // diagnostica risultati inserimento come PopUp
 
-                        MessageBox.Show(addedCount + " moduli aggiunti, " + errorCount + " falliti/non selezionati.", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(addedCount + " added modules, " + errorCount + " failed / not selected.", "Import completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        MessageBox.Show(imExpansionAdded + " moduli ImExpansion aggiunti, " + imepxansionErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(imExpansionAdded + " ImExpansion modules added, " + imepxansionErrorCount + " failed / not selected.", "Import completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        MessageBox.Show(masterAdded + " moduli Master aggiunti, " + masterErrorCount + " falliti/non selezionati", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(masterAdded + " Master modules added, " + masterErrorCount + " failed / not selected.", "Import completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        MessageBox.Show(totalSlavesAdded + " moduli IO-link Slave TOTALI aggiunti", "Import completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(totalSlavesAdded + " added IO-link Slave TOTAL modules ", "Import completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        MessageBox.Show(dbInputGroupsCount + " Gruppi DB_INPUT aggiunti, "+ dbOutputGroupsCount + " Gruppi DB_OUTPUT aggiunti", "Import Terminato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(dbInputGroupsCount + " DB_INPUT group added, "+ dbOutputGroupsCount + " DB_OUTPUT group added", "Import completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
 
                      
@@ -1244,7 +1244,7 @@ namespace Basic_Project_Generator.UserInterfaces
                 stopwatch.Stop();
                 var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
                 txt_elapsedTime.Text = "Elapsed Time: " + elapsedSeconds.ToString("F2") + " s";
-                _traceWriter.Write("btn_AddImportedModules_Click completato in " + elapsedSeconds.ToString("F2") + " secondi.");
+                _traceWriter.Write("btn_AddImportedModules_Click completed in " + elapsedSeconds.ToString("F2") + " seconds.");
 
                 //crea un file di log con tutto quello che c'è nel _traceWriter
                
